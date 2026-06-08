@@ -198,7 +198,7 @@ export default function RegisterPage() {
                     className={`w-full pl-9 pr-3 py-2 bg-white border rounded-lg text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-terracotta-300 transition-all ${
                       fieldErrors.email ? 'border-error-300' : 'border-sand-200'
                     }`}
-                    placeholder="you@example.com"
+                    placeholder="johndoe@gmail.com"
                   />
                 </div>
                 {fieldErrors.email && (
