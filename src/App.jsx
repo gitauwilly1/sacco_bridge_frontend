@@ -23,6 +23,9 @@ import BulkContributionPage from '@/pages/chamas/BulkContributionPage.jsx';
 import MarketPage from '@/pages/investments/MarketPage.jsx';
 import SaccoDetailPage from '@/pages/investments/SaccoDetailPage.jsx';
 import HoldingsPage from '@/pages/investments/HoldingsPage.jsx';
+import LiquidityRequestsPage from '@/pages/investments/LiquidityRequestsPage.jsx';
+import OpportunitiesPage from '@/pages/investments/OpportunitiesPage.jsx';
+import ConnectionRoomPage from '@/pages/investments/ConnectionRoomPage.jsx';
 
 export default function App() {
   return (
@@ -60,6 +63,9 @@ export default function App() {
                 <Route path="saccos" element={<MarketPage />} />
                 <Route path="saccos/:id" element={<SaccoDetailPage />} />
                 <Route path="holdings" element={<HoldingsPage />} />
+                <Route path="requests" element={<LiquidityRequestsPage />} />
+                <Route path="opportunities" element={<OpportunitiesPage />} />
+                <Route path="connections/:id" element={<ConnectionRoomPage />} />
               </Route>
 
               {/* Fallback */}
