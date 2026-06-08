@@ -1,4 +1,4 @@
-import { useMode } from '@/contexts/ModeContext';
+import { useMode } from '@/contexts/ModeContext.jsx';
 import { Users, TrendingUp } from 'lucide-react';
 
 export default function ModeToggle() {

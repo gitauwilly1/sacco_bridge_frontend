@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { useMode } from '@/contexts/ModeContext';
+import { useMode } from '@/contexts/ModeContext.jsx';
 import { Home, Users, TrendingUp, PlusCircle, Clock, User } from 'lucide-react';
 
 export default function BottomNav() {
@@ -42,14 +42,10 @@ export default function BottomNav() {
 
         <NavLink
           to={mode === 'chama' ? '/contribute' : '/opportunities'}
-          className={`flex flex-col items-center gap-0.5 py-1 px-2 rounded-lg transition-all duration-200 -mt-5 ${
-            isActive(mode === 'chama' ? '/contribute' : '/opportunities')
-              ? 'text-white'
-              : 'text-white'
-          }`}
+          className="flex flex-col items-center gap-0.5 py-1 px-2 rounded-lg transition-all duration-200 -mt-5"
         >
           <div className="w-12 h-12 rounded-full bg-gradient-to-br from-terracotta-500 to-clay-700 flex items-center justify-center shadow-terracotta">
-            <PlusCircle className="w-6 h-6" />
+            <PlusCircle className="w-6 h-6 text-white" />
           </div>
           <span className="text-[10px] font-medium text-slate-400">
             {mode === 'chama' ? 'Contribute' : 'Invest'}

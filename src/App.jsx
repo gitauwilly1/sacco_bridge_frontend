@@ -1,12 +1,12 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
-import { AuthProvider } from '@/contexts/AuthContext';
-import { ModeProvider } from '@/contexts/ModeContext';
-import { queryClient } from '@/lib/query-client';
-import ProtectedRoute from '@/components/layout/ProtectedRoute';
-import AppShell from '@/components/layout/AppShell';
-import SplashScreen from '@/pages/onboarding/SplashScreen';
-import LoginPage from '@/pages/auth/LoginPage';
+import { AuthProvider } from '@/contexts/AuthContext.jsx';
+import { ModeProvider } from '@/contexts/ModeContext.jsx';
+import { queryClient } from '@/lib/query-client.js';
+import ProtectedRoute from '@/components/layout/ProtectedRoute.jsx';
+import AppShell from '@/components/layout/AppShell.jsx';
+import SplashScreen from '@/pages/onboarding/SplashScreen.jsx';
+import LoginPage from '@/pages/auth/LoginPage.jsx';
 
 export default function App() {
   return (

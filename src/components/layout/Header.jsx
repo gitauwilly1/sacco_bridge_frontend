@@ -1,12 +1,11 @@
-import { useMode } from '@/contexts/ModeContext';
-import { useAuth } from '@/contexts/AuthContext';
+import { useMode } from '@/contexts/ModeContext.jsx';
+import { useAuth } from '@/contexts/AuthContext.jsx';
 import { Link } from 'react-router-dom';
-import { Bell, User } from 'lucide-react';
-import ModeToggle from '@/components/layout/ModeToggle';
+import { Bell } from 'lucide-react';
+import ModeToggle from '@/components/layout/ModeToggle.jsx';
 
 export default function Header() {
   const { user } = useAuth();
-  const { mode } = useMode();
 
   return (
     <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-lg border-b border-sand-200 safe-top">
