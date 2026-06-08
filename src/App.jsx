@@ -26,6 +26,11 @@ import HoldingsPage from '@/pages/investments/HoldingsPage.jsx';
 import LiquidityRequestsPage from '@/pages/investments/LiquidityRequestsPage.jsx';
 import OpportunitiesPage from '@/pages/investments/OpportunitiesPage.jsx';
 import ConnectionRoomPage from '@/pages/investments/ConnectionRoomPage.jsx';
+import ActivityPage from '@/pages/transactions/ActivityPage.jsx';
+import SettlementDetailPage from '@/pages/transactions/SettlementDetailPage.jsx';
+import ReceiptsPage from '@/pages/transactions/ReceiptsPage.jsx';
+import ReceiptDetailPage from '@/pages/transactions/ReceiptDetailPage.jsx';
+import ProfilePage from '@/pages/profile/ProfilePage.jsx';
 
 export default function App() {
   return (
@@ -66,6 +71,11 @@ export default function App() {
                 <Route path="requests" element={<LiquidityRequestsPage />} />
                 <Route path="opportunities" element={<OpportunitiesPage />} />
                 <Route path="connections/:id" element={<ConnectionRoomPage />} />
+                <Route path="activity" element={<ActivityPage />} />
+                <Route path="settlements/:id" element={<SettlementDetailPage />} />
+                <Route path="receipts" element={<ReceiptsPage />} />
+                <Route path="receipts/:number" element={<ReceiptDetailPage />} />
+                <Route path="profile" element={<ProfilePage />} />
               </Route>
 
               {/* Fallback */}
