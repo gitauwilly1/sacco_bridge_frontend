@@ -10,6 +10,8 @@ import LoginPage from '@/pages/auth/LoginPage.jsx';
 import RegisterPage from '@/pages/auth/RegisterPage.jsx';
 import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage.jsx';
 import ResetPasswordPage from '@/pages/auth/ResetPasswordPage.jsx';
+import HomePage from '@/pages/home/HomePage.jsx';
+
 
 export default function App() {
   return (
@@ -32,7 +34,7 @@ export default function App() {
                   </ProtectedRoute>
                 }
               >
-                <Route index element={<div className="p-4 text-center text-slate-500">Dashboard coming soon</div>} />
+                <Route index element={<HomePage />} />
               </Route>
 
               <Route path="*" element={<Navigate to="/splash" replace />} />
