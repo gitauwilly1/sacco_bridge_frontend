@@ -11,7 +11,13 @@ import RegisterPage from '@/pages/auth/RegisterPage.jsx';
 import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage.jsx';
 import ResetPasswordPage from '@/pages/auth/ResetPasswordPage.jsx';
 import HomePage from '@/pages/home/HomePage.jsx';
-
+import ChamaListPage from '@/pages/chamas/ChamaListPage.jsx';
+import ChamaDetailPage from '@/pages/chamas/ChamaDetailPage.jsx';
+import ChamaMembersPage from '@/pages/chamas/ChamaMembersPage.jsx';
+import ChamaContributionsPage from '@/pages/chamas/ChamaContributionsPage.jsx';
+import ChamaLoansPage from '@/pages/chamas/ChamaLoansPage.jsx';
+import ChamaMeetingsPage from '@/pages/chamas/ChamaMeetingsPage.jsx';
+import ChamaSettingsPage from '@/pages/chamas/ChamaSettingsPage.jsx';
 
 export default function App() {
   return (
@@ -20,12 +26,14 @@ export default function App() {
         <AuthProvider>
           <ModeProvider>
             <Routes>
+              {/* Public Routes */}
               <Route path="/splash" element={<SplashScreen />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
               <Route path="/reset-password" element={<ResetPasswordPage />} />
 
+              {/* Protected Routes */}
               <Route
                 path="/"
                 element={
@@ -35,8 +43,16 @@ export default function App() {
                 }
               >
                 <Route index element={<HomePage />} />
+                <Route path="chamas" element={<ChamaListPage />} />
+                <Route path="chamas/:id" element={<ChamaDetailPage />} />
+                <Route path="chamas/:id/members" element={<ChamaMembersPage />} />
+                <Route path="chamas/:id/contributions" element={<ChamaContributionsPage />} />
+                <Route path="chamas/:id/loans" element={<ChamaLoansPage />} />
+                <Route path="chamas/:id/meetings" element={<ChamaMeetingsPage />} />
+                <Route path="chamas/:id/settings" element={<ChamaSettingsPage />} />
               </Route>
 
+              {/* Fallback */}
               <Route path="*" element={<Navigate to="/splash" replace />} />
             </Routes>
           </ModeProvider>
