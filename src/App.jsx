@@ -31,6 +31,8 @@ import SettlementDetailPage from '@/pages/transactions/SettlementDetailPage.jsx'
 import ReceiptsPage from '@/pages/transactions/ReceiptsPage.jsx';
 import ReceiptDetailPage from '@/pages/transactions/ReceiptDetailPage.jsx';
 import ProfilePage from '@/pages/profile/ProfilePage.jsx';
+import NotificationsPage from '@/pages/notifications/NotificationsPage.jsx';
+import ChatPage from '@/pages/chatbot/ChatPage.jsx';
 
 export default function App() {
   return (
@@ -76,6 +78,9 @@ export default function App() {
                 <Route path="receipts" element={<ReceiptsPage />} />
                 <Route path="receipts/:number" element={<ReceiptDetailPage />} />
                 <Route path="profile" element={<ProfilePage />} />
+                <Route path="notifications" element={<NotificationsPage />} />
+                <Route path="chat" element={<ChatPage />} />
+                <Route path="chat/:sessionId" element={<ChatPage />} />
               </Route>
 
               {/* Fallback */}
