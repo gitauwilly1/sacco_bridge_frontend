@@ -18,6 +18,8 @@ import ChamaContributionsPage from '@/pages/chamas/ChamaContributionsPage.jsx';
 import ChamaLoansPage from '@/pages/chamas/ChamaLoansPage.jsx';
 import ChamaMeetingsPage from '@/pages/chamas/ChamaMeetingsPage.jsx';
 import ChamaSettingsPage from '@/pages/chamas/ChamaSettingsPage.jsx';
+import ContributionFlowPage from '@/pages/chamas/ContributionFlowPage.jsx';
+import BulkContributionPage from '@/pages/chamas/BulkContributionPage.jsx';
 
 export default function App() {
   return (
@@ -50,6 +52,8 @@ export default function App() {
                 <Route path="chamas/:id/loans" element={<ChamaLoansPage />} />
                 <Route path="chamas/:id/meetings" element={<ChamaMeetingsPage />} />
                 <Route path="chamas/:id/settings" element={<ChamaSettingsPage />} />
+                <Route path="contribute" element={<ContributionFlowPage />} />
+                <Route path="contribute/bulk" element={<BulkContributionPage />} />
               </Route>
 
               {/* Fallback */}
