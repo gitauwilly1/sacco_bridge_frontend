@@ -33,6 +33,8 @@ import ReceiptDetailPage from '@/pages/transactions/ReceiptDetailPage.jsx';
 import ProfilePage from '@/pages/profile/ProfilePage.jsx';
 import NotificationsPage from '@/pages/notifications/NotificationsPage.jsx';
 import ChatPage from '@/pages/chatbot/ChatPage.jsx';
+import LoanApplicationPage from '@/pages/chamas/LoanApplicationPage.jsx';
+import CreateLiquidityRequestPage from '@/pages/investments/CreateLiquidityRequestPage.jsx';
 
 export default function App() {
   return (
@@ -81,6 +83,8 @@ export default function App() {
                 <Route path="notifications" element={<NotificationsPage />} />
                 <Route path="chat" element={<ChatPage />} />
                 <Route path="chat/:sessionId" element={<ChatPage />} />
+                <Route path="loans/new" element={<LoanApplicationPage />} />
+                <Route path="requests/new" element={<CreateLiquidityRequestPage />} />
               </Route>
 
               {/* Fallback */}
