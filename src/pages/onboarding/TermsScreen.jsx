@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext.jsx';
-import { ArrowLeft, Shield, FileText, AlertTriangle, Clock, Building2 } from 'lucide-react';
+import { ArrowLeft, Shield, FileText, AlertTriangle, Clock, Building2, TrendingUp } from 'lucide-react';
 
 export default function TermsScreen() {
   const navigate = useNavigate();

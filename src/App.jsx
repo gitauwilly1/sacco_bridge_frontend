@@ -35,6 +35,10 @@ import NotificationsPage from '@/pages/notifications/NotificationsPage.jsx';
 import ChatPage from '@/pages/chatbot/ChatPage.jsx';
 import LoanApplicationPage from '@/pages/chamas/LoanApplicationPage.jsx';
 import CreateLiquidityRequestPage from '@/pages/investments/CreateLiquidityRequestPage.jsx';
+import PhoneEntryScreen from '@/pages/onboarding/PhoneEntryScreen.jsx';
+import OTPVerifyScreen from '@/pages/onboarding/OTPVerifyScreen.jsx';
+import RoleSelectScreen from '@/pages/onboarding/RoleSelectScreen.jsx';
+import TermsScreen from '@/pages/onboarding/TermsScreen.jsx';
 
 export default function App() {
   return (
@@ -85,6 +89,10 @@ export default function App() {
                 <Route path="chat/:sessionId" element={<ChatPage />} />
                 <Route path="loans/new" element={<LoanApplicationPage />} />
                 <Route path="requests/new" element={<CreateLiquidityRequestPage />} />
+                <Route path="/onboarding" element={<PhoneEntryScreen />} />
+                <Route path="/onboarding/verify" element={<OTPVerifyScreen />} />
+                <Route path="/onboarding/roles" element={<RoleSelectScreen />} />
+                <Route path="/onboarding/terms" element={<TermsScreen />} />
               </Route>
 
               {/* Fallback */}
