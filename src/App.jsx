@@ -5,15 +5,7 @@ import { FullPageLoader } from './components/feedback/LoadingState';
 import { Toaster } from '@/components/ui/sonner';
 import AuthLayout from './features/auth/components/AuthLayout';
 import AppShell from './components/layout/AppShell';
-
-function DashboardPlaceholder() {
-  return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold text-slate mb-4">Dashboard</h1>
-      <p className="text-gray-500">Welcome! Your dashboard is being built.</p>
-    </div>
-  );
-}
+import DashboardHome from './features/dashboard/components/DashboardHome';
 
 export default function App() {
   const { initialize, isLoading, isInitialized, isAuthenticated } = useAuthStore();
@@ -42,7 +34,7 @@ export default function App() {
     <div className="min-h-screen bg-surface">
       {isAuthenticated ? (
         <AppShell>
-          <DashboardPlaceholder />
+          <DashboardHome />
         </AppShell>
       ) : (
         <AuthLayout />
