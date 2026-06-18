@@ -1,109 +1,27 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
-
 @import "tailwindcss";
 
-/* Switzer font - local or CDN fallback */
-@font-face {
-  font-family: 'Switzer';
-  src: url('https://cdn.jsdelivr.net/npm/switzer@1.0.0/dist/Switzer-Variable.woff2') format('woff2');
-  font-weight: 300 700;
-  font-display: swap;
-}
-
-/* CSS Custom Properties for runtime use */
-:root {
+@theme {
   --color-terracotta: #C67B5C;
-  --color-terracotta-dark: #8B4513;
+  --color-terracotta-dark: #B8895E;
+  --color-clay: #8B4513;
   --color-sand: #F5E6D3;
-  --color-white-warm: #FAFAF8;
+  --color-sand-light: #FFF8F0;
   --color-slate: #3D405B;
+  --color-slate-dark: #1A1A2E;
   --color-success: #2D8B4E;
   --color-alert: #E8A838;
-  --color-error: #D32F2F;
-  --color-text-primary: #1A1A2E;
-  --color-text-secondary: #4A4A5A;
-  --color-text-muted: #8E8E93;
-  --color-border: #E8E8E8;
+  --color-danger: #E74C3C;
+  --color-surface: #FAFAF8;
+
+  --font-heading: 'Switzer', sans-serif;
+  --font-body: 'IBM Plex Sans', sans-serif;
 }
 
-/* Base styles */
-* {
-  -webkit-tap-highlight-color: transparent;
-}
-
-body {
-  font-family: 'Inter', system-ui, sans-serif;
-  color: var(--color-text-primary);
-  background-color: var(--color-white-warm);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-/* Glass effect utility */
-.glass {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.glass-strong {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-}
-
-/* Chama background pattern */
-.bg-chama-pattern {
-  background-color: #F5E6D3;
-  background-image: radial-gradient(#C67B5C 0.5px, transparent 0.5px);
-  background-size: 20px 20px;
-}
-
-/* Noise texture overlay */
-.bg-noise::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  opacity: 0.03;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-  pointer-events: none;
-}
-
-/* Skeleton loading */
-.skeleton {
-  background: linear-gradient(90deg, #F5E6D3 25%, #FAE8D8 50%, #F5E6D3 75%);
-  background-size: 200% 100%;
-  animation: skeleton-shimmer 1.5s infinite;
-  border-radius: 0.5rem;
-}
-
-@keyframes skeleton-shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-/* Scrollbar styling */
-::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #D4A574;
-  border-radius: 2px;
-}
-
-/* Safe area for mobile devices */
-.safe-bottom {
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-}
-
-.safe-top {
-  padding-top: env(safe-area-inset-top, 0px);
+@layer base {
+  body {
+    @apply bg-surface text-slate-dark font-body antialiased;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading;
+  }
 }
