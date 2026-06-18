@@ -3,6 +3,7 @@ import useAuthStore from './stores/authStore';
 import useUIStore from './stores/uiStore';
 import { FullPageLoader } from './components/feedback/LoadingState';
 import { Toaster } from '@/components/ui/sonner';
+import AuthLayout from './features/auth/components/AuthLayout';
 
 export default function App() {
   const { initialize, isLoading, isInitialized, isAuthenticated } = useAuthStore();
@@ -31,12 +32,10 @@ export default function App() {
     <div className="min-h-screen bg-surface">
       {isAuthenticated ? (
         <div className="flex items-center justify-center min-h-screen">
-          <p className="text-lg text-slate">Dashboard coming soon...</p>
+          <p className="text-lg text-slate">Dashboard coming next...</p>
         </div>
       ) : (
-        <div className="flex items-center justify-center min-h-screen">
-          <p className="text-lg text-slate">Login screen coming soon...</p>
-        </div>
+        <AuthLayout />
       )}
       <Toaster position="top-center" richColors />
     </div>
