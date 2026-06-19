@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ErrorState, EmptyState } from '../../../components/feedback/ErrorState';
+import { ErrorState, EmptyState } from '@/components/feedback';
 import { getInitials, formatKES } from '../../../utils/format';
 import { Users } from 'lucide-react';
 
@@ -18,14 +18,14 @@ const roleColors = {
 };
 
 export default function MembersList({ chamaId }) {
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['chama-members', chamaId],
     queryFn: () => chamaApi.getMembers(chamaId).then((r) => r.data),
     enabled: !!chamaId,
   });
 
   if (isLoading) return <div className="space-y-2">{[1,2,3].map(i => <Skeleton key={i} className="h-16 w-full" />)}</div>;
-  if (error) return <ErrorState message="Failed to load members" />;
+  if (error) return <ErrorState message="Failed to load members" onRetry={refetch} />;
 
   const members = data?.data || data?.results || [];
 

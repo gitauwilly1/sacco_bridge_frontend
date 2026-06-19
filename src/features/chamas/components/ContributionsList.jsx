@@ -3,19 +3,19 @@ import { chamaApi } from '../api/chamaApi';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ErrorState, EmptyState } from '../../../components/feedback/ErrorState';
+import { ErrorState, EmptyState } from '@/components/feedback';
 import { formatKES, formatDate } from '../../../utils/format';
 import { Wallet } from 'lucide-react';
 
 export default function ContributionsList({ chamaId }) {
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['chama-contributions', chamaId],
     queryFn: () => chamaApi.getContributions(chamaId).then((r) => r.data),
     enabled: !!chamaId,
   });
 
   if (isLoading) return <div className="space-y-2">{[1,2,3].map(i => <Skeleton key={i} className="h-16 w-full" />)}</div>;
-  if (error) return <ErrorState message="Failed to load contributions" />;
+  if (error) return <ErrorState message="Failed to load contributions" onRetry={refetch} />;
 
   const contributions = data?.data || data?.results || [];
 

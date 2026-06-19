@@ -1,5 +1,3 @@
-// src/features/chamas/components/MeetingsList.jsx
-
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
