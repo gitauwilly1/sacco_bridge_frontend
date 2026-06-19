@@ -13,6 +13,7 @@ export const chamaApi = {
   // Contributions
   getContributions: (id, params) => apiClient.get(`/chamas/${id}/contributions/`, { params }),
   recordContribution: (id, data) => apiClient.post(`/chamas/${id}/contributions/`, data),
+  bulkRecordContributions: (id, data) => apiClient.post(`/chamas/${id}/contributions/bulk/`, data),
   
   // Loans
   getLoans: (id, params) => apiClient.get(`/chamas/${id}/loans/`, { params }),
