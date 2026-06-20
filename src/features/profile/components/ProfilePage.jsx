@@ -14,6 +14,8 @@ import NotificationPreferences from './NotificationPreferences';
 import SessionManager from './SessionManager';
 import DataExport from './DataExport';
 import AccountDeactivation from './AccountDeactivation';
+import TransactionLimits from './TransactionLimits';
+
 
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState('profile');
@@ -80,6 +82,9 @@ export default function ProfilePage() {
           <TabsTrigger value="data">
             <Download className="h-4 w-4 mr-1" /> Data
           </TabsTrigger>
+          <TabsTrigger value="limits">
+            <Shield className="h-4 w-4 mr-1" /> Limits
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="profile" className="mt-4">
@@ -101,6 +106,10 @@ export default function ProfilePage() {
         <TabsContent value="data" className="mt-4 space-y-4">
           <DataExport />
           <AccountDeactivation />
+        </TabsContent>
+
+        <TabsContent value="limits" className="mt-4">
+          <TransactionLimits />
         </TabsContent>
       </Tabs>
     </div>
