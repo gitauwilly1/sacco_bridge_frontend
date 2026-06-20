@@ -1,5 +1,3 @@
-// src/lib/offlineQueue.js
-
 import { openDB } from 'idb';
 
 const DB_NAME = 'sacco-bridge-offline';
