@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import {
   Home, Users, ArrowLeftRight, Activity, User,
-  Menu, X, Bell, LogOut, Settings, HelpCircle,
+  Menu, X, LogOut, Settings, HelpCircle,
   Shield, ChevronDown,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -11,10 +11,10 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Badge } from '@/components/ui/badge';
 import useAuthStore from '../../stores/authStore';
 import useUIStore from '../../stores/uiStore';
 import { getInitials } from '../../utils/format';
+import NotificationBell from '../../features/notifications/components/NotificationBell';
 
 const navItems = [
   { id: 'home', label: 'Home', icon: Home, path: '/' },
@@ -85,12 +85,7 @@ export default function AppShell({ children }) {
             </div>
 
             {/* Notifications */}
-            <button className="relative rounded-full p-2 hover:bg-gray-100">
-              <Bell className="h-5 w-5 text-gray-500" />
-              <Badge className="absolute -top-0.5 -right-0.5 h-4 w-4 p-0 text-[10px] bg-danger">
-                3
-              </Badge>
-            </button>
+            <NotificationBell />
 
             {/* User Menu */}
             <DropdownMenu>

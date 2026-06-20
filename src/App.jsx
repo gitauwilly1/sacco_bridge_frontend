@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import useAuthStore from './stores/authStore';
 import useUIStore from './stores/uiStore';
+import useSocketStore from './stores/socketStore';
 import { FullPageLoader } from './components/feedback/LoadingState';
 import { Toaster } from '@/components/ui/sonner';
 import AuthLayout from './features/auth/components/AuthLayout';
@@ -10,10 +11,18 @@ import DashboardHome from './features/dashboard/components/DashboardHome';
 export default function App() {
   const { initialize, isLoading, isInitialized, isAuthenticated } = useAuthStore();
   const { setOnlineStatus } = useUIStore();
+  const { connect, disconnect } = useSocketStore();
 
   useEffect(() => {
     initialize();
   }, []);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      connect();
+    }
+    return () => disconnect();
+  }, [isAuthenticated]);
 
   useEffect(() => {
     const handleOnline = () => setOnlineStatus(true);
