@@ -9,16 +9,16 @@ import { formatKES, formatTimeAgo } from '../../../utils/format';
 import DataTable from './DataTable';
 
 const riskColors = {
-  low: 'bg-success/10 text-success',
-  medium: 'bg-alert/10 text-alert',
-  high: 'bg-danger/10 text-danger',
-  critical: 'bg-danger/10 text-danger border-danger/30',
+  low: 'bg-success/10 text-success border-success/20',
+  medium: 'bg-alert/10 text-alert border-alert/20',
+  high: 'bg-danger/10 text-danger border-danger/20',
+  critical: 'bg-danger/10 text-danger border border-danger/30',
 };
 
 const statusColors = {
-  pending: 'bg-alert/10 text-alert',
-  approved: 'bg-success/10 text-success',
-  blocked: 'bg-danger/10 text-danger',
+  pending: 'bg-alert/10 text-alert border-alert/20',
+  approved: 'bg-success/10 text-success border-success/20',
+  blocked: 'bg-danger/10 text-danger border-danger/20',
 };
 
 export default function FraudReview() {
@@ -62,15 +62,15 @@ export default function FraudReview() {
       key: 'id',
       header: 'ID',
       width: '80px',
-      render: (value) => <span className="font-mono text-xs">#{value}</span>,
+      render: (value) => <span className="font-mono text-xs font-semibold text-slate/75">#{value}</span>,
     },
     {
       key: 'user_name',
       header: 'User',
       render: (_, row) => (
         <div>
-          <p className="font-medium text-slate text-sm">{row.user_name || '—'}</p>
-          <p className="text-xs text-gray-500">{row.transaction_type || row.type}</p>
+          <p className="font-semibold text-slate text-sm">{row.user_name || '—'}</p>
+          <p className="text-xs text-gray-400">{row.transaction_type || row.type}</p>
         </div>
       ),
     },
@@ -78,7 +78,7 @@ export default function FraudReview() {
       key: 'risk_level',
       header: 'Risk',
       render: (value) => (
-        <Badge className={riskColors[value] || 'bg-gray-100'} variant="outline">
+        <Badge className={`${riskColors[value] || 'bg-sand text-slate border-sand-dark/20'} border`} variant="outline">
           {value?.toUpperCase()}
         </Badge>
       ),
@@ -87,14 +87,14 @@ export default function FraudReview() {
       key: 'amount',
       header: 'Amount',
       render: (value) => (
-        <span className="text-sm font-semibold">{value ? formatKES(value) : '—'}</span>
+        <span className="text-sm font-bold text-slate">{value ? formatKES(value) : '—'}</span>
       ),
     },
     {
       key: 'status',
       header: 'Status',
       render: (value) => (
-        <Badge className={statusColors[value] || 'bg-gray-100'} variant="outline">
+        <Badge className={`${statusColors[value] || 'bg-sand text-slate border-sand-dark/20'} border`} variant="outline">
           {value}
         </Badge>
       ),
@@ -102,18 +102,18 @@ export default function FraudReview() {
     {
       key: 'created_at',
       header: 'Detected',
-      render: (value) => <span className="text-xs text-gray-500">{formatTimeAgo(value)}</span>,
+      render: (value) => <span className="text-xs text-gray-500 font-medium">{formatTimeAgo(value)}</span>,
     },
   ];
 
   const rowActions = (row) => (
-    <div className="flex items-center gap-1 justify-end">
+    <div className="flex items-center gap-2 justify-end">
       {row.status === 'pending' && (
         <>
           <Button
             size="sm"
             variant="ghost"
-            className="text-success"
+            className="text-success hover:text-success/80 hover:bg-success/5 transition-all rounded-lg font-semibold"
             onClick={() => reviewMutation.mutate({ id: row.id, action: 'approve' })}
           >
             <CheckCircle2 className="h-3 w-3 mr-1" /> Approve
@@ -121,7 +121,7 @@ export default function FraudReview() {
           <Button
             size="sm"
             variant="ghost"
-            className="text-danger"
+            className="text-danger hover:text-danger/80 hover:bg-danger/5 transition-all rounded-lg font-semibold"
             onClick={() => {
               if (window.confirm('Block this transaction?')) {
                 reviewMutation.mutate({ id: row.id, action: 'block' });
@@ -146,7 +146,7 @@ export default function FraudReview() {
           <select
             value={riskLevel}
             onChange={(e) => { setRiskLevel(e.target.value); setPage(1); }}
-            className="text-xs border rounded-md px-2 py-1.5 bg-white"
+            className="text-xs border border-sand bg-white/90 hover:border-terracotta focus:outline-none focus:ring-1 focus:ring-terracotta rounded-lg px-2.5 py-1.5 text-slate font-medium shadow-subtle transition-all cursor-pointer"
           >
             <option value="all">All Risks</option>
             <option value="critical">Critical</option>
@@ -154,8 +154,13 @@ export default function FraudReview() {
             <option value="medium">Medium</option>
             <option value="low">Low</option>
           </select>
-          <Button size="sm" variant="outline" onClick={() => refetch()}>
-            <RefreshCw className="h-3 w-3" />
+          <Button 
+            size="sm" 
+            variant="outline" 
+            onClick={() => refetch()}
+            className="border-sand hover:bg-sand-light text-slate transition-colors"
+          >
+            <RefreshCw className="h-3.5 w-3.5 text-slate/75" />
           </Button>
         </div>
       </div>
