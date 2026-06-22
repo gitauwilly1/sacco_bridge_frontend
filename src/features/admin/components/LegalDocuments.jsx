@@ -81,54 +81,65 @@ export default function LegalDocuments() {
           <select
             value={docType}
             onChange={(e) => setDocType(e.target.value)}
-            className="text-xs border rounded-md px-2 py-1.5 bg-white"
+            className="text-xs border border-sand-dark/30 rounded-xl px-2 py-1.5 bg-white text-slate font-bold cursor-pointer focus:ring-1 focus:ring-terracotta"
           >
             <option value="terms">Terms & Conditions</option>
             <option value="privacy">Privacy Policy</option>
           </select>
-          <Button size="sm" onClick={() => setShowCreate(true)}>
-            <Plus className="h-3 w-3 mr-1" /> New Version
+          <Button
+            size="sm"
+            onClick={() => setShowCreate(true)}
+            className="bg-terracotta hover:bg-terracotta-dark text-white rounded-xl shadow-subtle cursor-pointer h-9 text-xs font-semibold px-3.5 transition-colors"
+          >
+            <Plus className="h-3.5 w-3.5 mr-1" /> New Version
           </Button>
         </div>
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-gray-500 text-center py-8">Loading...</p>
+        <div className="space-y-2 py-8">
+          {[1, 2].map((i) => (
+            <div key={i} className="skeleton-shimmer h-16 w-full rounded-2xl" />
+          ))}
+        </div>
       ) : docs.length === 0 ? (
-        <p className="text-sm text-gray-500 text-center py-8">No versions found</p>
+        <p className="text-xs text-gray-400 font-medium text-center py-8">No versions found</p>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-2.5">
           {docs.map((doc) => (
-            <Card key={doc.id}>
+            <Card key={doc.id} className="border-sand bg-white shadow-subtle rounded-2xl card-lift">
               <CardContent className="p-4 flex items-center justify-between">
                 <div>
                   <div className="flex items-center gap-2">
-                    <p className="font-medium text-slate text-sm">v{doc.version}</p>
+                    <p className="font-bold text-slate text-sm">v{doc.version}</p>
                     {doc.is_published && (
-                      <Badge className="bg-success/10 text-success">Published</Badge>
+                      <Badge className="bg-success/10 text-success border border-success/20 text-[9px] font-extrabold rounded-full px-2 py-0.5 shadow-none uppercase" variant="outline">
+                        Published
+                      </Badge>
                     )}
                   </div>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-[11px] text-gray-400 font-medium mt-0.5 font-numbers">
                     {formatDate(doc.created_at)}
                     {doc.published_at && ` · Published ${formatDate(doc.published_at)}`}
                   </p>
                 </div>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1.5">
                   <Button
                     size="sm"
                     variant="ghost"
                     onClick={() => setViewDoc(doc)}
+                    className="text-slate/75 hover:text-terracotta hover:bg-sand-light/50 h-8 rounded-lg text-xs font-semibold px-2 cursor-pointer transition-all"
                   >
-                    <Eye className="h-3 w-3 mr-1" /> View
+                    <Eye className="h-3.5 w-3.5 mr-1" /> View
                   </Button>
                   {!doc.is_published && (
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="text-success"
+                      className="text-success hover:bg-success/10 hover:text-success h-8 rounded-lg text-xs font-semibold px-2 cursor-pointer transition-all"
                       onClick={() => publishMutation.mutate(doc.id)}
                     >
-                      <CheckCircle2 className="h-3 w-3 mr-1" /> Publish
+                      <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> Publish
                     </Button>
                   )}
                 </div>
@@ -140,13 +151,13 @@ export default function LegalDocuments() {
 
       {/* View Dialog */}
       <Dialog open={!!viewDoc} onOpenChange={() => setViewDoc(null)}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
+        <DialogContent className="glass-card rounded-2xl border border-sand/45 max-w-2xl max-h-[80vh] overflow-y-auto shadow-elevated scrollbar-none">
+          <DialogHeader className="pb-2">
+            <DialogTitle className="text-sm font-bold text-slate">
               {viewDoc?.type === 'terms' ? 'Terms & Conditions' : 'Privacy Policy'} v{viewDoc?.version}
             </DialogTitle>
           </DialogHeader>
-          <div className="text-sm text-slate whitespace-pre-wrap">
+          <div className="text-xs text-slate/90 whitespace-pre-wrap leading-relaxed pt-2">
             {viewDoc?.content}
           </div>
         </DialogContent>
@@ -189,9 +200,9 @@ function CreateLegalDialog({ open, onClose, docType, onSuccess }) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>New Legal Version</DialogTitle>
+      <DialogContent className="glass-card rounded-2xl border border-sand/45 max-w-md shadow-elevated">
+        <DialogHeader className="pb-2">
+          <DialogTitle className="text-sm font-bold text-slate">New Legal Version</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -200,19 +211,19 @@ function CreateLegalDialog({ open, onClose, docType, onSuccess }) {
               name="type"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Type</FormLabel>
+                  <FormLabel className="text-xs font-bold text-slate">Type</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className="border-input rounded-xl bg-white text-xs focus:border-terracotta focus:ring-1 focus:ring-terracotta h-10 cursor-pointer">
                         <SelectValue />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent>
-                      <SelectItem value="terms">Terms & Conditions</SelectItem>
-                      <SelectItem value="privacy">Privacy Policy</SelectItem>
+                    <SelectContent className="bg-white border-sand shadow-subtle rounded-xl">
+                      <SelectItem value="terms" className="cursor-pointer text-xs font-medium hover:bg-sand-light text-slate focus:bg-sand-light focus:text-terracotta">Terms & Conditions</SelectItem>
+                      <SelectItem value="privacy" className="cursor-pointer text-xs font-medium hover:bg-sand-light text-slate focus:bg-sand-light focus:text-terracotta">Privacy Policy</SelectItem>
                     </SelectContent>
                   </Select>
-                  <FormMessage />
+                  <FormMessage className="text-xs text-danger font-semibold" />
                 </FormItem>
               )}
             />
@@ -221,11 +232,11 @@ function CreateLegalDialog({ open, onClose, docType, onSuccess }) {
               name="version"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Version</FormLabel>
+                  <FormLabel className="text-xs font-bold text-slate">Version</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., 2.1" {...field} />
+                    <Input placeholder="e.g., 2.1" className="border-input rounded-xl bg-white text-xs focus:border-terracotta focus:ring-1 focus:ring-terracotta h-10" {...field} />
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className="text-xs text-danger font-semibold" />
                 </FormItem>
               )}
             />
@@ -234,17 +245,17 @@ function CreateLegalDialog({ open, onClose, docType, onSuccess }) {
               name="content"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Content</FormLabel>
+                  <FormLabel className="text-xs font-bold text-slate">Content</FormLabel>
                   <FormControl>
-                    <Textarea rows={10} placeholder="Document content..." {...field} />
+                    <Textarea rows={10} placeholder="Document content..." className="border-input rounded-xl bg-white text-xs focus:border-terracotta focus:ring-1 focus:ring-terracotta min-h-[120px]" {...field} />
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className="text-xs text-danger font-semibold" />
                 </FormItem>
               )}
             />
-            <div className="flex gap-2 justify-end">
-              <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
-              <Button type="submit" disabled={isSaving}>
+            <div className="flex gap-2 justify-end pt-2">
+              <Button type="button" variant="outline" onClick={onClose} className="border-sand hover:bg-sand-light text-slate cursor-pointer h-9 rounded-lg text-xs font-semibold px-4 transition-all">Cancel</Button>
+              <Button type="submit" disabled={isSaving} className="bg-terracotta hover:bg-terracotta-dark text-white border-0 shadow-subtle cursor-pointer h-9 rounded-lg text-xs font-semibold px-4 transition-all">
                 {isSaving ? 'Creating...' : 'Create'}
               </Button>
             </div>
