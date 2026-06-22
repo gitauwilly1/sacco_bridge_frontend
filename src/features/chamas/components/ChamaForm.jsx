@@ -107,7 +107,6 @@ export default function ChamaForm({ chama, onSuccess }) {
   });
 
   const watchedType = form.watch('chama_type');
-  const TypeIcon = chamaTypeIcons[watchedType] || Users;
 
   const onSubmit = async (values) => {
     setIsLoading(true);
@@ -167,16 +166,20 @@ export default function ChamaForm({ chama, onSuccess }) {
   return (
     <div className="pb-4">
       {/* Header */}
-      <div className="sticky top-14 z-30 bg-white border-b px-4 py-3">
+      <div className="sticky top-14 z-30 bg-white/80 backdrop-blur-lg border-b border-sand px-4 py-3">
         <div className="flex items-center gap-3">
-          <button onClick={() => navigate({ to: '/chamas' })}>
+          <button
+            onClick={() => navigate({ to: '/chamas' })}
+            className="p-1 rounded-lg text-slate hover:bg-sand-light transition-colors"
+            aria-label="Back to chamas"
+          >
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div className="flex-1">
-            <h1 className="text-lg font-bold text-slate">
+            <h1 className="text-base font-bold font-heading text-slate leading-tight">
               {isEditing ? 'Edit Chama' : 'Create Chama'}
             </h1>
-            <p className="text-xs text-gray-500">
+            <p className="text-[11px] text-gray-400 font-medium uppercase tracking-wider mt-0.5">
               {isEditing ? 'Update your chama details' : 'Start a new savings group'}
             </p>
           </div>
@@ -187,10 +190,10 @@ export default function ChamaForm({ chama, onSuccess }) {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             {/* Basic Information */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Basic Information</CardTitle>
-                <CardDescription>Tell us about your chama</CardDescription>
+            <Card className="border-sand bg-white shadow-subtle">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-bold text-slate">Basic Information</CardTitle>
+                <CardDescription className="text-xs text-gray-400">Tell us about your chama</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <FormField
@@ -198,7 +201,7 @@ export default function ChamaForm({ chama, onSuccess }) {
                   name="chama_name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Chama Name</FormLabel>
+                      <FormLabel className="text-slate font-medium text-xs">Chama Name</FormLabel>
                       <FormControl>
                         <Input placeholder="e.g., Mavuno Investment Group" {...field} />
                       </FormControl>
@@ -212,18 +215,18 @@ export default function ChamaForm({ chama, onSuccess }) {
                   name="chama_type"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Chama Type</FormLabel>
+                      <FormLabel className="text-slate font-medium text-xs">Chama Type</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
-                          <SelectTrigger>
+                          <SelectTrigger className="border-sand bg-white">
                             <SelectValue placeholder="Select a chama type" />
                           </SelectTrigger>
                         </FormControl>
-                        <SelectContent>
+                        <SelectContent className="border-sand bg-white">
                           {Object.entries(CHAMA_TYPES).map(([value, label]) => {
                             const Icon = chamaTypeIcons[value] || Users;
                             return (
-                              <SelectItem key={value} value={value}>
+                              <SelectItem key={value} value={value} className="focus:bg-sand-light focus:text-terracotta">
                                 <div className="flex items-center gap-2">
                                   <Icon className="h-4 w-4" />
                                   <span>{label}</span>
@@ -243,16 +246,16 @@ export default function ChamaForm({ chama, onSuccess }) {
                   name="description"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Description (Optional)</FormLabel>
+                      <FormLabel className="text-slate font-medium text-xs">Description (Optional)</FormLabel>
                       <FormControl>
                         <Textarea
                           placeholder="Describe the purpose of your chama..."
-                          className="resize-none"
+                          className="resize-none border-sand bg-white focus-visible:border-terracotta"
                           rows={3}
                           {...field}
                         />
                       </FormControl>
-                      <FormDescription>
+                      <FormDescription className="text-[10px] text-gray-400 font-medium">
                         {field.value?.length || 0}/500 characters
                       </FormDescription>
                       <FormMessage />
@@ -263,10 +266,10 @@ export default function ChamaForm({ chama, onSuccess }) {
             </Card>
 
             {/* Contribution Settings */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Contribution Settings</CardTitle>
-                <CardDescription>Set how members will contribute</CardDescription>
+            <Card className="border-sand bg-white shadow-subtle">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-bold text-slate">Contribution Settings</CardTitle>
+                <CardDescription className="text-xs text-gray-400">Set how members will contribute</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
@@ -275,13 +278,15 @@ export default function ChamaForm({ chama, onSuccess }) {
                     name="contribution_amount"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Amount (KES)</FormLabel>
+                        <FormLabel className="text-slate font-medium text-xs">Amount (KES)</FormLabel>
                         <FormControl>
                           <Input
                             placeholder="e.g., 1000"
                             type="number"
                             min="0"
                             step="0.01"
+                            className="font-numbers"
+                            style={{ fontFamily: "'JetBrains Mono', monospace" }}
                             {...field}
                           />
                         </FormControl>
@@ -295,16 +300,16 @@ export default function ChamaForm({ chama, onSuccess }) {
                     name="contribution_frequency"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Frequency</FormLabel>
+                        <FormLabel className="text-slate font-medium text-xs">Frequency</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
-                            <SelectTrigger>
+                            <SelectTrigger className="border-sand bg-white">
                               <SelectValue placeholder="Select" />
                             </SelectTrigger>
                           </FormControl>
-                          <SelectContent>
+                          <SelectContent className="border-sand bg-white">
                             {Object.entries(CONTRIBUTION_FREQUENCIES).map(([value, label]) => (
-                              <SelectItem key={value} value={value}>
+                              <SelectItem key={value} value={value} className="focus:bg-sand-light focus:text-terracotta">
                                 {label}
                               </SelectItem>
                             ))}
@@ -321,16 +326,18 @@ export default function ChamaForm({ chama, onSuccess }) {
                   name="max_members"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Maximum Members (Optional)</FormLabel>
+                      <FormLabel className="text-slate font-medium text-xs">Maximum Members (Optional)</FormLabel>
                       <FormControl>
                         <Input
                           placeholder="e.g., 50"
                           type="number"
                           min="2"
+                          className="font-numbers"
+                          style={{ fontFamily: "'JetBrains Mono', monospace" }}
                           {...field}
                         />
                       </FormControl>
-                      <FormDescription>
+                      <FormDescription className="text-[10px] text-gray-400 font-medium">
                         Leave blank for unlimited members
                       </FormDescription>
                       <FormMessage />
@@ -342,16 +349,16 @@ export default function ChamaForm({ chama, onSuccess }) {
 
             {/* Initial Members (Create only) */}
             {!isEditing && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Invite Members</CardTitle>
-                  <CardDescription>
+              <Card className="border-sand bg-white shadow-subtle">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-bold text-slate">Invite Members</CardTitle>
+                  <CardDescription className="text-xs text-gray-400">
                     Add phone numbers to invite members immediately
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {form.watch('initial_members')?.map((_, index) => (
-                    <div key={index} className="flex gap-2 items-start">
+                    <div key={index} className="flex gap-2 items-start border-b border-sand/40 pb-3 last:border-0 last:pb-0">
                       <div className="flex-1 space-y-2">
                         <FormField
                           control={form.control}
@@ -382,10 +389,11 @@ export default function ChamaForm({ chama, onSuccess }) {
                         type="button"
                         variant="ghost"
                         size="icon"
-                        className="mt-1"
+                        className="mt-1 hover:bg-danger/10 hover:text-danger rounded-lg transition-colors"
                         onClick={() => removeMember(index)}
+                        aria-label={`Remove member ${index + 1}`}
                       >
-                        <Trash2 className="h-4 w-4 text-danger" />
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   ))}
@@ -394,28 +402,36 @@ export default function ChamaForm({ chama, onSuccess }) {
                     type="button"
                     variant="outline"
                     size="sm"
+                    className="border-sand hover:bg-sand-light text-slate hover:text-terracotta transition-colors mt-2"
                     onClick={addMember}
                     disabled={(form.watch('initial_members')?.length || 0) >= 20}
                   >
-                    <Plus className="h-4 w-4 mr-1" /> Add Member
+                    <Plus className="h-4 w-4 mr-1.5" /> Add Member
                   </Button>
                 </CardContent>
               </Card>
             )}
 
             {/* Submit */}
-            <div className="flex gap-3">
+            <div className="flex gap-3 pt-2">
               <Button
                 type="button"
                 variant="outline"
-                className="flex-1"
+                className="flex-1 border-sand hover:bg-sand-light text-slate transition-all"
                 onClick={() => navigate({ to: '/chamas' })}
               >
                 Cancel
               </Button>
-              <Button type="submit" className="flex-1" disabled={isLoading}>
+              <Button
+                type="submit"
+                className="flex-1 bg-terracotta hover:bg-clay text-white shadow-sm transition-all duration-150 active:scale-[0.98]"
+                disabled={isLoading}
+              >
                 {isLoading ? (
-                  'Saving...'
+                  <span className="flex items-center gap-2">
+                    <span className="h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                    Saving...
+                  </span>
                 ) : (
                   <>
                     <Save className="h-4 w-4 mr-2" />
