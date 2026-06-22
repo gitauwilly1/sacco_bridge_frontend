@@ -37,7 +37,7 @@ export default function ProfilePage() {
     <div className="pb-4">
       {/* Profile Header */}
       <div className="text-center py-6 px-4">
-        <div className="relative mx-auto w-24 h-24 rounded-full bg-sand-light flex items-center justify-center mb-3">
+        <div className="relative mx-auto w-24 h-24 rounded-full bg-sand-light flex items-center justify-center mb-3 ring-4 ring-sand/30 shadow-subtle">
           {profile?.profile_picture ? (
             <img
               src={profile.profile_picture}
@@ -45,7 +45,7 @@ export default function ProfilePage() {
               className="w-24 h-24 rounded-full object-cover"
             />
           ) : (
-            <span className="text-3xl font-bold text-terracotta">
+            <span className="text-3xl font-extrabold text-terracotta font-heading">
               {getInitials(profile?.first_name, profile?.last_name) || '?'}
             </span>
           )}
@@ -53,37 +53,53 @@ export default function ProfilePage() {
         <h1 className="text-xl font-bold text-slate">
           {profile?.full_name || `${profile?.first_name || ''} ${profile?.last_name || ''}`}
         </h1>
-        <p className="text-sm text-gray-500">{profile?.email}</p>
+        <p className="text-xs text-gray-400 font-medium mt-0.5">{profile?.email}</p>
         {profile?.trust_score > 0 && (
-          <div className="mt-2 inline-flex items-center gap-1 bg-sand-light px-3 py-1 rounded-full">
-            <Shield className="h-4 w-4 text-terracotta" />
-            <span className="text-sm font-medium text-terracotta">
-              Trust Score: {profile.trust_score}
-            </span>
+          <div className="mt-2.5 inline-flex items-center gap-1.5 bg-terracotta/10 border border-terracotta/20 px-3 py-1 rounded-full text-xs font-bold text-terracotta shadow-none">
+            <Shield className="h-3.5 w-3.5" />
+            <span>Trust Score: {profile.trust_score}</span>
           </div>
         )}
       </div>
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="px-4">
-        <TabsList className="w-full justify-start overflow-x-auto">
-          <TabsTrigger value="profile">
-            <User className="h-4 w-4 mr-1" /> Profile
+        <TabsList className="bg-sand-light/60 p-1 rounded-xl border border-sand/40 w-full justify-start overflow-x-auto flex gap-1 scrollbar-none">
+          <TabsTrigger
+            value="profile"
+            className="px-3 py-2 text-xs rounded-lg cursor-pointer transition-all flex items-center gap-1.5 font-bold data-[state=active]:bg-white data-[state=active]:text-terracotta data-[state=active]:shadow-subtle data-[state=active]:border data-[state=active]:border-sand/65 text-slate hover:text-terracotta/80"
+          >
+            <User className="h-3.5 w-3.5" /> Profile
           </TabsTrigger>
-          <TabsTrigger value="security">
-            <Shield className="h-4 w-4 mr-1" /> Security
+          <TabsTrigger
+            value="security"
+            className="px-3 py-2 text-xs rounded-lg cursor-pointer transition-all flex items-center gap-1.5 font-bold data-[state=active]:bg-white data-[state=active]:text-terracotta data-[state=active]:shadow-subtle data-[state=active]:border data-[state=active]:border-sand/65 text-slate hover:text-terracotta/80"
+          >
+            <Shield className="h-3.5 w-3.5" /> Security
           </TabsTrigger>
-          <TabsTrigger value="notifications">
-            <Bell className="h-4 w-4 mr-1" /> Alerts
+          <TabsTrigger
+            value="notifications"
+            className="px-3 py-2 text-xs rounded-lg cursor-pointer transition-all flex items-center gap-1.5 font-bold data-[state=active]:bg-white data-[state=active]:text-terracotta data-[state=active]:shadow-subtle data-[state=active]:border data-[state=active]:border-sand/65 text-slate hover:text-terracotta/80"
+          >
+            <Bell className="h-3.5 w-3.5" /> Alerts
           </TabsTrigger>
-          <TabsTrigger value="sessions">
-            <Smartphone className="h-4 w-4 mr-1" /> Sessions
+          <TabsTrigger
+            value="sessions"
+            className="px-3 py-2 text-xs rounded-lg cursor-pointer transition-all flex items-center gap-1.5 font-bold data-[state=active]:bg-white data-[state=active]:text-terracotta data-[state=active]:shadow-subtle data-[state=active]:border data-[state=active]:border-sand/65 text-slate hover:text-terracotta/80"
+          >
+            <Smartphone className="h-3.5 w-3.5" /> Sessions
           </TabsTrigger>
-          <TabsTrigger value="data">
-            <Download className="h-4 w-4 mr-1" /> Data
+          <TabsTrigger
+            value="data"
+            className="px-3 py-2 text-xs rounded-lg cursor-pointer transition-all flex items-center gap-1.5 font-bold data-[state=active]:bg-white data-[state=active]:text-terracotta data-[state=active]:shadow-subtle data-[state=active]:border data-[state=active]:border-sand/65 text-slate hover:text-terracotta/80"
+          >
+            <Download className="h-3.5 w-3.5" /> Data
           </TabsTrigger>
-          <TabsTrigger value="limits">
-            <Shield className="h-4 w-4 mr-1" /> Limits
+          <TabsTrigger
+            value="limits"
+            className="px-3 py-2 text-xs rounded-lg cursor-pointer transition-all flex items-center gap-1.5 font-bold data-[state=active]:bg-white data-[state=active]:text-terracotta data-[state=active]:shadow-subtle data-[state=active]:border data-[state=active]:border-sand/65 text-slate hover:text-terracotta/80"
+          >
+            <Shield className="h-3.5 w-3.5" /> Limits
           </TabsTrigger>
         </TabsList>
 
