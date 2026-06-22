@@ -133,32 +133,34 @@ export default function WebhookManagement() {
   ];
 
   const rowActions = (row) => (
-    <div className="flex items-center gap-1 justify-end">
+    <div className="flex items-center gap-1.5 justify-end">
       <Button
         size="sm"
         variant="ghost"
         onClick={() => setViewDeliveries(row.id)}
+        className="text-slate/75 hover:text-terracotta hover:bg-sand-light/50 h-8 rounded-lg text-xs font-semibold px-2 cursor-pointer transition-all"
       >
-        <Eye className="h-3 w-3 mr-1" /> Deliveries
+        <Eye className="h-3.5 w-3.5 mr-1" /> Deliveries
       </Button>
       <Button
         size="sm"
         variant="ghost"
         onClick={() => regenerateMutation.mutate(row.id)}
+        className="text-slate/75 hover:text-terracotta hover:bg-sand-light/50 h-8 rounded-lg text-xs font-semibold px-2 cursor-pointer transition-all"
       >
-        <Key className="h-3 w-3 mr-1" /> Secret
+        <Key className="h-3.5 w-3.5 mr-1" /> Secret
       </Button>
       <Button
         size="sm"
         variant="ghost"
-        className="text-danger"
+        className="text-danger hover:bg-danger/10 hover:text-danger h-8 w-8 p-0 cursor-pointer rounded-lg transition-all"
         onClick={() => {
           if (window.confirm('Delete this webhook?')) {
             deleteMutation.mutate(row.id);
           }
         }}
       >
-        <Trash2 className="h-3 w-3" />
+        <Trash2 className="h-3.5 w-3.5" />
       </Button>
     </div>
   );
@@ -170,8 +172,12 @@ export default function WebhookManagement() {
           <h1 className="text-xl font-bold text-slate">Webhooks</h1>
           <p className="text-sm text-gray-500">{total} subscriptions</p>
         </div>
-        <Button size="sm" onClick={() => setShowCreate(true)}>
-          <Plus className="h-3 w-3 mr-1" /> Add Webhook
+        <Button
+          size="sm"
+          onClick={() => setShowCreate(true)}
+          className="bg-terracotta hover:bg-terracotta-dark text-white rounded-xl shadow-subtle cursor-pointer h-9 text-xs font-semibold px-3.5 transition-colors"
+        >
+          <Plus className="h-3.5 w-3.5 mr-1" /> Add Webhook
         </Button>
       </div>
 
@@ -245,10 +251,10 @@ function WebhookFormDialog({ open, onClose, webhook, onSuccess }) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{webhook ? 'Edit Webhook' : 'Add Webhook'}</DialogTitle>
-          <DialogDescription>Configure a new webhook endpoint</DialogDescription>
+      <DialogContent className="glass-card rounded-2xl border border-sand/45 max-w-md shadow-elevated">
+        <DialogHeader className="pb-2">
+          <DialogTitle className="text-sm font-bold text-slate">{webhook ? 'Edit Webhook' : 'Add Webhook'}</DialogTitle>
+          <DialogDescription className="text-xs text-gray-400 font-medium">Configure a new webhook endpoint</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -257,11 +263,11 @@ function WebhookFormDialog({ open, onClose, webhook, onSuccess }) {
               name="url"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Endpoint URL</FormLabel>
+                  <FormLabel className="text-xs font-bold text-slate">Endpoint URL</FormLabel>
                   <FormControl>
-                    <Input placeholder="https://example.com/webhook" {...field} />
+                    <Input placeholder="https://example.com/webhook" className="border-input rounded-xl bg-white text-xs focus:border-terracotta focus:ring-1 focus:ring-terracotta h-10" {...field} />
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className="text-xs text-danger font-semibold" />
                 </FormItem>
               )}
             />
@@ -270,22 +276,22 @@ function WebhookFormDialog({ open, onClose, webhook, onSuccess }) {
               name="event_type"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Event Type</FormLabel>
+                  <FormLabel className="text-xs font-bold text-slate">Event Type</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className="border-input rounded-xl bg-white text-xs focus:border-terracotta focus:ring-1 focus:ring-terracotta h-10 cursor-pointer">
                         <SelectValue placeholder="Select event" />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent>
+                    <SelectContent className="bg-white border-sand shadow-subtle rounded-xl">
                       {eventTypes.map((type) => (
-                        <SelectItem key={type} value={type}>
+                        <SelectItem key={type} value={type} className="cursor-pointer text-xs font-medium hover:bg-sand-light text-slate focus:bg-sand-light focus:text-terracotta">
                           {type}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                  <FormMessage />
+                  <FormMessage className="text-xs text-danger font-semibold" />
                 </FormItem>
               )}
             />
@@ -294,19 +300,19 @@ function WebhookFormDialog({ open, onClose, webhook, onSuccess }) {
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description (Optional)</FormLabel>
+                  <FormLabel className="text-xs font-bold text-slate">Description (Optional)</FormLabel>
                   <FormControl>
-                    <Input placeholder="Brief description" {...field} />
+                    <Input placeholder="Brief description" className="border-input rounded-xl bg-white text-xs focus:border-terracotta focus:ring-1 focus:ring-terracotta h-10" {...field} />
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className="text-xs text-danger font-semibold" />
                 </FormItem>
               )}
             />
-            <div className="flex gap-2 justify-end">
-              <Button type="button" variant="outline" onClick={onClose}>
+            <div className="flex gap-2 justify-end pt-2">
+              <Button type="button" variant="outline" onClick={onClose} className="border-sand hover:bg-sand-light text-slate cursor-pointer h-9 rounded-lg text-xs font-semibold px-4 transition-all">
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSaving}>
+              <Button type="submit" disabled={isSaving} className="bg-terracotta hover:bg-terracotta-dark text-white border-0 shadow-subtle cursor-pointer h-9 rounded-lg text-xs font-semibold px-4 transition-all">
                 {isSaving ? 'Saving...' : webhook ? 'Update' : 'Create'}
               </Button>
             </div>
@@ -332,34 +338,38 @@ function DeliveriesDialog({ webhookId, onClose }) {
 
   return (
     <Dialog open={!!webhookId} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>Delivery History</DialogTitle>
+      <DialogContent className="glass-card rounded-2xl border border-sand/45 max-w-2xl shadow-elevated">
+        <DialogHeader className="pb-2">
+          <DialogTitle className="text-sm font-bold text-slate">Delivery History</DialogTitle>
         </DialogHeader>
-        <div className="max-h-96 overflow-y-auto space-y-2">
+        <div className="max-h-96 overflow-y-auto space-y-2.5 pt-2 pr-1 scrollbar-none">
           {isLoading ? (
-            <p className="text-sm text-gray-500 text-center py-8">Loading...</p>
+            <div className="space-y-2 py-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="skeleton-shimmer h-12 w-full rounded-xl" />
+              ))}
+            </div>
           ) : deliveries.length === 0 ? (
-            <p className="text-sm text-gray-500 text-center py-8">No deliveries yet</p>
+            <p className="text-xs text-gray-450 font-medium text-center py-8">No deliveries yet</p>
           ) : (
             deliveries.map((d) => (
-              <div key={d.id} className="flex items-center justify-between p-3 border rounded-lg text-sm">
-                <div>
+              <div key={d.id} className="flex items-center justify-between p-3.5 border border-sand/40 bg-sand-light/10 rounded-xl text-xs">
+                <div className="flex items-center gap-2">
                   <Badge
-                    className={
+                    className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold shadow-none capitalize ${
                       d.status === 'success'
-                        ? 'bg-success/10 text-success'
-                        : 'bg-danger/10 text-danger'
-                    }
+                        ? 'bg-success/10 text-success border border-success/20'
+                        : 'bg-danger/10 text-danger border border-danger/20'
+                    }`}
                     variant="outline"
                   >
                     {d.status}
                   </Badge>
-                  <span className="ml-2 text-xs text-gray-500">
+                  <span className="text-[10px] text-gray-405 font-medium font-numbers">
                     {formatTimeAgo(d.created_at)}
                   </span>
                 </div>
-                <span className="text-xs text-gray-400">
+                <span className="text-xs font-bold text-slate/85 font-numbers bg-white border border-sand/35 px-2 py-0.5 rounded-md">
                   {d.response_code || d.status_code}
                 </span>
               </div>
