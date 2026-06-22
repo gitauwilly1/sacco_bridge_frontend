@@ -9,9 +9,9 @@ import { formatDate, formatTimeAgo } from '../../../utils/format';
 import DataTable from './DataTable';
 
 const statusColors = {
-  pending: 'bg-alert/10 text-alert',
-  approved: 'bg-success/10 text-success',
-  rejected: 'bg-gray-200 text-gray-600',
+  pending: 'bg-alert/10 text-alert border-alert/20',
+  approved: 'bg-success/10 text-success border-success/20',
+  rejected: 'bg-sand text-slate border-sand-dark/20',
 };
 
 export default function DeletionRequests() {
@@ -57,17 +57,17 @@ export default function DeletionRequests() {
       key: 'id',
       header: 'ID',
       width: '80px',
-      render: (value) => <span className="font-mono text-xs">#{value}</span>,
+      render: (value) => <span className="font-mono text-xs font-semibold text-slate/75">#{value}</span>,
     },
     {
       key: 'user_name',
       header: 'User',
       render: (_, row) => (
         <div>
-          <p className="font-medium text-slate text-sm">
+          <p className="font-semibold text-slate text-sm">
             {row.user_name || row.user_email}
           </p>
-          <p className="text-xs text-gray-500">{row.user_email}</p>
+          <p className="text-xs text-gray-400">{row.user_email}</p>
         </div>
       ),
     },
@@ -75,7 +75,7 @@ export default function DeletionRequests() {
       key: 'reason',
       header: 'Reason',
       render: (value) => (
-        <p className="text-sm text-slate max-w-[200px] truncate">
+        <p className="text-sm font-medium text-slate max-w-[200px] truncate">
           {value || '—'}
         </p>
       ),
@@ -85,7 +85,7 @@ export default function DeletionRequests() {
       header: 'Status',
       render: (value) => (
         <Badge
-          className={statusColors[value] || 'bg-gray-100 text-gray-600'}
+          className={`${statusColors[value] || 'bg-sand text-slate border-sand-dark/20'} border`}
           variant="outline"
         >
           {value}
@@ -96,7 +96,7 @@ export default function DeletionRequests() {
       key: 'requested_at',
       header: 'Requested',
       render: (_, row) => (
-        <span className="text-xs text-gray-500">
+        <span className="text-xs text-gray-500 font-medium">
           {formatTimeAgo(row.requested_at || row.created_at)}
         </span>
       ),
@@ -105,8 +105,8 @@ export default function DeletionRequests() {
       key: 'expires_at',
       header: 'Expires',
       render: (value) => (
-        <div className="flex items-center gap-1 text-xs text-gray-500">
-          <Clock className="h-3 w-3" />
+        <div className="flex items-center gap-1.5 text-xs text-gray-500 font-medium">
+          <Clock className="h-3.5 w-3.5 text-gray-400" />
           {value ? formatDate(value) : '—'}
         </div>
       ),
@@ -114,13 +114,13 @@ export default function DeletionRequests() {
   ];
 
   const rowActions = (row) => (
-    <div className="flex items-center gap-1 justify-end">
+    <div className="flex items-center gap-2 justify-end">
       {row.status === 'pending' && (
         <>
           <Button
             size="sm"
             variant="ghost"
-            className="text-success"
+            className="text-success hover:text-success/80 hover:bg-success/5 transition-all rounded-lg font-semibold"
             onClick={() => {
               if (window.confirm('Approve this deletion request?')) {
                 reviewMutation.mutate({ id: row.id, action: 'approve' });
@@ -132,7 +132,7 @@ export default function DeletionRequests() {
           <Button
             size="sm"
             variant="ghost"
-            className="text-danger"
+            className="text-danger hover:text-danger/80 hover:bg-danger/5 transition-all rounded-lg font-semibold"
             onClick={() => {
               if (window.confirm('Reject this deletion request?')) {
                 reviewMutation.mutate({ id: row.id, action: 'reject' });
@@ -160,15 +160,20 @@ export default function DeletionRequests() {
               setStatus(e.target.value);
               setPage(1);
             }}
-            className="text-xs border rounded-md px-2 py-1.5 bg-white"
+            className="text-xs border border-sand bg-white/90 hover:border-terracotta focus:outline-none focus:ring-1 focus:ring-terracotta rounded-lg px-2.5 py-1.5 text-slate font-medium shadow-subtle transition-all cursor-pointer"
           >
             <option value="all">All</option>
             <option value="pending">Pending</option>
             <option value="approved">Approved</option>
             <option value="rejected">Rejected</option>
           </select>
-          <Button size="sm" variant="outline" onClick={() => refetch()}>
-            <RefreshCw className="h-3 w-3" />
+          <Button 
+            size="sm" 
+            variant="outline" 
+            onClick={() => refetch()}
+            className="border-sand hover:bg-sand-light text-slate transition-colors"
+          >
+            <RefreshCw className="h-3.5 w-3.5 text-slate/75" />
           </Button>
         </div>
       </div>
