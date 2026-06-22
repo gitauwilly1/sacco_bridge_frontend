@@ -69,42 +69,45 @@ export default function AccountDeactivation() {
   };
 
   return (
-    <Card className="border-danger/20">
-      <CardHeader>
-        <CardTitle className="text-base text-danger flex items-center gap-2">
-          <AlertTriangle className="h-5 w-5" />
+    <Card className="border-danger/30 bg-white shadow-subtle">
+      <CardHeader className="pb-3 bg-danger/5 rounded-t-2xl border-b border-danger/15">
+        <CardTitle className="text-sm font-bold text-danger flex items-center gap-2">
+          <AlertTriangle className="h-4.5 w-4.5" />
           Danger Zone
         </CardTitle>
-        <CardDescription>
+        <CardDescription className="text-xs text-danger/80 font-medium">
           Irreversible actions for your account
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 pt-4">
         {/* Deactivate */}
         {!showDeactivate ? (
           <Button
             variant="outline"
-            className="w-full border-danger/30 text-danger hover:bg-danger/5"
+            className="w-full border border-danger/30 text-danger hover:bg-danger/10 hover:border-danger/45 bg-white cursor-pointer h-10 rounded-xl text-xs font-semibold transition-all"
             onClick={() => setShowDeactivate(true)}
           >
             Deactivate Account
           </Button>
         ) : (
-          <div className="p-3 bg-gray-50 rounded-lg space-y-3">
-            <p className="text-sm text-gray-600">
-              Your account will be disabled. You can reactivate at any time by
-              logging in.
+          <div className="p-3.5 bg-sand-light/30 border border-sand/40 rounded-xl space-y-3.5">
+            <p className="text-xs text-slate font-medium leading-relaxed">
+              Your account will be temporarily disabled. You can reactivate at any time by simply
+              logging back in.
             </p>
             <div className="flex gap-2">
               <Button
-                variant="outline"
-                className="text-danger"
+                className="bg-danger hover:bg-danger/90 text-white shadow-subtle cursor-pointer h-9 rounded-lg text-xs font-semibold px-4 transition-all"
                 onClick={handleDeactivate}
                 disabled={isDeactivating}
               >
                 {isDeactivating ? 'Deactivating...' : 'Confirm Deactivate'}
               </Button>
-              <Button variant="ghost" onClick={() => setShowDeactivate(false)}>
+              <Button
+                variant="outline"
+                className="border-sand hover:bg-sand-light text-slate cursor-pointer h-9 rounded-lg text-xs font-semibold px-4 transition-all"
+                onClick={() => setShowDeactivate(false)}
+              >
                 Cancel
               </Button>
             </div>
@@ -115,36 +118,40 @@ export default function AccountDeactivation() {
         {!showDelete ? (
           <Button
             variant="outline"
-            className="w-full border-danger/30 text-danger hover:bg-danger/5"
+            className="w-full border border-danger/30 text-danger hover:bg-danger/10 hover:border-danger/45 bg-white cursor-pointer h-10 rounded-xl text-xs font-semibold transition-all"
             onClick={() => setShowDelete(true)}
           >
             <Trash2 className="mr-2 h-4 w-4" />
             Request Account Deletion
           </Button>
         ) : (
-          <div className="p-3 bg-danger/5 rounded-lg space-y-3">
-            <div className="flex items-start gap-2">
-              <AlertTriangle className="h-5 w-5 text-danger flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-danger font-medium">
-                This will permanently delete your account and all data after a
+          <div className="p-3.5 bg-danger/5 border border-danger/20 rounded-xl space-y-3.5">
+            <div className="flex items-start gap-2.5 p-3 rounded-lg bg-danger/10 border border-danger/25">
+              <AlertTriangle className="h-4.5 w-4.5 text-danger flex-shrink-0 mt-0.5" />
+              <p className="text-xs text-danger font-bold leading-relaxed">
+                This will permanently delete your account and all associated data after a
                 30-day grace period. This action cannot be undone.
               </p>
             </div>
             <Form {...deleteForm}>
               <form
                 onSubmit={deleteForm.handleSubmit(handleDelete)}
-                className="space-y-3"
+                className="space-y-4"
               >
                 <FormField
                   control={deleteForm.control}
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Enter your password</FormLabel>
+                      <FormLabel className="text-xs font-bold text-slate">Enter your password</FormLabel>
                       <FormControl>
-                        <Input type="password" {...field} />
+                        <Input
+                          type="password"
+                          className="border-input rounded-xl bg-white text-sm focus:border-danger focus:ring-1 focus:ring-danger h-10"
+                          {...field}
+                        />
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className="text-xs text-danger font-semibold" />
                     </FormItem>
                   )}
                 />
@@ -153,26 +160,30 @@ export default function AccountDeactivation() {
                   name="confirmation"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Type DELETE to confirm</FormLabel>
+                      <FormLabel className="text-xs font-bold text-slate">Type DELETE to confirm</FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <Input
+                          placeholder="DELETE"
+                          className="border-input rounded-xl bg-white text-sm focus:border-danger focus:ring-1 focus:ring-danger h-10"
+                          {...field}
+                        />
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className="text-xs text-danger font-semibold" />
                     </FormItem>
                   )}
                 />
-                <div className="flex gap-2">
+                <div className="flex gap-2 pt-1">
                   <Button
                     type="submit"
-                    variant="outline"
-                    className="text-danger border-danger/30"
+                    className="bg-danger hover:bg-danger/90 text-white shadow-subtle cursor-pointer h-9 rounded-lg text-xs font-semibold px-4 transition-all"
                     disabled={isDeleting}
                   >
                     {isDeleting ? 'Requesting...' : 'Permanently Delete'}
                   </Button>
                   <Button
                     type="button"
-                    variant="ghost"
+                    variant="outline"
+                    className="border-sand hover:bg-sand-light text-slate cursor-pointer h-9 rounded-lg text-xs font-semibold px-4 transition-all"
                     onClick={() => {
                       setShowDelete(false);
                       deleteForm.reset();
