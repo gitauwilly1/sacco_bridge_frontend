@@ -104,14 +104,18 @@ export default function RaiseDisputeForm() {
   return (
     <div className="pb-4">
       {/* Header */}
-      <div className="sticky top-14 z-30 bg-white border-b px-4 py-3">
+      <div className="sticky top-14 z-30 bg-white/80 backdrop-blur-lg border-b border-sand px-4 py-3">
         <div className="flex items-center gap-3">
-          <button onClick={() => navigate({ to: `/transactions/${settlementId}` })}>
+          <button
+            onClick={() => navigate({ to: `/transactions/${settlementId}` })}
+            className="p-1 rounded-lg text-slate hover:bg-sand-light transition-colors"
+            aria-label="Back to transaction"
+          >
             <ArrowLeft className="h-5 w-5" />
           </button>
-          <div className="flex-1">
-            <h1 className="text-lg font-bold text-slate">Raise Dispute</h1>
-            <p className="text-xs text-gray-500">Settlement #{settlementId}</p>
+          <div className="flex-1 min-w-0">
+            <h1 className="text-base font-bold font-heading text-slate leading-tight">Raise Dispute</h1>
+            <p className="text-xs text-gray-400 font-medium truncate mt-0.5">Settlement #{settlementId}</p>
           </div>
         </div>
       </div>
@@ -119,16 +123,16 @@ export default function RaiseDisputeForm() {
       <div className="p-4">
         {/* Settlement Summary */}
         {settlement && (
-          <Card className="mb-4 bg-sand-light border-0">
+          <Card className="mb-4 bg-sand-light/50 border border-sand/40 shadow-none rounded-xl">
             <CardContent className="p-4">
-              <div className="grid grid-cols-2 gap-2 text-sm">
+              <div className="grid grid-cols-2 gap-4 text-xs font-medium">
                 <div>
-                  <p className="text-xs text-gray-500">SACCO</p>
-                  <p className="font-semibold text-slate">{settlement.sacco_name}</p>
+                  <p className="text-[10px] uppercase tracking-wider text-gray-400 mb-0.5">SACCO</p>
+                  <p className="text-sm font-bold text-slate truncate">{settlement.sacco_name}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500">Amount</p>
-                  <p className="font-semibold text-terracotta">
+                  <p className="text-[10px] uppercase tracking-wider text-gray-400 mb-0.5">Amount</p>
+                  <p className="text-sm font-bold text-terracotta font-numbers" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
                     {formatKES(settlement.total_value)}
                   </p>
                 </div>
@@ -138,14 +142,14 @@ export default function RaiseDisputeForm() {
         )}
 
         {/* Cooling Period Warning */}
-        <Card className="mb-6 border-alert/30 bg-alert/5">
+        <Card className="mb-6 border-alert/20 bg-alert/5 text-alert rounded-xl shadow-none">
           <CardContent className="p-4 flex items-start gap-3">
             <Clock className="h-5 w-5 text-alert flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-semibold text-alert">
+              <p className="text-xs font-bold uppercase tracking-wider text-alert">
                 30-Minute Cooling Period
               </p>
-              <p className="text-xs text-gray-600 mt-1">
+              <p className="text-xs text-slate-dark/80 mt-1 leading-relaxed">
                 Disputes can only be raised after 30 minutes from settlement creation.
                 This allows time for the system to process the transaction normally.
               </p>
@@ -155,10 +159,10 @@ export default function RaiseDisputeForm() {
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <Card>
+            <Card className="border-sand bg-white shadow-subtle">
               <CardHeader>
-                <CardTitle className="text-base">Dispute Details</CardTitle>
-                <CardDescription>
+                <CardTitle className="text-sm font-bold text-slate">Dispute Details</CardTitle>
+                <CardDescription className="text-xs text-gray-400 font-medium">
                   Explain the issue with this settlement
                 </CardDescription>
               </CardHeader>
@@ -168,22 +172,22 @@ export default function RaiseDisputeForm() {
                   name="reason"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Reason</FormLabel>
+                      <FormLabel className="text-xs font-bold text-slate">Reason</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
-                          <SelectTrigger>
+                          <SelectTrigger className="border-input rounded-xl bg-white text-sm focus:border-terracotta focus:ring-1 focus:ring-terracotta h-10 cursor-pointer">
                             <SelectValue placeholder="Select a reason" />
                           </SelectTrigger>
                         </FormControl>
-                        <SelectContent>
+                        <SelectContent className="bg-white border-sand shadow-subtle rounded-xl">
                           {Object.entries(disputeReasons).map(([value, label]) => (
-                            <SelectItem key={value} value={value}>
+                            <SelectItem key={value} value={value} className="cursor-pointer text-sm font-medium hover:bg-sand-light text-slate focus:bg-sand-light focus:text-terracotta">
                               {label}
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
-                      <FormMessage />
+                      <FormMessage className="text-xs text-danger font-semibold" />
                     </FormItem>
                   )}
                 />
@@ -193,31 +197,31 @@ export default function RaiseDisputeForm() {
                   name="description"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Description</FormLabel>
+                      <FormLabel className="text-xs font-bold text-slate">Description</FormLabel>
                       <FormControl>
                         <Textarea
                           placeholder="Describe what went wrong with this transaction..."
-                          className="resize-none"
+                          className="resize-none border-input rounded-xl bg-white text-sm focus:border-terracotta focus:ring-1 focus:ring-terracotta"
                           rows={5}
                           {...field}
                         />
                       </FormControl>
-                      <FormDescription>
+                      <FormDescription className="text-[10px] text-gray-400 font-semibold text-right">
                         {field.value?.length || 0}/1000 characters
                       </FormDescription>
-                      <FormMessage />
+                      <FormMessage className="text-xs text-danger font-semibold" />
                     </FormItem>
                   )}
                 />
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="border-blue-500/20 bg-blue-500/5 text-slate rounded-xl shadow-none">
               <CardContent className="p-4 flex items-start gap-3">
                 <Info className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
-                <div className="text-xs text-gray-600">
-                  <p className="font-medium mb-1">What happens next?</p>
-                  <ol className="list-decimal list-inside space-y-1">
+                <div className="text-xs font-medium">
+                  <p className="font-bold mb-1 text-slate">What happens next?</p>
+                  <ol className="list-decimal list-inside space-y-1.5 text-gray-500 leading-relaxed">
                     <li>A trustee will be notified of your dispute</li>
                     <li>They will review the transaction details</li>
                     <li>You may be contacted for additional information</li>
@@ -231,14 +235,14 @@ export default function RaiseDisputeForm() {
               <Button
                 type="button"
                 variant="outline"
-                className="flex-1"
+                className="flex-1 border-sand hover:bg-sand-light text-slate cursor-pointer h-10 rounded-xl text-xs font-semibold"
                 onClick={() => navigate({ to: `/transactions/${settlementId}` })}
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
-                className="flex-1"
+                className="flex-1 bg-terracotta hover:bg-terracotta-dark text-white border-0 shadow-subtle cursor-pointer h-10 rounded-xl text-xs font-semibold"
                 disabled={isLoading}
               >
                 {isLoading ? (
