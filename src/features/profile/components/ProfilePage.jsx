@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
-  User, Shield, Bell, Smartphone, Download,
+  User, Shield, Bell, Smartphone, Download, Palette,
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PageSpinner } from '@/components/feedback/LoadingState';
@@ -15,6 +15,9 @@ import SessionManager from './SessionManager';
 import DataExport from './DataExport';
 import AccountDeactivation from './AccountDeactivation';
 import TransactionLimits from './TransactionLimits';
+import AppearanceSettings from './AppearanceSettings';
+import VerificationStatus from './VerificationStatus';
+import ConnectedAccounts from './ConnectedAccounts';
 
 
 export default function ProfilePage() {
@@ -67,47 +70,55 @@ export default function ProfilePage() {
         <TabsList className="bg-sand-light/60 p-1 rounded-xl border border-sand/40 w-full justify-start overflow-x-auto flex gap-1 scrollbar-none">
           <TabsTrigger
             value="profile"
-            className="px-3 py-2 text-xs rounded-lg cursor-pointer transition-all flex items-center gap-1.5 font-bold data-[state=active]:bg-white data-[state=active]:text-terracotta data-[state=active]:shadow-subtle data-[state=active]:border data-[state=active]:border-sand/65 text-slate hover:text-terracotta/80"
+            className="px-3 py-2 text-xs rounded-lg cursor-pointer transition-all flex items-center gap-1.5 font-bold data-[state=active]:bg-white data-[state=active]:text-terracotta data-[state=active]:shadow-subtle data-[state=active]:border data-[state=active]:border-sand/65 text-slate hover:text-terracotta/80 font-heading"
           >
             <User className="h-3.5 w-3.5" /> Profile
           </TabsTrigger>
           <TabsTrigger
             value="security"
-            className="px-3 py-2 text-xs rounded-lg cursor-pointer transition-all flex items-center gap-1.5 font-bold data-[state=active]:bg-white data-[state=active]:text-terracotta data-[state=active]:shadow-subtle data-[state=active]:border data-[state=active]:border-sand/65 text-slate hover:text-terracotta/80"
+            className="px-3 py-2 text-xs rounded-lg cursor-pointer transition-all flex items-center gap-1.5 font-bold data-[state=active]:bg-white data-[state=active]:text-terracotta data-[state=active]:shadow-subtle data-[state=active]:border data-[state=active]:border-sand/65 text-slate hover:text-terracotta/80 font-heading"
           >
             <Shield className="h-3.5 w-3.5" /> Security
           </TabsTrigger>
           <TabsTrigger
             value="notifications"
-            className="px-3 py-2 text-xs rounded-lg cursor-pointer transition-all flex items-center gap-1.5 font-bold data-[state=active]:bg-white data-[state=active]:text-terracotta data-[state=active]:shadow-subtle data-[state=active]:border data-[state=active]:border-sand/65 text-slate hover:text-terracotta/80"
+            className="px-3 py-2 text-xs rounded-lg cursor-pointer transition-all flex items-center gap-1.5 font-bold data-[state=active]:bg-white data-[state=active]:text-terracotta data-[state=active]:shadow-subtle data-[state=active]:border data-[state=active]:border-sand/65 text-slate hover:text-terracotta/80 font-heading"
           >
             <Bell className="h-3.5 w-3.5" /> Alerts
           </TabsTrigger>
           <TabsTrigger
             value="sessions"
-            className="px-3 py-2 text-xs rounded-lg cursor-pointer transition-all flex items-center gap-1.5 font-bold data-[state=active]:bg-white data-[state=active]:text-terracotta data-[state=active]:shadow-subtle data-[state=active]:border data-[state=active]:border-sand/65 text-slate hover:text-terracotta/80"
+            className="px-3 py-2 text-xs rounded-lg cursor-pointer transition-all flex items-center gap-1.5 font-bold data-[state=active]:bg-white data-[state=active]:text-terracotta data-[state=active]:shadow-subtle data-[state=active]:border data-[state=active]:border-sand/65 text-slate hover:text-terracotta/80 font-heading"
           >
             <Smartphone className="h-3.5 w-3.5" /> Sessions
           </TabsTrigger>
           <TabsTrigger
+            value="appearance"
+            className="px-3 py-2 text-xs rounded-lg cursor-pointer transition-all flex items-center gap-1.5 font-bold data-[state=active]:bg-white data-[state=active]:text-terracotta data-[state=active]:shadow-subtle data-[state=active]:border data-[state=active]:border-sand/65 text-slate hover:text-terracotta/80 font-heading"
+          >
+            <Palette className="h-3.5 w-3.5" /> Appearance
+          </TabsTrigger>
+          <TabsTrigger
             value="data"
-            className="px-3 py-2 text-xs rounded-lg cursor-pointer transition-all flex items-center gap-1.5 font-bold data-[state=active]:bg-white data-[state=active]:text-terracotta data-[state=active]:shadow-subtle data-[state=active]:border data-[state=active]:border-sand/65 text-slate hover:text-terracotta/80"
+            className="px-3 py-2 text-xs rounded-lg cursor-pointer transition-all flex items-center gap-1.5 font-bold data-[state=active]:bg-white data-[state=active]:text-terracotta data-[state=active]:shadow-subtle data-[state=active]:border data-[state=active]:border-sand/65 text-slate hover:text-terracotta/80 font-heading"
           >
             <Download className="h-3.5 w-3.5" /> Data
           </TabsTrigger>
           <TabsTrigger
             value="limits"
-            className="px-3 py-2 text-xs rounded-lg cursor-pointer transition-all flex items-center gap-1.5 font-bold data-[state=active]:bg-white data-[state=active]:text-terracotta data-[state=active]:shadow-subtle data-[state=active]:border data-[state=active]:border-sand/65 text-slate hover:text-terracotta/80"
+            className="px-3 py-2 text-xs rounded-lg cursor-pointer transition-all flex items-center gap-1.5 font-bold data-[state=active]:bg-white data-[state=active]:text-terracotta data-[state=active]:shadow-subtle data-[state=active]:border data-[state=active]:border-sand/65 text-slate hover:text-terracotta/80 font-heading"
           >
             <Shield className="h-3.5 w-3.5" /> Limits
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="profile" className="mt-4">
+        <TabsContent value="profile" className="mt-4 space-y-4">
+          <VerificationStatus profile={profile} />
           <EditProfileForm profile={profile} />
         </TabsContent>
 
-        <TabsContent value="security" className="mt-4">
+        <TabsContent value="security" className="mt-4 space-y-4">
+          <ConnectedAccounts profile={profile} />
           <SecuritySettings profile={profile} />
         </TabsContent>
 
@@ -117,6 +128,10 @@ export default function ProfilePage() {
 
         <TabsContent value="sessions" className="mt-4">
           <SessionManager />
+        </TabsContent>
+
+        <TabsContent value="appearance" className="mt-4">
+          <AppearanceSettings />
         </TabsContent>
 
         <TabsContent value="data" className="mt-4 space-y-4">
