@@ -17,15 +17,15 @@ import { formatTimeAgo } from '../../../utils/format';
 import useNotificationStore from '../../../stores/notificationStore';
 
 const categoryConfig = {
-  chama: { icon: Users, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-  contribution: { icon: HandCoins, color: 'text-success', bg: 'bg-success/10' },
-  loan: { icon: DollarSign, color: 'text-alert', bg: 'bg-alert/10' },
-  investment: { icon: Building2, color: 'text-terracotta', bg: 'bg-terracotta/10' },
-  settlement: { icon: CheckCheck, color: 'text-purple-500', bg: 'bg-purple-500/10' },
-  meeting: { icon: Calendar, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-  poll: { icon: Vote, color: 'text-alert', bg: 'bg-alert/10' },
-  security: { icon: Shield, color: 'text-danger', bg: 'bg-danger/10' },
-  system: { icon: Bell, color: 'text-gray-500', bg: 'bg-gray-100' },
+  chama: { icon: Users, color: 'text-blue-500', bg: 'bg-sand-light' },
+  contribution: { icon: HandCoins, color: 'text-success', bg: 'bg-sand-light' },
+  loan: { icon: DollarSign, color: 'text-alert', bg: 'bg-sand-light' },
+  investment: { icon: Building2, color: 'text-terracotta', bg: 'bg-sand-light' },
+  settlement: { icon: CheckCheck, color: 'text-terracotta', bg: 'bg-sand-light' },
+  meeting: { icon: Calendar, color: 'text-blue-500', bg: 'bg-sand-light' },
+  poll: { icon: Vote, color: 'text-alert', bg: 'bg-sand-light' },
+  security: { icon: Shield, color: 'text-danger', bg: 'bg-sand-light' },
+  system: { icon: Bell, color: 'text-slate', bg: 'bg-sand-light' },
 };
 
 const categoryTabs = [
@@ -64,34 +64,36 @@ function NotificationItem({ notification }) {
   return (
     <button
       onClick={handlePress}
-      className={`w-full text-left p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors ${
-        !notification.is_read ? 'bg-sand-light/50' : ''
+      className={`w-full text-left p-3.5 rounded-xl border card-lift transition-all cursor-pointer ${
+        !notification.is_read
+          ? 'bg-sand-light/30 border-sand-dark/15 shadow-none'
+          : 'bg-white border-sand/45 shadow-subtle'
       }`}
     >
       <div className="flex items-start gap-3">
-        <div className={`h-10 w-10 rounded-lg ${category.bg} flex items-center justify-center flex-shrink-0`}>
+        <div className="h-10 w-10 rounded-lg bg-sand-light border border-sand/30 flex items-center justify-center flex-shrink-0 shadow-subtle">
           <Icon className={`h-5 w-5 ${category.color}`} />
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
-            <p className={`text-sm ${!notification.is_read ? 'font-semibold' : 'font-medium'} text-slate`}>
+            <p className={`text-xs ${!notification.is_read ? 'font-bold text-slate' : 'font-medium text-slate/80'} truncate`}>
               {notification.title}
             </p>
             {!notification.is_read && (
-              <span className="h-2 w-2 rounded-full bg-terracotta flex-shrink-0 mt-1.5" />
+              <span className="h-2.5 w-2.5 rounded-full bg-terracotta animate-pulse flex-shrink-0 mt-1.5" />
             )}
           </div>
           {notification.body && (
-            <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">
+            <p className="text-xs text-gray-400 mt-0.5 line-clamp-2 leading-relaxed">
               {notification.body}
             </p>
           )}
-          <div className="flex items-center gap-2 mt-1">
-            <span className="text-xs text-gray-400">
+          <div className="flex items-center gap-2 mt-2">
+            <span className="text-[10px] text-gray-400 font-medium font-numbers">
               {formatTimeAgo(notification.created_at)}
             </span>
             {notification.category && (
-              <Badge className={category.color} variant="outline">
+              <Badge className={`${category.color} bg-sand-light/60 border-sand-dark/20 text-[9px] font-extrabold px-1.5 py-0.5 rounded-md shadow-none capitalize`} variant="outline">
                 {notification.category}
               </Badge>
             )}
@@ -104,16 +106,14 @@ function NotificationItem({ notification }) {
 
 function NotificationListSkeleton() {
   return (
-    <div>
+    <div className="space-y-2.5 px-4 pt-3">
       {[1, 2, 3, 4, 5].map((i) => (
-        <div key={i} className="p-4 border-b border-gray-100">
-          <div className="flex items-start gap-3">
-            <Skeleton className="h-10 w-10 rounded-lg" />
-            <div className="flex-1">
-              <Skeleton className="h-4 w-48 mb-2" />
-              <Skeleton className="h-3 w-64 mb-1" />
-              <Skeleton className="h-3 w-16" />
-            </div>
+        <div key={i} className="p-3.5 border border-sand/40 bg-white rounded-xl shadow-subtle flex items-start gap-3">
+          <div className="skeleton-shimmer h-10 w-10 rounded-lg flex-shrink-0" />
+          <div className="flex-1 space-y-2">
+            <div className="skeleton-shimmer h-3.5 w-48 rounded" />
+            <div className="skeleton-shimmer h-3 w-full rounded" />
+            <div className="skeleton-shimmer h-2.5 w-16 rounded" />
           </div>
         </div>
       ))}
@@ -133,9 +133,6 @@ export default function NotificationList() {
     isLoading,
     error,
     refetch,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
   } = useQuery({
     queryKey: ['notifications', page, filter, showUnreadOnly],
     queryFn: () =>
@@ -167,37 +164,38 @@ export default function NotificationList() {
   return (
     <div className="pb-4">
       {/* Header */}
-      <div className="sticky top-14 z-30 bg-white border-b">
+      <div className="sticky top-14 z-30 bg-white border-b border-sand/40">
         <div className="flex items-center justify-between px-4 py-3">
           <div>
-            <h1 className="text-lg font-bold text-slate">Notifications</h1>
-            <p className="text-xs text-gray-500">{total} notifications</p>
+            <h1 className="text-sm font-bold text-slate">Notifications</h1>
+            <p className="text-xs text-gray-400 font-medium">{total} notifications</p>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowUnreadOnly(!showUnreadOnly)}
-              className={`text-xs px-2 py-1 rounded-full ${
+              className={`text-xs font-bold px-3 py-1.5 rounded-full border cursor-pointer transition-all ${
                 showUnreadOnly
-                  ? 'bg-terracotta/10 text-terracotta'
-                  : 'bg-gray-100 text-gray-500'
+                  ? 'bg-terracotta/10 text-terracotta border-terracotta/20 shadow-none'
+                  : 'bg-sand-light/60 text-slate border-sand/40 hover:bg-sand-light'
               }`}
             >
               Unread
             </button>
             <Button
               size="sm"
-              variant="ghost"
+              variant="outline"
               onClick={() => markAllReadMutation.mutate()}
               disabled={markAllReadMutation.isPending}
+              className="border-terracotta text-terracotta hover:bg-terracotta/5 hover:text-terracotta cursor-pointer h-8 rounded-lg text-xs font-semibold px-3 transition-all"
             >
-              <CheckCheck className="h-4 w-4 mr-1" />
+              <CheckCheck className="h-3.5 w-3.5 mr-1" />
               Read All
             </Button>
           </div>
         </div>
 
         {/* Category Tabs */}
-        <div className="flex gap-1 px-4 pb-2 overflow-x-auto">
+        <div className="flex gap-1.5 px-4 pb-3 overflow-x-auto scrollbar-none">
           {categoryTabs.map((tab) => (
             <button
               key={tab.value}
@@ -205,10 +203,10 @@ export default function NotificationList() {
                 setFilter(tab.value);
                 setPage(1);
               }}
-              className={`px-3 py-1 text-xs rounded-full whitespace-nowrap ${
+              className={`px-3.5 py-1.5 text-xs font-bold rounded-full whitespace-nowrap cursor-pointer transition-all border ${
                 filter === tab.value
-                  ? 'bg-terracotta text-white'
-                  : 'bg-gray-100 text-gray-600'
+                  ? 'bg-terracotta text-white border-terracotta shadow-subtle'
+                  : 'bg-sand-light/60 text-slate border-sand/40 hover:bg-sand-light'
               }`}
             >
               {tab.label}
@@ -223,18 +221,20 @@ export default function NotificationList() {
       ) : error ? (
         <ErrorState message="Failed to load notifications" onRetry={refetch} />
       ) : notifications.length === 0 ? (
-        <EmptyState
-          icon={Bell}
-          title="No notifications"
-          description={
-            filter !== 'all' || showUnreadOnly
-              ? 'No notifications match your filters'
-              : "You're all caught up!"
-          }
-        />
+        <div className="px-4 py-8">
+          <EmptyState
+            icon={Bell}
+            title="No notifications"
+            description={
+              filter !== 'all' || showUnreadOnly
+                ? 'No notifications match your filters'
+                : "You're all caught up!"
+            }
+          />
+        </div>
       ) : (
         <>
-          <div>
+          <div className="space-y-2.5 px-4 pt-3">
             {notifications.map((notification) => (
               <NotificationItem
                 key={notification.id}
@@ -251,10 +251,11 @@ export default function NotificationList() {
                 variant="outline"
                 disabled={page <= 1}
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
+                className="border-sand hover:bg-sand-light text-slate text-xs font-semibold h-8 rounded-lg cursor-pointer transition-all"
               >
                 Previous
               </Button>
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-gray-400 font-medium">
                 {page} of {totalPages}
               </span>
               <Button
@@ -262,6 +263,7 @@ export default function NotificationList() {
                 variant="outline"
                 disabled={page >= totalPages}
                 onClick={() => setPage((p) => p + 1)}
+                className="border-sand hover:bg-sand-light text-slate text-xs font-semibold h-8 rounded-lg cursor-pointer transition-all"
               >
                 Next
               </Button>
