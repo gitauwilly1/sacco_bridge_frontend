@@ -51,15 +51,15 @@ export default function EscrowManagement() {
       key: 'id',
       header: 'ID',
       width: '80px',
-      render: (value) => <span className="font-mono text-xs">#{value}</span>,
+      render: (value) => <span className="font-mono text-xs font-semibold text-slate/75">#{value}</span>,
     },
     {
       key: 'sacco_name',
       header: 'SACCO',
       render: (_, row) => (
         <div>
-          <p className="font-medium text-slate text-sm">{row.sacco_name || '—'}</p>
-          <p className="text-xs text-gray-500">{row.share_class_name}</p>
+          <p className="font-semibold text-slate text-sm">{row.sacco_name || '—'}</p>
+          <p className="text-xs text-gray-400">{row.share_class_name}</p>
         </div>
       ),
     },
@@ -67,7 +67,7 @@ export default function EscrowManagement() {
       key: 'amount',
       header: 'Amount Held',
       render: (value) => (
-        <span className="text-sm font-semibold text-terracotta">
+        <span className="text-sm font-bold text-terracotta">
           {formatKES(value)}
         </span>
       ),
@@ -79,10 +79,10 @@ export default function EscrowManagement() {
         <Badge
           className={
             value === 'held'
-              ? 'bg-blue-500/10 text-blue-500'
+              ? 'bg-blue-500/10 text-blue-500 border border-blue-500/20'
               : value === 'released'
-              ? 'bg-success/10 text-success'
-              : 'bg-gray-200 text-gray-600'
+              ? 'bg-success/10 text-success border border-success/20'
+              : 'bg-sand text-slate border border-sand-dark/20'
           }
           variant="outline"
         >
@@ -94,19 +94,19 @@ export default function EscrowManagement() {
       key: 'created_at',
       header: 'Created',
       render: (value) => (
-        <span className="text-xs text-gray-500">{formatDate(value)}</span>
+        <span className="text-xs text-gray-500 font-medium">{formatDate(value)}</span>
       ),
     },
   ];
 
   const rowActions = (row) => (
-    <div className="flex items-center gap-1 justify-end">
+    <div className="flex items-center gap-2 justify-end">
       {row.status === 'held' && (
         <>
           <Button
             size="sm"
             variant="ghost"
-            className="text-success"
+            className="text-success hover:text-success/80 hover:bg-success/5 transition-all rounded-lg font-semibold"
             onClick={() => {
               if (window.confirm(`Release full amount ${formatKES(row.amount)}?`)) {
                 releaseMutation.mutate({ id: row.id, action: 'release' });
@@ -118,7 +118,7 @@ export default function EscrowManagement() {
           <Button
             size="sm"
             variant="ghost"
-            className="text-alert"
+            className="text-alert hover:text-alert/80 hover:bg-alert/5 transition-all rounded-lg font-semibold"
             onClick={() => {
               if (window.confirm(`Refund ${formatKES(row.amount)} to buyer?`)) {
                 releaseMutation.mutate({ id: row.id, action: 'refund' });
@@ -146,15 +146,20 @@ export default function EscrowManagement() {
               setStatus(e.target.value);
               setPage(1);
             }}
-            className="text-xs border rounded-md px-2 py-1.5 bg-white"
+            className="text-xs border border-sand bg-white/90 hover:border-terracotta focus:outline-none focus:ring-1 focus:ring-terracotta rounded-lg px-2.5 py-1.5 text-slate font-medium shadow-subtle transition-all cursor-pointer"
           >
             <option value="all">All</option>
             <option value="held">Held</option>
             <option value="released">Released</option>
             <option value="refunded">Refunded</option>
           </select>
-          <Button size="sm" variant="outline" onClick={() => refetch()}>
-            <RefreshCw className="h-3 w-3" />
+          <Button 
+            size="sm" 
+            variant="outline" 
+            onClick={() => refetch()}
+            className="border-sand hover:bg-sand-light text-slate transition-colors"
+          >
+            <RefreshCw className="h-3.5 w-3.5 text-slate/75" />
           </Button>
         </div>
       </div>
