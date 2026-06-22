@@ -125,9 +125,9 @@ export default function EditProfileForm({ profile }) {
   return (
     <div className="space-y-6">
       {/* Profile Picture */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Profile Picture</CardTitle>
+      <Card className="border-sand bg-white shadow-subtle">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm font-bold text-slate">Profile Picture</CardTitle>
         </CardHeader>
         <CardContent className="flex items-center gap-4">
           <div className="relative">
@@ -135,16 +135,16 @@ export default function EditProfileForm({ profile }) {
               <img
                 src={profile.profile_picture}
                 alt="Profile"
-                className="w-20 h-20 rounded-full object-cover"
+                className="w-20 h-20 rounded-full object-cover ring-4 ring-sand/30 shadow-subtle"
               />
             ) : (
-              <div className="w-20 h-20 rounded-full bg-sand-light flex items-center justify-center">
-                <span className="text-2xl font-bold text-terracotta">
+              <div className="w-20 h-20 rounded-full bg-sand-light flex items-center justify-center ring-4 ring-sand/30 shadow-subtle">
+                <span className="text-2xl font-extrabold text-terracotta font-heading">
                   {getInitials(profile?.first_name, profile?.last_name) || '?'}
                 </span>
               </div>
             )}
-            <label className="absolute bottom-0 right-0 bg-terracotta text-white p-1.5 rounded-full cursor-pointer">
+            <label className="absolute bottom-0 right-0 bg-terracotta text-white p-2 rounded-full cursor-pointer hover:bg-terracotta-dark shadow-subtle transition-colors">
               <Camera className="h-3.5 w-3.5" />
               <input
                 type="file"
@@ -155,23 +155,28 @@ export default function EditProfileForm({ profile }) {
               />
             </label>
           </div>
-          <div className="text-xs text-gray-500">
+          <div className="text-xs text-gray-400 font-medium space-y-0.5">
             <p>JPG, PNG or WebP</p>
             <p>Max 5MB</p>
           </div>
           {profile?.profile_picture && (
-            <Button variant="outline" size="sm" onClick={handleRemovePicture}>
-              <Trash2 className="mr-1 h-4 w-4" /> Remove
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRemovePicture}
+              className="border-sand hover:bg-danger/5 hover:text-danger hover:border-danger/20 text-slate cursor-pointer h-8 rounded-lg text-xs font-semibold ml-auto"
+            >
+              <Trash2 className="mr-1 h-3.5 w-3.5" /> Remove
             </Button>
           )}
         </CardContent>
       </Card>
 
       {/* Edit Form */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Personal Information</CardTitle>
-          <CardDescription>Update your profile details</CardDescription>
+      <Card className="border-sand bg-white shadow-subtle">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm font-bold text-slate">Personal Information</CardTitle>
+          <CardDescription className="text-xs text-gray-400 font-medium">Update your profile details</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -182,9 +187,14 @@ export default function EditProfileForm({ profile }) {
                   name="first_name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>First Name</FormLabel>
-                      <FormControl><Input {...field} /></FormControl>
-                      <FormMessage />
+                      <FormLabel className="text-xs font-bold text-slate">First Name</FormLabel>
+                      <FormControl>
+                        <Input
+                          className="border-input rounded-xl bg-white text-sm focus:border-terracotta focus:ring-1 focus:ring-terracotta"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage className="text-xs text-danger font-semibold" />
                     </FormItem>
                   )}
                 />
@@ -193,9 +203,14 @@ export default function EditProfileForm({ profile }) {
                   name="last_name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Last Name</FormLabel>
-                      <FormControl><Input {...field} /></FormControl>
-                      <FormMessage />
+                      <FormLabel className="text-xs font-bold text-slate">Last Name</FormLabel>
+                      <FormControl>
+                        <Input
+                          className="border-input rounded-xl bg-white text-sm focus:border-terracotta focus:ring-1 focus:ring-terracotta"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage className="text-xs text-danger font-semibold" />
                     </FormItem>
                   )}
                 />
@@ -206,9 +221,15 @@ export default function EditProfileForm({ profile }) {
                 name="date_of_birth"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Date of Birth</FormLabel>
-                    <FormControl><Input type="date" {...field} /></FormControl>
-                    <FormMessage />
+                    <FormLabel className="text-xs font-bold text-slate">Date of Birth</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="date"
+                        className="border-input rounded-xl bg-white text-sm focus:border-terracotta focus:ring-1 focus:ring-terracotta"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage className="text-xs text-danger font-semibold" />
                   </FormItem>
                 )}
               />
@@ -218,9 +239,15 @@ export default function EditProfileForm({ profile }) {
                 name="occupation"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Occupation</FormLabel>
-                    <FormControl><Input placeholder="e.g., Teacher" {...field} /></FormControl>
-                    <FormMessage />
+                    <FormLabel className="text-xs font-bold text-slate">Occupation</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="e.g., Teacher"
+                        className="border-input rounded-xl bg-white text-sm focus:border-terracotta focus:ring-1 focus:ring-terracotta"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage className="text-xs text-danger font-semibold" />
                   </FormItem>
                 )}
               />
@@ -230,9 +257,15 @@ export default function EditProfileForm({ profile }) {
                 name="employer"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Employer</FormLabel>
-                    <FormControl><Input placeholder="e.g., TSC" {...field} /></FormControl>
-                    <FormMessage />
+                    <FormLabel className="text-xs font-bold text-slate">Employer</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="e.g., TSC"
+                        className="border-input rounded-xl bg-white text-sm focus:border-terracotta focus:ring-1 focus:ring-terracotta"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage className="text-xs text-danger font-semibold" />
                   </FormItem>
                 )}
               />
@@ -243,9 +276,15 @@ export default function EditProfileForm({ profile }) {
                   name="county"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>County</FormLabel>
-                      <FormControl><Input placeholder="e.g., Nairobi" {...field} /></FormControl>
-                      <FormMessage />
+                      <FormLabel className="text-xs font-bold text-slate">County</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="e.g., Nairobi"
+                          className="border-input rounded-xl bg-white text-sm focus:border-terracotta focus:ring-1 focus:ring-terracotta"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage className="text-xs text-danger font-semibold" />
                     </FormItem>
                   )}
                 />
@@ -254,9 +293,15 @@ export default function EditProfileForm({ profile }) {
                   name="city"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>City</FormLabel>
-                      <FormControl><Input placeholder="e.g., Westlands" {...field} /></FormControl>
-                      <FormMessage />
+                      <FormLabel className="text-xs font-bold text-slate">City</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="e.g., Westlands"
+                          className="border-input rounded-xl bg-white text-sm focus:border-terracotta focus:ring-1 focus:ring-terracotta"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage className="text-xs text-danger font-semibold" />
                     </FormItem>
                   )}
                 />
@@ -268,20 +313,20 @@ export default function EditProfileForm({ profile }) {
                   name="risk_tolerance"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Risk Tolerance</FormLabel>
+                      <FormLabel className="text-xs font-bold text-slate">Risk Tolerance</FormLabel>
                       <Select value={field.value} onValueChange={field.onChange}>
                         <FormControl>
-                          <SelectTrigger>
+                          <SelectTrigger className="border-input rounded-xl bg-white text-sm focus:border-terracotta focus:ring-1 focus:ring-terracotta h-10 cursor-pointer">
                             <SelectValue />
                           </SelectTrigger>
                         </FormControl>
-                        <SelectContent>
-                          <SelectItem value="CONSERVATIVE">Conservative</SelectItem>
-                          <SelectItem value="MODERATE">Moderate</SelectItem>
-                          <SelectItem value="AGGRESSIVE">Aggressive</SelectItem>
+                        <SelectContent className="bg-white border-sand shadow-subtle rounded-xl">
+                          <SelectItem value="CONSERVATIVE" className="cursor-pointer text-sm font-medium hover:bg-sand-light text-slate focus:bg-sand-light focus:text-terracotta">Conservative</SelectItem>
+                          <SelectItem value="MODERATE" className="cursor-pointer text-sm font-medium hover:bg-sand-light text-slate focus:bg-sand-light focus:text-terracotta">Moderate</SelectItem>
+                          <SelectItem value="AGGRESSIVE" className="cursor-pointer text-sm font-medium hover:bg-sand-light text-slate focus:bg-sand-light focus:text-terracotta">Aggressive</SelectItem>
                         </SelectContent>
                       </Select>
-                      <FormMessage />
+                      <FormMessage className="text-xs text-danger font-semibold" />
                     </FormItem>
                   )}
                 />
@@ -290,21 +335,21 @@ export default function EditProfileForm({ profile }) {
                   name="investment_experience"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Experience</FormLabel>
+                      <FormLabel className="text-xs font-bold text-slate">Experience</FormLabel>
                       <Select value={field.value} onValueChange={field.onChange}>
                         <FormControl>
-                          <SelectTrigger>
+                          <SelectTrigger className="border-input rounded-xl bg-white text-sm focus:border-terracotta focus:ring-1 focus:ring-terracotta h-10 cursor-pointer">
                             <SelectValue />
                           </SelectTrigger>
                         </FormControl>
-                        <SelectContent>
-                          <SelectItem value="NONE">None</SelectItem>
-                          <SelectItem value="BEGINNER">Beginner</SelectItem>
-                          <SelectItem value="INTERMEDIATE">Intermediate</SelectItem>
-                          <SelectItem value="EXPERT">Expert</SelectItem>
+                        <SelectContent className="bg-white border-sand shadow-subtle rounded-xl">
+                          <SelectItem value="NONE" className="cursor-pointer text-sm font-medium hover:bg-sand-light text-slate focus:bg-sand-light focus:text-terracotta">None</SelectItem>
+                          <SelectItem value="BEGINNER" className="cursor-pointer text-sm font-medium hover:bg-sand-light text-slate focus:bg-sand-light focus:text-terracotta">Beginner</SelectItem>
+                          <SelectItem value="INTERMEDIATE" className="cursor-pointer text-sm font-medium hover:bg-sand-light text-slate focus:bg-sand-light focus:text-terracotta">Intermediate</SelectItem>
+                          <SelectItem value="EXPERT" className="cursor-pointer text-sm font-medium hover:bg-sand-light text-slate focus:bg-sand-light focus:text-terracotta">Expert</SelectItem>
                         </SelectContent>
                       </Select>
-                      <FormMessage />
+                      <FormMessage className="text-xs text-danger font-semibold" />
                     </FormItem>
                   )}
                 />
@@ -315,24 +360,28 @@ export default function EditProfileForm({ profile }) {
                 name="preferred_language"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Language</FormLabel>
+                    <FormLabel className="text-xs font-bold text-slate">Language</FormLabel>
                     <Select value={field.value} onValueChange={field.onChange}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="border-input rounded-xl bg-white text-sm focus:border-terracotta focus:ring-1 focus:ring-terracotta h-10 cursor-pointer">
                           <SelectValue />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
-                        <SelectItem value="en">English</SelectItem>
-                        <SelectItem value="sw">Kiswahili</SelectItem>
+                      <SelectContent className="bg-white border-sand shadow-subtle rounded-xl">
+                        <SelectItem value="en" className="cursor-pointer text-sm font-medium hover:bg-sand-light text-slate focus:bg-sand-light focus:text-terracotta">English</SelectItem>
+                        <SelectItem value="sw" className="cursor-pointer text-sm font-medium hover:bg-sand-light text-slate focus:bg-sand-light focus:text-terracotta">Kiswahili</SelectItem>
                       </SelectContent>
                     </Select>
-                    <FormMessage />
+                    <FormMessage className="text-xs text-danger font-semibold" />
                   </FormItem>
                 )}
               />
 
-              <Button type="submit" className="w-full" disabled={isSaving}>
+              <Button
+                type="submit"
+                className="w-full bg-terracotta hover:bg-terracotta-dark text-white border-0 shadow-subtle cursor-pointer h-10 rounded-xl text-xs font-semibold mt-2"
+                disabled={isSaving}
+              >
                 <Save className="mr-2 h-4 w-4" />
                 {isSaving ? 'Saving...' : 'Save Changes'}
               </Button>
