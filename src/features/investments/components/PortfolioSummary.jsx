@@ -4,8 +4,6 @@ import {
   Layers, DollarSign,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorState } from '@/components/feedback';
 import { investmentsApi } from '../api/investmentsApi';
 import { formatKES } from '../../../utils/format';
@@ -17,9 +15,9 @@ function getConcentrationColor(score) {
 }
 
 function getConcentrationBg(score) {
-  if (score >= 80) return 'bg-success/10';
-  if (score >= 50) return 'bg-alert/10';
-  return 'bg-danger/10';
+  if (score >= 80) return 'bg-success/5';
+  if (score >= 50) return 'bg-alert/5';
+  return 'bg-danger/5';
 }
 
 export default function PortfolioSummary() {
@@ -36,12 +34,12 @@ export default function PortfolioSummary() {
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-2 gap-3">
         {[1, 2, 3, 4].map((i) => (
-          <Card key={i}>
-            <CardContent className="p-4">
-              <Skeleton className="h-4 w-16 mb-2" />
-              <Skeleton className="h-8 w-24" />
+          <Card key={i} className="border-sand">
+            <CardContent className="p-4 space-y-2">
+              <div className="skeleton-shimmer h-3.5 w-16 rounded" />
+              <div className="skeleton-shimmer h-7 w-24 rounded-lg" />
             </CardContent>
           </Card>
         ))}
@@ -60,57 +58,57 @@ export default function PortfolioSummary() {
   const bgClass = getConcentrationBg(score);
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {/* Portfolio Value */}
-      <div className="bg-sand-light rounded-xl p-4 text-center">
-        <p className="text-xs text-gray-500 mb-1">Total Portfolio Value</p>
-        <p className="text-3xl font-bold text-slate">
+      <div className="bg-sand border border-sand-dark/20 rounded-2xl p-5 text-center shadow-subtle">
+        <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider mb-1">Total Portfolio Value</p>
+        <p className="text-3xl font-extrabold text-slate font-numbers" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
           {formatKES(concentration.total_value)}
         </p>
-        <div className="flex items-center justify-center gap-1 mt-1">
+        <div className="flex items-center justify-center gap-1 mt-1.5">
           <TrendingUp className="h-3.5 w-3.5 text-success" />
-          <span className="text-xs text-success font-medium">
+          <span className="text-xs text-success font-semibold font-numbers" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
             {concentration.percentage_change ?? 0}% all time
           </span>
         </div>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 gap-2">
-        <Card>
+      <div className="grid grid-cols-2 gap-3">
+        <Card className="border-sand bg-white shadow-subtle card-lift">
           <CardContent className="p-4">
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center gap-2 mb-1.5">
               <Layers className="h-4 w-4 text-terracotta" />
-              <p className="text-xs text-gray-500">SACCOs</p>
+              <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider">SACCOs</p>
             </div>
-            <p className="text-xl font-bold text-slate">{concentration.total_saccos || 0}</p>
+            <p className="text-xl font-bold text-slate font-numbers animate-count-up" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{concentration.total_saccos || 0}</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border-sand bg-white shadow-subtle card-lift">
           <CardContent className="p-4">
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center gap-2 mb-1.5">
               <DollarSign className="h-4 w-4 text-blue-500" />
-              <p className="text-xs text-gray-500">Holdings</p>
+              <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Holdings</p>
             </div>
-            <p className="text-xl font-bold text-slate">{concentration.total_holdings || 0}</p>
+            <p className="text-xl font-bold text-slate font-numbers animate-count-up" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{concentration.total_holdings || 0}</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border-sand bg-white shadow-subtle card-lift">
           <CardContent className="p-4">
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center gap-2 mb-1.5">
               <PieChart className="h-4 w-4 text-purple-500" />
-              <p className="text-xs text-gray-500">Diversification</p>
+              <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Diversification</p>
             </div>
-            <p className={`text-xl font-bold ${colorClass}`}>
+            <p className={`text-xl font-bold font-numbers animate-count-up ${colorClass}`} style={{ fontFamily: "'JetBrains Mono', monospace" }}>
               {score}/100
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border-sand bg-white shadow-subtle card-lift">
           <CardContent className="p-4">
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center gap-2 mb-1.5">
               <Shield className="h-4 w-4 text-success" />
-              <p className="text-xs text-gray-500">Risk Level</p>
+              <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Risk Level</p>
             </div>
             <p className="text-xl font-bold text-slate">
               {score >= 80 ? 'Low' : score >= 50 ? 'Medium' : 'High'}
@@ -121,18 +119,18 @@ export default function PortfolioSummary() {
 
       {/* Concentration Warnings */}
       {concentration.warnings?.length > 0 && (
-        <Card className={`border-0 ${bgClass}`}>
+        <Card className={`border-0 border-l-4 ${score >= 80 ? 'border-l-success' : score >= 50 ? 'border-l-alert' : 'border-l-danger'} ${bgClass} rounded-xl shadow-subtle`}>
           <CardContent className="p-4">
-            <div className="flex items-start gap-2">
+            <div className="flex items-start gap-2.5">
               <AlertTriangle className="h-5 w-5 text-alert flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-semibold text-slate mb-2">
+                <p className="text-sm font-bold text-slate mb-2">
                   Concentration Warning{concentration.warnings.length > 1 ? 's' : ''}
                 </p>
-                <ul className="space-y-1">
+                <ul className="space-y-1.5">
                   {concentration.warnings.map((warning, i) => (
-                    <li key={i} className="text-xs text-gray-600 flex items-start gap-1">
-                      <span>•</span>
+                    <li key={i} className="text-xs text-gray-500 font-medium flex items-start gap-1">
+                      <span className="text-slate">&bull;</span>
                       <span>{warning.message || warning}</span>
                     </li>
                   ))}
