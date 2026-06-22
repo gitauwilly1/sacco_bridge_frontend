@@ -13,15 +13,15 @@ import { formatDate, formatTimeAgo } from '../../../utils/format';
 import DataTable from './DataTable';
 
 const roleColors = {
-  PLATFORM_ADMIN: 'bg-danger/10 text-danger',
-  SUPPORT_AGENT: 'bg-blue-500/10 text-blue-500',
-  MEMBER: 'bg-gray-100 text-gray-600',
+  PLATFORM_ADMIN: 'bg-danger/10 text-danger border-danger/20',
+  SUPPORT_AGENT: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+  MEMBER: 'bg-gray-100 text-gray-600 border-gray-200',
 };
 
 const statusColors = {
-  active: 'bg-success/10 text-success',
-  suspended: 'bg-alert/10 text-alert',
-  deactivated: 'bg-gray-200 text-gray-600',
+  active: 'bg-success/10 text-success border border-success/20',
+  suspended: 'bg-alert/10 text-alert border border-alert/20',
+  deactivated: 'bg-gray-200 text-gray-600 border border-gray-300',
 };
 
 export default function UserList() {
@@ -75,16 +75,16 @@ export default function UserList() {
       sortable: true,
       render: (_, row) => (
         <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-full bg-sand-light flex items-center justify-center">
-            <span className="text-xs font-bold text-terracotta">
+          <div className="h-8 w-8 rounded-full bg-sand-light border border-sand/30 flex items-center justify-center flex-shrink-0 shadow-subtle">
+            <span className="text-xs font-bold text-terracotta font-heading">
               {row.first_name?.[0]}{row.last_name?.[0]}
             </span>
           </div>
           <div>
-            <p className="font-medium text-slate">
+            <p className="font-bold text-slate text-xs">
               {row.first_name} {row.last_name}
             </p>
-            <p className="text-xs text-gray-500">{row.email}</p>
+            <p className="text-[10px] text-gray-400 font-medium mt-0.5">{row.email}</p>
           </div>
         </div>
       ),
@@ -94,7 +94,7 @@ export default function UserList() {
       header: 'Role',
       sortable: true,
       render: (value) => (
-        <Badge className={roleColors[value] || 'bg-gray-100 text-gray-600'} variant="outline">
+        <Badge className={`${roleColors[value] || 'bg-gray-100 text-gray-605 border-gray-200'} text-[10px] font-extrabold rounded-full px-2 py-0.5 shadow-none`} variant="outline">
           {value?.replace('_', ' ') || 'Member'}
         </Badge>
       ),
@@ -104,7 +104,7 @@ export default function UserList() {
       header: 'Status',
       sortable: true,
       render: (value) => (
-        <Badge className={statusColors[value] || 'bg-gray-100 text-gray-600'} variant="outline">
+        <Badge className={`${statusColors[value] || 'bg-gray-100 text-gray-605 border-gray-200'} text-[10px] font-extrabold rounded-full px-2 py-0.5 shadow-none`} variant="outline">
           {value}
         </Badge>
       ),
@@ -114,13 +114,13 @@ export default function UserList() {
       header: 'KYC',
       render: (value) => (
         <Badge
-          className={
+          className={`text-[10px] font-extrabold rounded-full px-2 py-0.5 shadow-none ${
             value === 'verified'
-              ? 'bg-success/10 text-success'
+              ? 'bg-success/10 text-success border border-success/20'
               : value === 'pending'
-              ? 'bg-alert/10 text-alert'
-              : 'bg-gray-100 text-gray-500'
-          }
+              ? 'bg-alert/10 text-alert border border-alert/20'
+              : 'bg-gray-100 text-gray-500 border border-gray-200'
+          }`}
           variant="outline"
         >
           {value || 'unverified'}
@@ -132,17 +132,18 @@ export default function UserList() {
       header: 'Joined',
       sortable: true,
       render: (value) => (
-        <span className="text-xs text-gray-500">{formatDate(value)}</span>
+        <span className="text-[11px] text-gray-405 font-medium font-numbers">{formatDate(value)}</span>
       ),
     },
   ];
 
   const rowActions = (row) => (
-    <div className="flex items-center gap-1 justify-end">
+    <div className="flex items-center gap-1.5 justify-end">
       <Button
         size="sm"
         variant="ghost"
         onClick={() => navigate({ to: `/admin/users/${row.id}` })}
+        className="text-slate/75 hover:text-terracotta hover:bg-sand-light/50 h-8 rounded-lg text-xs font-semibold px-2 cursor-pointer transition-all"
       >
         View
       </Button>
@@ -150,7 +151,7 @@ export default function UserList() {
         <Button
           size="sm"
           variant="ghost"
-          className="text-alert"
+          className="text-alert hover:bg-alert/10 hover:text-alert h-8 rounded-lg text-xs font-semibold px-2 cursor-pointer transition-all"
           onClick={() => {
             if (window.confirm(`Suspend ${row.first_name} ${row.last_name}?`)) {
               suspendMutation.mutate({ userId: row.id, suspend: true });
@@ -163,7 +164,7 @@ export default function UserList() {
         <Button
           size="sm"
           variant="ghost"
-          className="text-success"
+          className="text-success hover:bg-success/10 hover:text-success h-8 rounded-lg text-xs font-semibold px-2 cursor-pointer transition-all"
           onClick={() => {
             suspendMutation.mutate({ userId: row.id, suspend: false });
           }}
@@ -188,7 +189,7 @@ export default function UserList() {
               setRole(e.target.value);
               setPage(1);
             }}
-            className="text-xs border rounded-md px-2 py-1.5 bg-white"
+            className="text-xs border border-sand-dark/30 rounded-xl px-2.5 py-1.5 bg-white text-slate font-bold cursor-pointer focus:ring-1 focus:ring-terracotta"
           >
             <option value="all">All Roles</option>
             <option value="PLATFORM_ADMIN">Admin</option>
@@ -201,15 +202,15 @@ export default function UserList() {
               setStatus(e.target.value);
               setPage(1);
             }}
-            className="text-xs border rounded-md px-2 py-1.5 bg-white"
+            className="text-xs border border-sand-dark/30 rounded-xl px-2.5 py-1.5 bg-white text-slate font-bold cursor-pointer focus:ring-1 focus:ring-terracotta"
           >
             <option value="all">All Status</option>
             <option value="active">Active</option>
             <option value="suspended">Suspended</option>
             <option value="deactivated">Deactivated</option>
           </select>
-          <Button size="sm" variant="outline" onClick={() => refetch()}>
-            <RefreshCw className="h-3 w-3" />
+          <Button size="sm" variant="outline" onClick={() => refetch()} className="border-sand hover:bg-sand-light text-slate cursor-pointer h-8 w-8 p-0 rounded-lg">
+            <RefreshCw className="h-3.5 w-3.5" />
           </Button>
         </div>
       </div>
