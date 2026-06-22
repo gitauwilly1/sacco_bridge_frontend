@@ -125,14 +125,18 @@ export default function RecordContribution() {
   return (
     <div className="pb-4">
       {/* Header */}
-      <div className="sticky top-14 z-30 bg-white border-b px-4 py-3">
+      <div className="sticky top-14 z-30 bg-white/80 backdrop-blur-lg border-b border-sand px-4 py-3">
         <div className="flex items-center gap-3">
-          <button onClick={() => navigate({ to: `/chamas/${chamaId}` })}>
+          <button
+            onClick={() => navigate({ to: `/chamas/${chamaId}` })}
+            className="p-1 rounded-lg text-slate hover:bg-sand-light transition-colors"
+            aria-label="Back to chama"
+          >
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div className="flex-1">
-            <h1 className="text-lg font-bold text-slate">Record Contribution</h1>
-            <p className="text-xs text-gray-500">Record a member contribution</p>
+            <h1 className="text-base font-bold font-heading text-slate leading-tight">Record Contribution</h1>
+            <p className="text-[11px] text-gray-400 font-medium uppercase tracking-wider mt-0.5">Record a member contribution</p>
           </div>
         </div>
       </div>
@@ -141,13 +145,13 @@ export default function RecordContribution() {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             {/* Member Selection */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Select Member</CardTitle>
-                <CardDescription>Choose the contributing member</CardDescription>
+            <Card className="border-sand bg-white shadow-subtle">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-bold text-slate">Select Member</CardTitle>
+                <CardDescription className="text-xs text-gray-400">Choose the contributing member</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
-                <div className="relative">
+                <div className="relative mb-2">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <Input
                     placeholder="Search members..."
@@ -163,43 +167,43 @@ export default function RecordContribution() {
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <div className="space-y-1 max-h-48 overflow-y-auto">
+                        <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
                           {filteredMembers.map((member) => (
                             <button
                               key={member.id}
                               type="button"
                               onClick={() => field.onChange(member.id.toString())}
-                              className={`w-full flex items-center gap-3 p-3 rounded-lg border transition-colors ${
+                              className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-colors ${
                                 field.value === member.id.toString()
                                   ? 'border-terracotta bg-terracotta/5'
-                                  : 'border-gray-200 hover:border-terracotta/50'
+                                  : 'border-sand hover:border-terracotta/40 bg-white'
                               }`}
                             >
-                              <Avatar className="h-10 w-10">
-                                <AvatarFallback className="bg-sand-light text-terracotta text-sm">
+                              <Avatar className="h-10 w-10 ring-2 ring-sand/30 flex-shrink-0">
+                                <AvatarFallback className="bg-sand-light text-terracotta font-semibold text-sm">
                                   {getInitials(
                                     member.user_name || member.user?.first_name,
                                     ''
                                   )}
                                 </AvatarFallback>
                               </Avatar>
-                              <div className="flex-1 text-left">
-                                <p className="text-sm font-medium text-slate">
+                              <div className="flex-1 text-left min-w-0">
+                                <p className="text-sm font-semibold text-slate truncate">
                                   {member.user_name || member.user?.full_name}
                                 </p>
-                                <p className="text-xs text-gray-500">
+                                <p className="text-xs text-gray-400 font-medium truncate mt-0.5">
                                   {member.user_email || member.user?.email}
                                 </p>
                               </div>
                               {member.total_contributions > 0 && (
-                                <span className="text-xs text-success font-medium">
+                                <span className="text-xs text-success font-bold font-numbers flex-shrink-0" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
                                   {formatKES(member.total_contributions)}
                                 </span>
                               )}
                             </button>
                           ))}
                           {filteredMembers.length === 0 && (
-                            <p className="text-sm text-gray-500 text-center py-4">
+                            <p className="text-sm text-gray-400 text-center py-4 font-medium">
                               No members found
                             </p>
                           )}
@@ -211,9 +215,9 @@ export default function RecordContribution() {
                 />
 
                 {selectedMember && (
-                  <div className="bg-sand-light rounded-lg p-3 text-sm">
-                    <span className="text-gray-500">Selected: </span>
-                    <span className="font-medium text-slate">
+                  <div className="bg-sand-light rounded-lg p-3 text-xs border border-sand/40">
+                    <span className="text-gray-400 font-medium">Selected: </span>
+                    <span className="font-semibold text-slate">
                       {selectedMember.user_name || selectedMember.user?.full_name}
                     </span>
                   </div>
@@ -222,10 +226,10 @@ export default function RecordContribution() {
             </Card>
 
             {/* Contribution Details */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Contribution Details</CardTitle>
-                <CardDescription>Enter the contribution information</CardDescription>
+            <Card className="border-sand bg-white shadow-subtle">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-bold text-slate">Contribution Details</CardTitle>
+                <CardDescription className="text-xs text-gray-400">Enter the contribution information</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <FormField
@@ -233,13 +237,15 @@ export default function RecordContribution() {
                   name="amount"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Amount (KES)</FormLabel>
+                      <FormLabel className="text-slate font-medium text-xs">Amount (KES)</FormLabel>
                       <FormControl>
                         <Input
                           placeholder="e.g., 1000"
                           type="number"
                           min="0"
                           step="0.01"
+                          className="font-numbers"
+                          style={{ fontFamily: "'JetBrains Mono', monospace" }}
                           {...field}
                         />
                       </FormControl>
@@ -254,7 +260,7 @@ export default function RecordContribution() {
                     name="period_start"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Period Start</FormLabel>
+                        <FormLabel className="text-slate font-medium text-xs">Period Start</FormLabel>
                         <FormControl>
                           <Input type="date" {...field} />
                         </FormControl>
@@ -268,7 +274,7 @@ export default function RecordContribution() {
                     name="period_end"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Period End</FormLabel>
+                        <FormLabel className="text-slate font-medium text-xs">Period End</FormLabel>
                         <FormControl>
                           <Input type="date" {...field} />
                         </FormControl>
@@ -283,16 +289,16 @@ export default function RecordContribution() {
                   name="payment_method"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Payment Method</FormLabel>
+                      <FormLabel className="text-slate font-medium text-xs">Payment Method</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
-                          <SelectTrigger>
+                          <SelectTrigger className="border-sand bg-white">
                             <SelectValue placeholder="Select payment method" />
                           </SelectTrigger>
                         </FormControl>
-                        <SelectContent>
+                        <SelectContent className="border-sand bg-white">
                           {Object.entries(paymentMethodLabels).map(([value, label]) => (
-                            <SelectItem key={value} value={value}>
+                            <SelectItem key={value} value={value} className="focus:bg-sand-light focus:text-terracotta">
                               {label}
                             </SelectItem>
                           ))}
@@ -308,7 +314,7 @@ export default function RecordContribution() {
                   name="payment_reference"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Payment Reference (Optional)</FormLabel>
+                      <FormLabel className="text-slate font-medium text-xs">Payment Reference (Optional)</FormLabel>
                       <FormControl>
                         <Input placeholder="e.g., M-Pesa transaction code" {...field} />
                       </FormControl>
@@ -322,7 +328,7 @@ export default function RecordContribution() {
                   name="notes"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Notes (Optional)</FormLabel>
+                      <FormLabel className="text-slate font-medium text-xs">Notes (Optional)</FormLabel>
                       <FormControl>
                         <Input placeholder="Any additional notes..." {...field} />
                       </FormControl>
@@ -334,18 +340,25 @@ export default function RecordContribution() {
             </Card>
 
             {/* Submit */}
-            <div className="flex gap-3">
+            <div className="flex gap-3 pt-2">
               <Button
                 type="button"
                 variant="outline"
-                className="flex-1"
+                className="flex-1 border-sand hover:bg-sand-light text-slate transition-all"
                 onClick={() => navigate({ to: `/chamas/${chamaId}` })}
               >
                 Cancel
               </Button>
-              <Button type="submit" className="flex-1" disabled={isLoading}>
+              <Button
+                type="submit"
+                className="flex-1 bg-terracotta hover:bg-clay text-white shadow-sm transition-all duration-150 active:scale-[0.98]"
+                disabled={isLoading}
+              >
                 {isLoading ? (
-                  'Recording...'
+                  <span className="flex items-center gap-2">
+                    <span className="h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                    Recording...
+                  </span>
                 ) : (
                   <>
                     <Save className="h-4 w-4 mr-2" />
