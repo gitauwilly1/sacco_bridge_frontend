@@ -36,6 +36,14 @@
   --font-heading: 'Switzer', system-ui, sans-serif;
   --font-body: 'IBM Plex Sans', system-ui, sans-serif;
   --font-numbers: 'JetBrains Mono', 'IBM Plex Mono', monospace;
+
+  --animate-bell-ring: bell-ring 2.5s ease-in-out infinite;
+  @keyframes bell-ring {
+    0%, 100% { transform: rotate(0); }
+    10%, 30% { transform: rotate(10deg); }
+    20%, 40% { transform: rotate(-10deg); }
+    50% { transform: rotate(0); }
+  }
 }
 
 /* ─── Base Styles ──────────────────────────────────────────────────── */
