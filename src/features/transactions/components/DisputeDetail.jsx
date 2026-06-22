@@ -13,10 +13,10 @@ import { transactionApi } from '../api/transactionApi';
 import { formatKES, formatDate, formatDateTime } from '../../../utils/format';
 
 const disputeStatusConfig = {
-  open: { label: 'Open', color: 'bg-danger/10 text-danger', icon: AlertCircle },
-  under_review: { label: 'Under Review', color: 'bg-alert/10 text-alert', icon: Clock },
-  resolved: { label: 'Resolved', color: 'bg-success/10 text-success', icon: CheckCircle2 },
-  closed: { label: 'Closed', color: 'bg-gray-200 text-gray-600', icon: CheckCircle2 },
+  open: { label: 'Open', color: 'bg-danger/10 text-danger border border-danger/20', icon: AlertCircle },
+  under_review: { label: 'Under Review', color: 'bg-alert/10 text-alert border border-alert/20', icon: Clock },
+  resolved: { label: 'Resolved', color: 'bg-success/10 text-success border border-success/20', icon: CheckCircle2 },
+  closed: { label: 'Closed', color: 'bg-gray-100 text-gray-550 border border-gray-200', icon: CheckCircle2 },
 };
 
 export default function DisputeDetail() {
@@ -47,21 +47,25 @@ export default function DisputeDetail() {
   return (
     <div className="pb-4">
       {/* Header */}
-      <div className="sticky top-14 z-30 bg-white border-b px-4 py-3">
+      <div className="sticky top-14 z-30 bg-white/80 backdrop-blur-lg border-b border-sand px-4 py-3">
         <div className="flex items-center gap-3">
-          <button onClick={() => navigate({ to: '/disputes' })}>
+          <button
+            onClick={() => navigate({ to: '/disputes' })}
+            className="p-1 rounded-lg text-slate hover:bg-sand-light transition-colors"
+            aria-label="Back to disputes"
+          >
             <ArrowLeft className="h-5 w-5" />
           </button>
-          <div className="flex-1">
-            <h1 className="text-lg font-bold text-slate">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-base font-bold font-heading text-slate leading-tight truncate">
               Dispute #{dispute.id}
             </h1>
-            <div className="flex items-center gap-2 mt-0.5">
-              <Badge className={status.color} variant="outline">
-                <StatusIcon className="h-3 w-3 mr-0.5" />
+            <div className="flex items-center gap-2 mt-1">
+              <Badge className={`px-2 py-0.5 rounded-full text-[10px] font-semibold shadow-none capitalize ${status.color}`} variant="outline">
+                <StatusIcon className="h-3.5 w-3.5 mr-0.5" />
                 {status.label}
               </Badge>
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-gray-400 font-medium">
                 {formatDate(dispute.created_at)}
               </span>
             </div>
@@ -71,35 +75,38 @@ export default function DisputeDetail() {
 
       <div className="p-4 space-y-4">
         {/* Settlement Reference */}
-        <Card>
+        <Card className="border-sand bg-white shadow-subtle">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm">Settlement Reference</CardTitle>
+            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-gray-400">Settlement Reference</CardTitle>
           </CardHeader>
           <CardContent>
             <button
-              className="w-full text-left"
+              className="w-full text-left bg-sand-light/50 border border-sand/40 hover:bg-sand-light hover:shadow-subtle rounded-xl p-3.5 transition-all text-xs font-medium cursor-pointer"
               onClick={() => navigate({ to: `/transactions/${dispute.settlement_id}` })}
             >
-              <div className="grid grid-cols-2 gap-3 text-sm">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-xs text-gray-500">Settlement ID</p>
-                  <p className="font-semibold text-terracotta">
+                  <p className="text-[10px] uppercase tracking-wider text-gray-400 mb-0.5">Settlement ID</p>
+                  <p className="text-sm font-bold text-terracotta">
                     #{dispute.settlement_id}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500">Amount</p>
-                  <p className="font-semibold text-slate">
+                  <p className="text-[10px] uppercase tracking-wider text-gray-400 mb-0.5">Amount</p>
+                  <p className="text-sm font-bold text-slate font-numbers" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
                     {formatKES(dispute.settlement_amount)}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500">SACCO</p>
-                  <p className="font-semibold text-slate">{dispute.sacco_name}</p>
+                  <p className="text-[10px] uppercase tracking-wider text-gray-400 mb-0.5">SACCO</p>
+                  <p className="text-sm font-bold text-slate truncate">{dispute.sacco_name}</p>
                 </div>
-                <div>
-                  <p className="text-xs text-gray-500">View</p>
-                  <p className="text-terracotta text-sm">→</p>
+                <div className="flex items-end justify-between">
+                  <div>
+                    <p className="text-[10px] uppercase tracking-wider text-gray-400 mb-0.5">Details</p>
+                    <p className="text-xs font-bold text-terracotta">View Transaction</p>
+                  </div>
+                  <p className="text-terracotta text-sm font-bold">→</p>
                 </div>
               </div>
             </button>
@@ -107,18 +114,18 @@ export default function DisputeDetail() {
         </Card>
 
         {/* Dispute Reason */}
-        <Card>
+        <Card className="border-sand bg-white shadow-subtle">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm flex items-center gap-2">
+            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-gray-400 flex items-center gap-2">
               <AlertCircle className="h-4 w-4 text-terracotta" />
               Reason
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm font-semibold text-slate mb-2">
+            <p className="text-sm font-bold text-slate mb-2">
               {dispute.reason_display || dispute.reason}
             </p>
-            <p className="text-sm text-gray-600 leading-relaxed">
+            <p className="text-xs text-slate-dark/85 leading-relaxed bg-sand-light/30 border border-sand/40 rounded-xl p-3 font-medium">
               {dispute.description}
             </p>
           </CardContent>
@@ -126,46 +133,48 @@ export default function DisputeDetail() {
 
         {/* Resolution */}
         {dispute.resolution && (
-          <Card className="border-success/30">
+          <Card className="border-success/20 bg-success/5 text-success rounded-xl shadow-none">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center gap-2 text-success">
+              <CardTitle className="text-xs font-semibold uppercase tracking-wider text-success flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4" />
                 Resolution
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="text-sm text-gray-600">{dispute.resolution}</p>
-              {dispute.resolved_at && (
-                <p className="text-xs text-gray-400 mt-2">
-                  Resolved on {formatDate(dispute.resolved_at)}
-                </p>
-              )}
-              {dispute.resolved_by && (
-                <p className="text-xs text-gray-400">
-                  by {dispute.resolved_by}
-                </p>
-              )}
+            <CardContent className="space-y-2">
+              <p className="text-xs text-slate-dark/90 leading-relaxed font-medium">{dispute.resolution}</p>
+              <div className="pt-2 border-t border-success/15 flex items-center justify-between text-[10px] font-semibold text-success/80">
+                {dispute.resolved_at && (
+                  <span>
+                    Resolved on {formatDate(dispute.resolved_at)}
+                  </span>
+                )}
+                {dispute.resolved_by && (
+                  <span>
+                    by {dispute.resolved_by}
+                  </span>
+                )}
+              </div>
             </CardContent>
           </Card>
         )}
 
         {/* Updates/Timeline */}
         {dispute.updates?.length > 0 && (
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center gap-2">
+          <Card className="border-sand bg-white shadow-subtle">
+            <CardHeader className="pb-2.5">
+              <CardTitle className="text-xs font-semibold uppercase tracking-wider text-gray-400 flex items-center gap-2">
                 <MessageSquare className="h-4 w-4 text-terracotta" />
                 Updates
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-3.5">
               {dispute.updates.map((update, index) => (
                 <div
                   key={update.id || index}
-                  className="border-l-2 border-gray-200 pl-3 py-1"
+                  className="border-l-2 border-terracotta/40 pl-3.5 py-0.5 space-y-1.5"
                 >
-                  <p className="text-sm text-gray-600">{update.message || update.content}</p>
-                  <p className="text-xs text-gray-400 mt-1">
+                  <p className="text-xs text-slate font-medium leading-relaxed">{update.message || update.content}</p>
+                  <p className="text-[10px] text-gray-400 font-semibold font-numbers" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
                     {formatDateTime(update.created_at)}
                     {update.author && ` · ${update.author}`}
                   </p>
@@ -177,12 +186,12 @@ export default function DisputeDetail() {
 
         {/* Status Info */}
         {dispute.status === 'open' && (
-          <Card className="bg-blue-50 border-0">
+          <Card className="border-blue-500/20 bg-blue-500/5 text-slate rounded-xl shadow-none">
             <CardContent className="p-4 flex items-start gap-3">
               <Clock className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="text-sm font-semibold text-slate">Awaiting Review</p>
-                <p className="text-xs text-gray-600 mt-1">
+              <div className="text-xs font-medium">
+                <p className="font-bold text-slate">Awaiting Review</p>
+                <p className="text-gray-500 mt-1 leading-relaxed">
                   A trustee will review your dispute. You'll be notified when there's an update.
                 </p>
               </div>
