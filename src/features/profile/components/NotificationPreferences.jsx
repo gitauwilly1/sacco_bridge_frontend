@@ -61,16 +61,16 @@ const channels = [
 
 function PreferencesSkeleton() {
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {[1, 2, 3, 4].map((i) => (
-        <Card key={i}>
-          <CardContent className="p-4">
-            <Skeleton className="h-5 w-32 mb-2" />
-            <Skeleton className="h-3 w-48 mb-3" />
-            <div className="flex gap-4">
-              <Skeleton className="h-6 w-16" />
-              <Skeleton className="h-6 w-16" />
-              <Skeleton className="h-6 w-16" />
+        <Card key={i} className="border-sand">
+          <CardContent className="p-4 space-y-2.5">
+            <div className="skeleton-shimmer h-4 w-32 rounded-lg" />
+            <div className="skeleton-shimmer h-3 w-48 rounded" />
+            <div className="flex gap-3">
+              <div className="skeleton-shimmer h-6 w-16 rounded-full" />
+              <div className="skeleton-shimmer h-6 w-16 rounded-full" />
+              <div className="skeleton-shimmer h-6 w-16 rounded-full" />
             </div>
           </CardContent>
         </Card>
@@ -137,24 +137,24 @@ export default function NotificationPreferences() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {notificationCategories.map((category) => {
         const Icon = category.icon;
         const catPrefs = preferences[category.key] || {};
 
         return (
-          <Card key={category.key}>
+          <Card key={category.key} className="border-sand bg-white shadow-subtle">
             <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-1">
-                <Icon className="h-4 w-4 text-terracotta" />
-                <h3 className="text-sm font-semibold text-slate">
+              <div className="flex items-center gap-2 mb-1.5">
+                <Icon className="h-4.5 w-4.5 text-terracotta" />
+                <h3 className="text-sm font-bold text-slate">
                   {category.label}
                 </h3>
               </div>
-              <p className="text-xs text-gray-500 mb-3">
+              <p className="text-xs text-gray-400 font-medium mb-3.5 leading-relaxed">
                 {category.description}
               </p>
-              <div className="flex gap-3">
+              <div className="flex gap-2.5">
                 {channels.map((channel) => {
                   const ChannelIcon = channel.icon;
                   const isActive = catPrefs[channel.key] !== false; // default true
@@ -163,13 +163,13 @@ export default function NotificationPreferences() {
                     <button
                       key={channel.key}
                       onClick={() => handleToggle(category.key, channel.key)}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs transition-colors ${
+                      className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[11px] font-bold cursor-pointer transition-all border ${
                         isActive
-                          ? 'bg-terracotta/10 text-terracotta border border-terracotta/30'
-                          : 'bg-gray-100 text-gray-400 border border-gray-200'
+                          ? 'bg-terracotta/10 text-terracotta border-terracotta/20 shadow-none'
+                          : 'bg-gray-50 text-gray-400 border-gray-200/60 hover:bg-gray-100 hover:text-slate'
                       }`}
                     >
-                      <ChannelIcon className="h-3 w-3" />
+                      <ChannelIcon className="h-3.5 w-3.5" />
                       {channel.label}
                     </button>
                   );
@@ -178,10 +178,10 @@ export default function NotificationPreferences() {
             </CardContent>
           </Card>
         );
-      )}
+      })}
 
       <Button
-        className="w-full"
+        className="w-full bg-terracotta hover:bg-terracotta-dark text-white border-0 shadow-subtle cursor-pointer h-10 rounded-xl text-xs font-semibold mt-2"
         onClick={handleSave}
         disabled={saveMutation.isPending}
       >
