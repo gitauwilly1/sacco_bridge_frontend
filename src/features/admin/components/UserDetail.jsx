@@ -16,9 +16,9 @@ import { adminApi } from '../api/adminApi';
 import { formatDate } from '../../../utils/format';
 
 const roleColors = {
-  PLATFORM_ADMIN: 'bg-danger/10 text-danger',
-  SUPPORT_AGENT: 'bg-blue-500/10 text-blue-500',
-  MEMBER: 'bg-gray-100 text-gray-600',
+  PLATFORM_ADMIN: 'bg-danger/10 text-danger border-danger/20',
+  SUPPORT_AGENT: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+  MEMBER: 'bg-sand text-slate border-sand-dark/20',
 };
 
 export default function UserDetail() {
@@ -63,7 +63,10 @@ export default function UserDetail() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <button onClick={() => navigate({ to: '/admin/users' })}>
+        <button 
+          onClick={() => navigate({ to: '/admin/users' })}
+          className="h-9 w-9 flex items-center justify-center rounded-lg border border-sand bg-white/50 text-slate hover:bg-sand-light hover:text-terracotta transition-colors shadow-subtle"
+        >
           <ArrowLeft className="h-5 w-5" />
         </button>
         <div className="flex-1">
@@ -75,24 +78,24 @@ export default function UserDetail() {
       </div>
 
       {/* Profile Card */}
-      <Card>
+      <Card className="glass-card border-sand bg-white/95 shadow-subtle rounded-2xl overflow-hidden">
         <CardContent className="p-6">
           <div className="flex items-center gap-4 mb-4">
-            <div className="h-16 w-16 rounded-full bg-sand-light flex items-center justify-center">
+            <div className="h-16 w-16 rounded-full bg-sand-light flex items-center justify-center border border-sand">
               <span className="text-2xl font-bold text-terracotta">
                 {user.first_name?.[0]}{user.last_name?.[0]}
               </span>
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <Badge className={roleColors[user.role] || 'bg-gray-100'} variant="outline">
+                <Badge className={`${roleColors[user.role] || 'bg-sand text-slate border-sand-dark/20'} border`} variant="outline">
                   {user.role?.replace('_', ' ') || 'Member'}
                 </Badge>
                 <Badge
                   className={
                     user.status === 'active'
-                      ? 'bg-success/10 text-success'
-                      : 'bg-danger/10 text-danger'
+                      ? 'bg-success/10 text-success border-success/20 border'
+                      : 'bg-danger/10 text-danger border-danger/20 border'
                   }
                   variant="outline"
                 >
@@ -101,28 +104,28 @@ export default function UserDetail() {
               </div>
               <div className="flex items-center gap-3 mt-2 text-sm text-gray-500">
                 <span className="flex items-center gap-1">
-                  <Mail className="h-3.5 w-3.5" /> {user.email}
+                  <Mail className="h-3.5 w-3.5 text-gray-400" /> {user.email}
                 </span>
                 {user.phone_number && (
                   <span className="flex items-center gap-1">
-                    <Phone className="h-3.5 w-3.5" /> {user.phone_number}
+                    <Phone className="h-3.5 w-3.5 text-gray-400" /> {user.phone_number}
                   </span>
                 )}
               </div>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-3 text-sm">
+          <div className="grid grid-cols-2 gap-3 text-sm pt-4 border-t border-sand/30">
             <div>
-              <p className="text-xs text-gray-500">Joined</p>
-              <p className="font-medium text-slate">{formatDate(user.created_at)}</p>
+              <p className="text-xs text-gray-400">Joined</p>
+              <p className="font-semibold text-slate">{formatDate(user.created_at)}</p>
             </div>
             <div>
-              <p className="text-xs text-gray-500">KYC Status</p>
+              <p className="text-xs text-gray-400">KYC Status</p>
               <Badge
                 className={
                   user.kyc_status === 'verified'
-                    ? 'bg-success/10 text-success'
-                    : 'bg-alert/10 text-alert'
+                    ? 'bg-success/10 text-success border-success/20 border'
+                    : 'bg-alert/10 text-alert border-alert/20 border'
                 }
                 variant="outline"
               >
@@ -134,34 +137,34 @@ export default function UserDetail() {
       </Card>
 
       {/* Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Admin Actions</CardTitle>
+      <Card className="glass-card border-sand bg-white/95 shadow-subtle rounded-2xl overflow-hidden">
+        <CardHeader className="border-b border-sand/30 bg-sand-light/10">
+          <CardTitle className="text-base text-slate font-bold">Admin Actions</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-4 p-6">
           {/* KYC Verification */}
           {user.kyc_status === 'pending' && (
-            <div className="flex gap-2">
+            <div className="flex gap-3">
               <Button
                 size="sm"
-                className="flex-1"
+                className="flex-1 bg-terracotta hover:bg-clay text-white shadow-subtle border-none"
                 onClick={() =>
                   manageMutation.mutate({ action: 'verify_identity' })
                 }
                 disabled={manageMutation.isPending}
               >
-                <CheckCircle2 className="h-4 w-4 mr-1" /> Verify Identity
+                <CheckCircle2 className="h-4 w-4 mr-1.5" /> Verify Identity
               </Button>
               <Button
                 size="sm"
                 variant="outline"
-                className="flex-1"
+                className="flex-1 border-sand hover:bg-sand-light text-slate"
                 onClick={() =>
                   manageMutation.mutate({ action: 'reject_identity' })
                 }
                 disabled={manageMutation.isPending}
               >
-                <XCircle className="h-4 w-4 mr-1" /> Reject
+                <XCircle className="h-4 w-4 mr-1.5 text-danger" /> Reject
               </Button>
             </div>
           )}
@@ -171,7 +174,7 @@ export default function UserDetail() {
             <Button
               size="sm"
               variant="outline"
-              className="w-full text-alert"
+              className="w-full border-danger/30 hover:border-danger hover:bg-danger/5 text-danger font-medium transition-colors"
               onClick={() => {
                 if (window.confirm(`Suspend ${user.first_name} ${user.last_name}?`)) {
                   manageMutation.mutate({ action: 'suspend' });
@@ -179,45 +182,45 @@ export default function UserDetail() {
               }}
               disabled={manageMutation.isPending}
             >
-              <Ban className="h-4 w-4 mr-1" /> Suspend User
+              <Ban className="h-4 w-4 mr-1.5" /> Suspend User
             </Button>
           ) : (
             <Button
               size="sm"
               variant="outline"
-              className="w-full text-success"
+              className="w-full border-success/30 hover:border-success hover:bg-success/5 text-success font-medium transition-colors"
               onClick={() => manageMutation.mutate({ action: 'activate' })}
               disabled={manageMutation.isPending}
             >
-              <CheckCircle2 className="h-4 w-4 mr-1" /> Activate User
+              <CheckCircle2 className="h-4 w-4 mr-1.5" /> Activate User
             </Button>
           )}
 
           {/* Role Management */}
-          <div className="border-t pt-3">
-            <p className="text-xs text-gray-500 mb-2">Change Role</p>
-            <div className="flex gap-2">
+          <div className="border-t border-sand/30 pt-4">
+            <p className="text-xs font-semibold text-slate/70 mb-3">Change Role</p>
+            <div className="flex gap-3">
               <Button
                 size="sm"
                 variant="outline"
-                className="flex-1"
+                className="flex-1 border-sand hover:bg-sand-light text-slate transition-colors"
                 onClick={() =>
                   manageMutation.mutate({ action: 'add_role', role: 'SUPPORT_AGENT' })
                 }
                 disabled={manageMutation.isPending}
               >
-                <UserPlus className="h-4 w-4 mr-1" /> Make Support
+                <UserPlus className="h-4 w-4 mr-1.5 text-terracotta" /> Make Support
               </Button>
               <Button
                 size="sm"
                 variant="outline"
-                className="flex-1"
+                className="flex-1 border-sand hover:bg-sand-light text-slate transition-colors"
                 onClick={() =>
                   manageMutation.mutate({ action: 'remove_role' })
                 }
                 disabled={manageMutation.isPending}
               >
-                <Shield className="h-4 w-4 mr-1" /> Remove Role
+                <Shield className="h-4 w-4 mr-1.5 text-slate/60" /> Remove Role
               </Button>
             </div>
           </div>
