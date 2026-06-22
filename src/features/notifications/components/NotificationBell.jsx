@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { Bell } from 'lucide-react';
@@ -8,6 +8,7 @@ import { notificationApi } from '../api/notificationApi';
 export default function NotificationBell() {
   const navigate = useNavigate();
   const { unreadCount, setUnreadCount } = useNotificationStore();
+  const [isNewChange, setIsNewChange] = useState(false);
 
   const { data } = useQuery({
     queryKey: ['unread-count'],
@@ -22,14 +23,26 @@ export default function NotificationBell() {
     }
   }, [data, setUnreadCount]);
 
+  useEffect(() => {
+    if (unreadCount > 0) {
+      setIsNewChange(true);
+      const t = setTimeout(() => setIsNewChange(false), 300);
+      return () => clearTimeout(t);
+    }
+  }, [unreadCount]);
+
   return (
     <button
       onClick={() => navigate({ to: '/notifications' })}
-      className="relative p-2"
+      className="relative p-2 hover:bg-sand-light/50 rounded-lg transition-colors cursor-pointer"
     >
-      <Bell className="h-5 w-5 text-slate" />
+      <Bell className={`h-5 w-5 text-slate transition-transform ${unreadCount > 0 ? 'animate-bell-ring origin-top' : ''}`} />
       {unreadCount > 0 && (
-        <span className="absolute -top-0.5 -right-0.5 bg-danger text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center">
+        <span
+          className={`absolute -top-0.5 -right-0.5 bg-danger text-white text-[9px] font-extrabold rounded-full h-4.5 w-4.5 flex items-center justify-center border-2 border-white shadow-subtle transition-all duration-300 ${
+            isNewChange ? 'scale-125' : 'scale-100'
+          }`}
+        >
           {unreadCount > 9 ? '9+' : unreadCount}
         </span>
       )}
