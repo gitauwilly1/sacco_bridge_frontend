@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { CardContent, CardHeader } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { authApi } from '../api/authApi';
 import { toast } from 'sonner';
@@ -43,28 +43,35 @@ export default function VerifyCodeForm({ email, onSuccess }) {
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto">
-      <CardHeader className="text-center">
-        <ShieldCheck className="mx-auto h-12 w-12 text-terracotta mb-4" />
-        <CardTitle>Verify Your Email</CardTitle>
-        <CardDescription>
-          We sent a 6-digit code to <strong>{email}</strong>
-        </CardDescription>
+    <div className="w-full">
+      <CardHeader className="text-center pb-5 pt-7 px-6">
+        {/* Shield icon in sand bubble */}
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-sand-light shadow-subtle">
+          <ShieldCheck className="h-9 w-9 text-terracotta" />
+        </div>
+        <h1 className="font-heading font-bold text-2xl text-slate">Verify Your Email</h1>
+        <div className="mx-auto mt-1 h-0.5 w-8 rounded-full bg-terracotta opacity-60" />
+        <p className="text-sm text-gray-400 mt-2 leading-relaxed">
+          We sent a 6-digit code to{' '}
+          <strong className="text-slate font-semibold">{email}</strong>
+        </p>
       </CardHeader>
-      <CardContent>
+
+      <CardContent className="px-6 pb-7">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
             <FormField
               control={form.control}
               name="otp"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Verification Code</FormLabel>
+                  <FormLabel className="text-slate font-medium text-sm">Verification Code</FormLabel>
                   <FormControl>
                     <Input
                       placeholder="000000"
                       maxLength={6}
-                      className="text-center text-2xl tracking-[0.5em]"
+                      className="text-center text-2xl tracking-[0.5em] font-semibold"
+                      style={{ fontFamily: "'JetBrains Mono', monospace" }}
                       {...field}
                     />
                   </FormControl>
@@ -72,18 +79,42 @@ export default function VerifyCodeForm({ email, onSuccess }) {
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? 'Verifying...' : 'Verify Email'}
+
+            <Button
+              type="submit"
+              id="verify-submit-btn"
+              disabled={isLoading}
+              className="w-full bg-terracotta hover:bg-clay text-white font-semibold py-2.5 rounded-lg shadow-sm transition-all active:scale-[0.98]"
+            >
+              {isLoading ? (
+                <span className="flex items-center gap-2">
+                  <span className="h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                  Verifying…
+                </span>
+              ) : (
+                <>
+                  <ShieldCheck className="mr-2 h-4 w-4" />
+                  Verify Email
+                </>
+              )}
             </Button>
           </form>
         </Form>
-        <p className="mt-4 text-center text-sm text-gray-500">
-          Didn't receive the code?{' '}
-          <button onClick={handleResend} className="text-terracotta hover:underline font-medium">
-            Resend
-          </button>
-        </p>
+
+        {/* Resend link */}
+        <div className="mt-5 text-center rounded-lg bg-sand-light p-3">
+          <p className="text-xs text-gray-400">
+            Didn&apos;t receive the code?{' '}
+            <button
+              id="resend-code-btn"
+              onClick={handleResend}
+              className="text-terracotta hover:text-clay hover:underline font-semibold transition-colors"
+            >
+              Resend code
+            </button>
+          </p>
+        </div>
       </CardContent>
-    </Card>
+    </div>
   );
 }
