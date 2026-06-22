@@ -16,10 +16,21 @@ import { investmentsApi } from '../api/investmentsApi';
 import { formatKES, formatDate, formatTimeAgo } from '../../../utils/format';
 
 const offerStatusConfig = {
-  pending: { label: 'Pending', color: 'bg-alert/10 text-alert' },
-  accepted: { label: 'Accepted', color: 'bg-success/10 text-success' },
-  declined: { label: 'Declined', color: 'bg-danger/10 text-danger' },
-  countered: { label: 'Countered', color: 'bg-blue-500/10 text-blue-500' },
+  pending: { label: 'Pending', color: 'bg-alert/10 text-alert border border-alert/20' },
+  accepted: { label: 'Accepted', color: 'bg-success/10 text-success border border-success/20' },
+  declined: { label: 'Declined', color: 'bg-danger/10 text-danger border border-danger/20' },
+  countered: { label: 'Countered', color: 'bg-blue-500/10 text-blue-500 border border-blue-500/20' },
+};
+
+const roleConfig = {
+  buyer: { label: 'Buyer', color: 'bg-blue-500/10 text-blue-500 border border-blue-500/20' },
+  seller: { label: 'Seller', color: 'bg-terracotta/10 text-terracotta border border-terracotta/20' },
+};
+
+const connectionStatusConfig = {
+  active: { label: 'Active', color: 'bg-success/10 text-success border border-success/20' },
+  settled: { label: 'Settled', color: 'bg-gray-100 text-gray-500 border border-gray-200' },
+  cancelled: { label: 'Cancelled', color: 'bg-danger/10 text-danger border border-danger/20' },
 };
 
 export default function ConnectionDetail() {
@@ -101,21 +112,26 @@ export default function ConnectionDetail() {
 
   const isActive = connection.status === 'active';
   const offers = connection.offers || [];
-  const pendingOffers = offers.filter((o) => o.status === 'pending');
+  const role = roleConfig[connection.my_role] || roleConfig.buyer;
+  const status = connectionStatusConfig[connection.status] || connectionStatusConfig.active;
 
   return (
     <div className="pb-4">
       {/* Header */}
-      <div className="sticky top-14 z-30 bg-white border-b px-4 py-3">
+      <div className="sticky top-14 z-30 bg-white/80 backdrop-blur-lg border-b border-sand px-4 py-3">
         <div className="flex items-center gap-3">
-          <button onClick={() => navigate({ to: '/investments/connections' })}>
+          <button
+            onClick={() => navigate({ to: '/investments/connections' })}
+            className="p-1 rounded-lg text-slate hover:bg-sand-light transition-colors"
+            aria-label="Back to connections"
+          >
             <ArrowLeft className="h-5 w-5" />
           </button>
-          <div className="flex-1">
-            <h1 className="text-lg font-bold text-slate">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-base font-bold font-heading text-slate leading-tight truncate">
               {connection.counterparty_name || 'Connection'}
             </h1>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-400 font-medium truncate mt-0.5">
               {connection.sacco_name} · {connection.share_class_name}
             </p>
           </div>
@@ -124,33 +140,33 @@ export default function ConnectionDetail() {
 
       <div className="p-4 space-y-4">
         {/* Deal Summary */}
-        <Card>
+        <Card className="border-sand bg-white shadow-subtle">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm">Deal Summary</CardTitle>
+            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-gray-400">Deal Summary</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 gap-3 text-sm">
+            <div className="grid grid-cols-2 gap-4 text-xs font-medium">
               <div>
-                <p className="text-xs text-gray-500">My Role</p>
-                <Badge className="mt-1">
-                  {connection.my_role === 'buyer' ? 'Buyer' : 'Seller'}
+                <p className="text-[10px] uppercase tracking-wider text-gray-400 mb-1">My Role</p>
+                <Badge className={`px-2 py-0.5 rounded-full text-[10px] font-semibold shadow-none capitalize ${role.color}`} variant="outline">
+                  {role.label}
                 </Badge>
               </div>
               <div>
-                <p className="text-xs text-gray-500">Status</p>
-                <Badge className="mt-1">
-                  {connection.status}
+                <p className="text-[10px] uppercase tracking-wider text-gray-400 mb-1">Status</p>
+                <Badge className={`px-2 py-0.5 rounded-full text-[10px] font-semibold shadow-none capitalize ${status.color}`} variant="outline">
+                  {status.label}
                 </Badge>
               </div>
               <div>
-                <p className="text-xs text-gray-500">Quantity</p>
-                <p className="font-semibold text-slate">
+                <p className="text-[10px] uppercase tracking-wider text-gray-400 mb-0.5">Quantity</p>
+                <p className="text-sm font-bold text-slate font-numbers" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
                   {connection.quantity?.toLocaleString()}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-gray-500">Agreed Price</p>
-                <p className="font-semibold text-terracotta">
+                <p className="text-[10px] uppercase tracking-wider text-gray-400 mb-0.5">Agreed Price</p>
+                <p className="text-sm font-bold text-terracotta font-numbers" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
                   {connection.agreed_price
                     ? formatKES(connection.agreed_price)
                     : '—'}
@@ -161,14 +177,15 @@ export default function ConnectionDetail() {
         </Card>
 
         {/* Offers */}
-        <Card>
-          <CardHeader className="pb-2 flex flex-row items-center justify-between">
-            <CardTitle className="text-sm">Offers</CardTitle>
+        <Card className="border-sand bg-white shadow-subtle">
+          <CardHeader className="pb-2.5 flex flex-row items-center justify-between gap-4">
+            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-gray-400">Offers</CardTitle>
             {isActive && (
               <Button
                 size="sm"
                 variant="outline"
                 onClick={() => setShowOfferForm(!showOfferForm)}
+                className="border-sand hover:bg-sand-light text-slate cursor-pointer h-7 text-[11px] font-semibold px-2.5 rounded-lg"
               >
                 {showOfferForm ? 'Cancel' : 'Make Offer'}
               </Button>
@@ -177,29 +194,33 @@ export default function ConnectionDetail() {
           <CardContent className="space-y-3">
             {/* Make Offer Form */}
             {showOfferForm && (
-              <div className="bg-sand-light rounded-lg p-3 space-y-2">
-                <Input
-                  placeholder="Price per share (KES)"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={offerPrice}
-                  onChange={(e) => setOfferPrice(e.target.value)}
-                />
+              <div className="bg-sand-light/50 border border-sand/60 rounded-2xl p-3.5 space-y-3 animate-in fade-in duration-200">
+                <div className="relative">
+                  <Input
+                    placeholder="Price per share (KES)"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={offerPrice}
+                    onChange={(e) => setOfferPrice(e.target.value)}
+                    className="border-input rounded-xl bg-white text-sm font-numbers focus:border-terracotta focus:ring-1 focus:ring-terracotta"
+                  />
+                </div>
                 <Input
                   placeholder="Notes (optional)"
                   value={offerNotes}
                   onChange={(e) => setOfferNotes(e.target.value)}
+                  className="border-input rounded-xl bg-white text-sm focus:border-terracotta focus:ring-1 focus:ring-terracotta"
                 />
                 <Button
                   size="sm"
-                  className="w-full"
+                  className="w-full bg-terracotta hover:bg-terracotta-dark text-white shadow-subtle border-0 cursor-pointer h-9 text-xs font-semibold rounded-xl"
                   onClick={handleMakeOffer}
                   disabled={makeOfferMutation.isPending}
                 >
                   {makeOfferMutation.isPending ? 'Sending...' : (
                     <>
-                      <Send className="h-3 w-3 mr-1" />
+                      <Send className="h-3.5 w-3.5 mr-1" />
                       Send Offer
                     </>
                   )}
@@ -209,95 +230,97 @@ export default function ConnectionDetail() {
 
             {/* Offers List */}
             {offers.length === 0 ? (
-              <p className="text-sm text-gray-500 text-center py-4">
+              <p className="text-xs text-gray-400 font-medium text-center py-6">
                 No offers yet. Make the first offer!
               </p>
             ) : (
-              offers.map((offer) => {
-                const status = offerStatusConfig[offer.status] || offerStatusConfig.pending;
-                return (
-                  <div
-                    key={offer.id}
-                    className="border rounded-lg p-3 space-y-2"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-gray-500">
-                          {offer.created_by_name || 'Counterparty'}
+              <div className="space-y-3">
+                {offers.map((offer) => {
+                  const offerStatus = offerStatusConfig[offer.status] || offerStatusConfig.pending;
+                  return (
+                    <div
+                      key={offer.id}
+                      className="border border-sand bg-sand-light/10 hover:bg-sand-light/20 transition-all rounded-xl p-3.5 space-y-3"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="text-xs font-bold text-slate truncate">
+                            {offer.created_by_name || 'Counterparty'}
+                          </span>
+                          <Badge className={`px-2 py-0.5 rounded-full text-[10px] font-semibold shadow-none capitalize ${offerStatus.color}`} variant="outline">
+                            {offerStatus.label}
+                          </Badge>
+                        </div>
+                        <span className="text-[10px] text-gray-400 font-semibold flex-shrink-0">
+                          {formatTimeAgo(offer.created_at)}
                         </span>
-                        <Badge className={status.color} variant="outline">
-                          {status.label}
-                        </Badge>
                       </div>
-                      <span className="text-xs text-gray-400">
-                        {formatTimeAgo(offer.created_at)}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-lg font-bold text-terracotta">
-                          {formatKES(offer.price_per_share)}
-                        </p>
-                        <p className="text-xs text-gray-500">per share</p>
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <p className="text-base font-extrabold text-terracotta font-numbers" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                            {formatKES(offer.price_per_share)}
+                          </p>
+                          <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider mt-0.5">per share</p>
+                        </div>
+                        {offer.notes && (
+                          <p className="text-xs text-gray-500 max-w-[180px] bg-sand-light/30 border border-sand/40 rounded-lg p-1.5 italic text-right">
+                            {offer.notes}
+                          </p>
+                        )}
                       </div>
-                      {offer.notes && (
-                        <p className="text-xs text-gray-500 max-w-[180px] text-right">
-                          {offer.notes}
-                        </p>
+                      {/* Actions for pending offers not created by me */}
+                      {offer.status === 'pending' && isActive && (
+                        <div className="flex gap-2.5 pt-1">
+                          <Button
+                            size="sm"
+                            className="flex-1 bg-success hover:bg-success-dark text-white border-0 shadow-subtle cursor-pointer h-8 text-xs font-semibold rounded-lg"
+                            onClick={() => acceptOfferMutation.mutate(offer.id)}
+                            disabled={acceptOfferMutation.isPending}
+                          >
+                            <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
+                            Accept
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="flex-1 border-sand hover:bg-sand-light text-slate cursor-pointer h-8 text-xs font-semibold rounded-lg"
+                            onClick={() => declineOfferMutation.mutate(offer.id)}
+                            disabled={declineOfferMutation.isPending}
+                          >
+                            <XCircle className="h-3.5 w-3.5 mr-1" />
+                            Decline
+                          </Button>
+                        </div>
                       )}
                     </div>
-                    {/* Actions for pending offers not created by me */}
-                    {offer.status === 'pending' && isActive && (
-                      <div className="flex gap-2 pt-1">
-                        <Button
-                          size="sm"
-                          className="flex-1"
-                          onClick={() => acceptOfferMutation.mutate(offer.id)}
-                          disabled={acceptOfferMutation.isPending}
-                        >
-                          <CheckCircle2 className="h-3 w-3 mr-1" />
-                          Accept
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="flex-1"
-                          onClick={() => declineOfferMutation.mutate(offer.id)}
-                          disabled={declineOfferMutation.isPending}
-                        >
-                          <XCircle className="h-3 w-3 mr-1" />
-                          Decline
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                );
-              })
+                  );
+                })}
+              </div>
             )}
           </CardContent>
         </Card>
 
         {/* Messages */}
         {connection.messages?.length > 0 && (
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center gap-2">
-                <MessageSquare className="h-4 w-4" />
+          <Card className="border-sand bg-white shadow-subtle">
+            <CardHeader className="pb-2.5">
+              <CardTitle className="text-xs font-semibold uppercase tracking-wider text-gray-400 flex items-center gap-2">
+                <MessageSquare className="h-4 w-4 text-terracotta" />
                 Messages
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2">
+            <CardContent className="space-y-3">
               {connection.messages.map((msg) => (
                 <div
                   key={msg.id}
-                  className={`p-3 rounded-lg text-sm ${
+                  className={`p-3.5 rounded-2xl text-xs font-medium ${
                     msg.is_mine
-                      ? 'bg-terracotta/5 ml-4'
-                      : 'bg-gray-50 mr-4'
+                      ? 'bg-terracotta/10 text-slate border border-terracotta/20 rounded-tr-none ml-8'
+                      : 'bg-sand/40 text-slate border border-sand-dark/20 rounded-tl-none mr-8'
                   }`}
                 >
-                  <p className="text-slate">{msg.content || msg.message}</p>
-                  <p className="text-xs text-gray-400 mt-1">
+                  <p className="leading-relaxed">{msg.content || msg.message}</p>
+                  <p className="text-[10px] text-gray-400 font-semibold mt-1.5 text-right font-numbers" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
                     {formatTimeAgo(msg.created_at)}
                   </p>
                 </div>
