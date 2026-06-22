@@ -103,7 +103,10 @@ export default function AdminDisputeDetail() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <button onClick={() => navigate({ to: '/admin/disputes' })}>
+        <button 
+          onClick={() => navigate({ to: '/admin/disputes' })}
+          className="h-9 w-9 flex items-center justify-center rounded-lg border border-sand bg-white/50 text-slate hover:bg-sand-light hover:text-terracotta transition-colors shadow-subtle"
+        >
           <ArrowLeft className="h-5 w-5" />
         </button>
         <div className="flex-1">
@@ -117,66 +120,66 @@ export default function AdminDisputeDetail() {
       </div>
 
       {/* Dispute Info */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Dispute Details</CardTitle>
+      <Card className="glass-card border-sand bg-white/95 shadow-subtle rounded-2xl overflow-hidden">
+        <CardHeader className="border-b border-sand/30 bg-sand-light/10">
+          <CardTitle className="text-base text-slate font-bold">Dispute Details</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-4 p-6">
           <div className="flex justify-between text-sm">
-            <span className="text-gray-500">Reason</span>
+            <span className="text-gray-400">Reason</span>
             <span className="font-semibold text-slate">
               {dispute.reason_display || dispute.reason}
             </span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-gray-500">Amount</span>
-            <span className="font-semibold text-terracotta">
+            <span className="text-gray-400">Amount</span>
+            <span className="font-bold text-terracotta">
               {formatKES(dispute.settlement_amount)}
             </span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-gray-500">SACCO</span>
+            <span className="text-gray-400">SACCO</span>
             <span className="font-semibold text-slate">{dispute.sacco_name}</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-gray-500">Filed</span>
-            <span className="text-slate">{formatDate(dispute.created_at)}</span>
+            <span className="text-gray-400">Filed</span>
+            <span className="text-slate font-medium">{formatDate(dispute.created_at)}</span>
           </div>
-          <div className="pt-2 border-t">
-            <p className="text-xs text-gray-500 mb-1">Description</p>
-            <p className="text-sm text-slate">{dispute.description}</p>
+          <div className="pt-4 border-t border-sand/30">
+            <p className="text-xs font-semibold text-slate/70 mb-2">Description</p>
+            <p className="text-sm text-slate bg-sand-light/20 p-3 rounded-lg border border-sand/30 leading-relaxed">{dispute.description}</p>
           </div>
         </CardContent>
       </Card>
 
       {/* Resolution */}
       {dispute.status !== 'resolved' && dispute.status !== 'closed' && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Resolve Dispute</CardTitle>
-            <CardDescription>Choose a resolution action</CardDescription>
+        <Card className="glass-card border-sand bg-white/95 shadow-subtle rounded-2xl overflow-hidden">
+          <CardHeader className="border-b border-sand/30 bg-sand-light/10">
+            <CardTitle className="text-base text-slate font-bold">Resolve Dispute</CardTitle>
+            <CardDescription className="text-xs text-gray-500">Choose a resolution action</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
+          <CardContent className="space-y-4 p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {resolveActions.map((action) => {
                 const Icon = action.icon;
                 return (
                   <button
                     key={action.action}
                     onClick={() => setSelectedAction(action.action)}
-                    className={`w-full text-left p-3 rounded-lg border transition-colors ${
+                    className={`text-left p-3.5 rounded-xl border transition-all duration-200 ${
                       selectedAction === action.action
-                        ? 'border-terracotta bg-terracotta/5'
-                        : 'border-gray-200 hover:border-terracotta/50'
+                        ? 'border-terracotta bg-terracotta/5 shadow-subtle ring-1 ring-terracotta/30'
+                        : 'border-sand hover:border-terracotta/50 bg-white/50 hover:bg-sand-light/10'
                     }`}
                   >
                     <div className="flex items-center gap-2">
                       <Icon className={`h-4 w-4 ${action.color}`} />
-                      <span className="text-sm font-medium text-slate">
+                      <span className="text-sm font-semibold text-slate">
                         {action.label}
                       </span>
                     </div>
-                    <p className="text-xs text-gray-500 mt-1 ml-6">
+                    <p className="text-xs text-slate/60 mt-1 ml-6 leading-normal">
                       {action.description}
                     </p>
                   </button>
@@ -189,10 +192,11 @@ export default function AdminDisputeDetail() {
               rows={3}
               value={resolutionNotes}
               onChange={(e) => setResolutionNotes(e.target.value)}
+              className="border-sand bg-white/50 focus:border-terracotta focus:ring-1 focus:ring-terracotta rounded-xl shadow-subtle transition-all mt-2"
             />
 
             <Button
-              className="w-full"
+              className="w-full bg-terracotta hover:bg-clay text-white shadow-subtle border-none rounded-xl font-semibold py-5 transition-all duration-200"
               onClick={handleResolve}
               disabled={!selectedAction || isResolving}
             >
@@ -204,18 +208,18 @@ export default function AdminDisputeDetail() {
 
       {/* Resolution Info */}
       {dispute.resolution && (
-        <Card className="border-success/30">
-          <CardHeader>
-            <CardTitle className="text-base text-success flex items-center gap-2">
+        <Card className="border border-success/30 bg-success/5 shadow-subtle rounded-2xl overflow-hidden">
+          <CardHeader className="border-b border-success/20 bg-success/10 p-4">
+            <CardTitle className="text-base text-success flex items-center gap-2 font-bold">
               <CheckCircle2 className="h-5 w-5" />
               Resolved
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2 text-sm">
-            <p className="text-slate">{dispute.resolution}</p>
+          <CardContent className="space-y-2 text-sm p-6 bg-white/30">
+            <p className="text-slate font-medium leading-relaxed">{dispute.resolution}</p>
             {dispute.resolved_at && (
-              <p className="text-xs text-gray-500">
-                {formatDateTime(dispute.resolved_at)}
+              <p className="text-xs text-gray-400">
+                Resolved on {formatDateTime(dispute.resolved_at)}
               </p>
             )}
           </CardContent>
