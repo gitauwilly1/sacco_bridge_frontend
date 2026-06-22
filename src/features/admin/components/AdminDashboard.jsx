@@ -17,18 +17,18 @@ function DashboardSkeleton() {
     <div className="space-y-4">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {[1, 2, 3, 4].map((i) => (
-          <Card key={i}>
-            <CardContent className="p-4">
-              <Skeleton className="h-4 w-16 mb-2" />
-              <Skeleton className="h-8 w-24" />
+          <Card key={i} className="border-sand bg-white shadow-subtle rounded-2xl">
+            <CardContent className="p-4 space-y-2.5">
+              <div className="skeleton-shimmer h-4 w-16 rounded" />
+              <div className="skeleton-shimmer h-8 w-24 rounded" />
             </CardContent>
           </Card>
         ))}
       </div>
-      <Card>
-        <CardContent className="p-4">
+      <Card className="border-sand bg-white shadow-subtle rounded-2xl">
+        <CardContent className="p-4 space-y-3">
           {[1, 2, 3, 4, 5].map((i) => (
-            <Skeleton key={i} className="h-12 w-full mb-2" />
+            <div key={i} className="skeleton-shimmer h-12 w-full rounded-xl" />
           ))}
         </CardContent>
       </Card>
@@ -81,8 +81,8 @@ export default function AdminDashboard() {
       label: 'Open Disputes',
       value: analytics?.open_disputes?.toLocaleString() || '0',
       icon: AlertCircle,
-      color: analytics?.open_disputes > 0 ? 'text-danger' : 'text-gray-500',
-      bg: analytics?.open_disputes > 0 ? 'bg-danger/10' : 'bg-gray-100',
+      color: analytics?.open_disputes > 0 ? 'text-danger' : 'text-slate/60',
+      bg: analytics?.open_disputes > 0 ? 'bg-danger/10' : 'bg-sand-light',
     },
   ];
 
@@ -105,15 +105,15 @@ export default function AdminDashboard() {
         {stats.map((stat) => {
           const Icon = stat.icon;
           return (
-            <Card key={stat.label}>
+            <Card key={stat.label} className="border-sand bg-white shadow-subtle rounded-2xl card-lift">
               <CardContent className="p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className={`p-1.5 rounded-lg ${stat.bg}`}>
-                    <Icon className={`h-4 w-4 ${stat.color}`} />
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">{stat.label}</p>
+                  <div className={`h-8 w-8 rounded-full ${stat.bg} flex items-center justify-center shadow-subtle flex-shrink-0`}>
+                    <Icon className={`h-4.5 w-4.5 ${stat.color}`} />
                   </div>
-                  <p className="text-xs text-gray-500">{stat.label}</p>
                 </div>
-                <p className="text-2xl font-bold text-slate">{stat.value}</p>
+                <p className="text-xl font-extrabold text-slate font-numbers">{stat.value}</p>
               </CardContent>
             </Card>
           );
@@ -121,24 +121,24 @@ export default function AdminDashboard() {
       </div>
 
       {/* Quick Actions */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm">Quick Actions</CardTitle>
+      <Card className="border-sand bg-white shadow-subtle rounded-2xl">
+        <CardHeader className="pb-2 border-b border-sand/40">
+          <CardTitle className="text-xs font-bold text-slate uppercase tracking-wider">Quick Actions</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 gap-2">
+        <CardContent className="pt-4">
+          <div className="grid grid-cols-2 gap-3">
             {quickActions.map((action) => {
               const Icon = action.icon;
               return (
                 <Button
                   key={action.to}
                   variant="outline"
-                  className="justify-start"
+                  className="w-full flex items-center justify-start p-3 bg-white border border-sand/40 hover:border-terracotta/40 hover:bg-sand-light/10 card-lift rounded-xl text-xs font-bold text-slate transition-all cursor-pointer h-11"
                   onClick={() => navigate({ to: action.to })}
                 >
-                  <Icon className="h-4 w-4 mr-2" />
+                  <Icon className="h-4.5 w-4.5 mr-2 text-slate/50" />
                   {action.label}
-                  <ArrowRight className="h-3 w-3 ml-auto" />
+                  <ArrowRight className="h-3.5 w-3.5 ml-auto text-terracotta" />
                 </Button>
               );
             })}
@@ -148,28 +148,28 @@ export default function AdminDashboard() {
 
       {/* Recent Activity */}
       {analytics?.recent_activity?.length > 0 && (
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <Activity className="h-4 w-4 text-terracotta" />
+        <Card className="border-sand bg-white shadow-subtle rounded-2xl">
+          <CardHeader className="pb-2 border-b border-sand/40">
+            <CardTitle className="text-xs font-bold text-slate uppercase tracking-wider flex items-center gap-2">
+              <Activity className="h-4.5 w-4.5 text-terracotta" />
               Recent Activity
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2">
+          <CardContent className="divide-y divide-sand/40 pt-1">
             {analytics.recent_activity.map((activity, index) => (
               <div
                 key={activity.id || index}
-                className="flex items-center justify-between text-sm py-2 border-b border-gray-100 last:border-0"
+                className="flex items-center justify-between text-xs py-3.5"
               >
                 <div>
-                  <p className="font-medium text-slate">
+                  <p className="font-bold text-slate">
                     {activity.action || activity.event}
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-gray-400 mt-0.5 font-medium leading-relaxed">
                     {activity.description || activity.details}
                   </p>
                 </div>
-                <span className="text-xs text-gray-400 flex-shrink-0">
+                <span className="text-[10px] text-gray-400/90 font-medium font-numbers ml-3 flex-shrink-0">
                   {formatTimeAgo(activity.timestamp || activity.created_at)}
                 </span>
               </div>
