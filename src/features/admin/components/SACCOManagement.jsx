@@ -10,9 +10,9 @@ import { formatDate } from '../../../utils/format';
 import DataTable from './DataTable';
 
 const tierColors = {
-  1: 'bg-success/10 text-success',
-  2: 'bg-blue-500/10 text-blue-500',
-  3: 'bg-alert/10 text-alert',
+  1: 'bg-success/10 text-success border-success/20',
+  2: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+  3: 'bg-alert/10 text-alert border-alert/20',
 };
 
 export default function SACCOManagement() {
@@ -68,12 +68,12 @@ export default function SACCOManagement() {
       sortable: true,
       render: (_, row) => (
         <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded bg-sand-light flex items-center justify-center">
+          <div className="h-8 w-8 rounded-lg bg-sand-light flex items-center justify-center border border-sand">
             <Building2 className="h-4 w-4 text-terracotta" />
           </div>
           <div>
-            <p className="font-medium text-slate text-sm">{row.name}</p>
-            <p className="text-xs text-gray-500">{row.registration_number}</p>
+            <p className="font-semibold text-slate text-sm">{row.name}</p>
+            <p className="text-xs text-gray-400">{row.registration_number}</p>
           </div>
         </div>
       ),
@@ -82,7 +82,7 @@ export default function SACCOManagement() {
       key: 'sasra_tier',
       header: 'Tier',
       render: (value) => (
-        <Badge className={tierColors[value] || 'bg-gray-100'} variant="outline">
+        <Badge className={`${tierColors[value] || 'bg-sand text-slate border-sand-dark/20'} border`} variant="outline">
           Tier {value}
         </Badge>
       ),
@@ -92,7 +92,7 @@ export default function SACCOManagement() {
       header: 'Status',
       render: (value) => (
         <Badge
-          className={value ? 'bg-success/10 text-success' : 'bg-alert/10 text-alert'}
+          className={value ? 'bg-success/10 text-success border-success/20 border' : 'bg-alert/10 text-alert border-alert/20 border'}
           variant="outline"
         >
           {value ? 'Verified' : 'Pending'}
@@ -108,10 +108,11 @@ export default function SACCOManagement() {
   ];
 
   const rowActions = (row) => (
-    <div className="flex items-center gap-1 justify-end">
+    <div className="flex items-center gap-2 justify-end">
       <Button
         size="sm"
         variant="ghost"
+        className="text-terracotta hover:text-clay hover:bg-sand-light transition-all rounded-lg"
         onClick={() => navigate({ to: `/admin/saccos/${row.id}` })}
       >
         View
@@ -120,7 +121,7 @@ export default function SACCOManagement() {
         <Button
           size="sm"
           variant="ghost"
-          className="text-success"
+          className="text-success hover:text-success/80 hover:bg-success/5 transition-all rounded-lg"
           onClick={() => verifyMutation.mutate(row.id)}
         >
           <CheckCircle2 className="h-3 w-3 mr-1" /> Verify
@@ -140,15 +141,20 @@ export default function SACCOManagement() {
           <select
             value={status}
             onChange={(e) => { setStatus(e.target.value); setPage(1); }}
-            className="text-xs border rounded-md px-2 py-1.5 bg-white"
+            className="text-xs border border-sand bg-white/90 hover:border-terracotta focus:outline-none focus:ring-1 focus:ring-terracotta rounded-lg px-2.5 py-1.5 text-slate font-medium shadow-subtle transition-all cursor-pointer"
           >
             <option value="all">All</option>
             <option value="verified">Verified</option>
             <option value="pending">Pending</option>
             <option value="suspended">Suspended</option>
           </select>
-          <Button size="sm" variant="outline" onClick={() => refetch()}>
-            <RefreshCw className="h-3 w-3" />
+          <Button 
+            size="sm" 
+            variant="outline" 
+            onClick={() => refetch()}
+            className="border-sand hover:bg-sand-light text-slate transition-colors"
+          >
+            <RefreshCw className="h-3.5 w-3.5 text-slate/75" />
           </Button>
         </div>
       </div>
