@@ -6,7 +6,7 @@ import { FullPageLoader } from './components/feedback/LoadingState';
 import { Toaster } from '@/components/ui/sonner';
 import AuthLayout from './features/auth/components/AuthLayout';
 import AppShell from './components/layout/AppShell';
-import DashboardHome from './features/dashboard/components/DashboardHome';
+import { Outlet } from '@tanstack/react-router';
 
 export default function App() {
   const { initialize, isLoading, isInitialized, isAuthenticated } = useAuthStore();
@@ -43,7 +43,7 @@ export default function App() {
     <div className="min-h-screen bg-surface">
       {isAuthenticated ? (
         <AppShell>
-          <DashboardHome />
+          <Outlet />
         </AppShell>
       ) : (
         <AuthLayout />
