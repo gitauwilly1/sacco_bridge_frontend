@@ -3,12 +3,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import {
   DollarSign, Clock, CheckCircle2, XCircle, Users,
-  ChevronRight, Plus, RefreshCw, AlertCircle,
+  ChevronRight, Plus, RefreshCw,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorState, EmptyState } from '@/components/feedback';
 import { toast } from 'sonner';
 import { investmentsApi } from '../api/investmentsApi';
@@ -17,27 +16,27 @@ import { formatKES, formatTimeAgo } from '../../../utils/format';
 const requestStatusConfig = {
   active: {
     label: 'Active',
-    color: 'bg-success/10 text-success border-success/20',
+    color: 'bg-success/10 text-success border border-success/20',
     icon: CheckCircle2,
   },
   matched: {
     label: 'Matched',
-    color: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+    color: 'bg-blue-50 text-blue-600 border border-blue-100',
     icon: Users,
   },
   cancelled: {
     label: 'Cancelled',
-    color: 'bg-gray-200 text-gray-600 border-gray-300',
+    color: 'bg-gray-100 text-gray-400 border border-gray-200',
     icon: XCircle,
   },
   expired: {
     label: 'Expired',
-    color: 'bg-alert/10 text-alert border-alert/20',
+    color: 'bg-alert/10 text-alert border border-alert/20',
     icon: Clock,
   },
   completed: {
     label: 'Completed',
-    color: 'bg-terracotta/10 text-terracotta border-terracotta/20',
+    color: 'bg-terracotta/10 text-terracotta border border-terracotta/20',
     icon: CheckCircle2,
   },
 };
@@ -70,54 +69,53 @@ function RequestCard({ request }) {
 
   return (
     <Card
-      className="cursor-pointer hover:shadow-md transition-shadow"
+      className="cursor-pointer border-sand shadow-subtle card-lift transition-all duration-200"
       onClick={() => navigate({ to: `/investments/requests/${request.id}` })}
     >
       <CardContent className="p-4">
-        <div className="flex items-start justify-between mb-2">
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-1">
-              <h3 className="text-sm font-semibold text-slate">
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex-1 min-w-0 pr-2">
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
+              <h3 className="text-sm font-bold text-slate truncate">
                 {request.sacco_name}
               </h3>
-              <Badge className={status.color} variant="outline">
+              <Badge className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border-0 shadow-none capitalize ${status.color}`}>
                 <StatusIcon className="h-3 w-3 mr-0.5" />
                 {status.label}
               </Badge>
             </div>
-            <p className="text-xs text-gray-500">{request.share_class_name}</p>
+            <p className="text-xs text-gray-400 font-medium">{request.share_class_name}</p>
           </div>
-          <ChevronRight className="h-4 w-4 text-gray-400 flex-shrink-0" />
+          <ChevronRight className="h-4 w-4 text-gray-400 flex-shrink-0 mt-0.5" />
         </div>
 
-        <div className="grid grid-cols-3 gap-2 mb-2">
+        <div className="grid grid-cols-3 gap-2.5 mb-3.5 pt-1">
           <div>
-            <p className="text-xs text-gray-500">Quantity</p>
-            <p className="text-sm font-semibold text-slate">
+            <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Quantity</p>
+            <p className="text-sm font-bold text-slate font-numbers mt-0.5" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
               {request.quantity?.toLocaleString()}
             </p>
           </div>
           <div>
-            <p className="text-xs text-gray-500">Price</p>
-            <p className="text-sm font-semibold text-slate">
+            <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Price</p>
+            <p className="text-sm font-bold text-slate font-numbers mt-0.5" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
               {formatKES(request.price_per_share)}
             </p>
           </div>
           <div>
-            <p className="text-xs text-gray-500">Total</p>
-            <p className="text-sm font-semibold text-terracotta">
+            <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Total</p>
+            <p className="text-sm font-extrabold text-terracotta font-numbers mt-0.5" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
               {formatKES((request.quantity || 0) * (request.price_per_share || 0))}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center justify-between text-xs">
-          <span className="text-gray-500">
+        <div className="flex items-center justify-between text-xs pt-3.5 border-t border-sand/40 font-medium">
+          <span className="text-gray-400">
             {request.interested_buyers > 0 ? (
-              <span className="flex items-center gap-1">
-                <Users className="h-3 w-3" />
-                {request.interested_buyers} interested buyer
-                {request.interested_buyers !== 1 ? 's' : ''}
+              <span className="flex items-center gap-1 text-slate font-semibold">
+                <Users className="h-3.5 w-3.5" />
+                {request.interested_buyers} interested buyer{request.interested_buyers !== 1 ? 's' : ''}
               </span>
             ) : (
               formatTimeAgo(request.created_at)
@@ -127,11 +125,11 @@ function RequestCard({ request }) {
             <Button
               size="sm"
               variant="ghost"
-              className="text-xs text-danger h-auto p-0"
+              className="text-xs text-danger font-bold h-auto p-0 hover:bg-transparent hover:text-danger/80"
               onClick={handleCancel}
               disabled={cancelMutation.isPending}
             >
-              Cancel
+              Cancel Request
             </Button>
           )}
         </div>
@@ -142,17 +140,17 @@ function RequestCard({ request }) {
 
 function MyRequestsListSkeleton() {
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       {[1, 2, 3].map((i) => (
-        <Card key={i}>
-          <CardContent className="p-4">
-            <Skeleton className="h-4 w-40 mb-3" />
-            <div className="grid grid-cols-3 gap-2 mb-3">
-              <Skeleton className="h-4 w-16" />
-              <Skeleton className="h-4 w-16" />
-              <Skeleton className="h-4 w-16" />
+        <Card key={i} className="border-sand">
+          <CardContent className="p-4 space-y-3">
+            <div className="skeleton-shimmer h-5 w-40 rounded-lg" />
+            <div className="grid grid-cols-3 gap-2">
+              <div className="skeleton-shimmer h-4 w-16 rounded" />
+              <div className="skeleton-shimmer h-4 w-16 rounded" />
+              <div className="skeleton-shimmer h-4 w-16 rounded" />
             </div>
-            <Skeleton className="h-3 w-24" />
+            <div className="skeleton-shimmer h-3.5 w-24 rounded mt-1" />
           </CardContent>
         </Card>
       ))}
@@ -203,9 +201,9 @@ export default function MyRequestsList() {
               setStatus(e.target.value);
               setPage(1);
             }}
-            className="text-xs border rounded-md px-2 py-1 bg-white"
+            className="text-xs border border-input rounded-lg px-2.5 py-1.5 bg-white text-slate font-medium outline-none focus:border-terracotta focus:ring-1 focus:ring-terracotta transition-colors"
           >
-            <option value="all">All</option>
+            <option value="all">All Statuses</option>
             <option value="active">Active</option>
             <option value="matched">Matched</option>
             <option value="completed">Completed</option>
@@ -213,6 +211,7 @@ export default function MyRequestsList() {
           </select>
           <Button
             size="sm"
+            className="bg-terracotta hover:bg-clay text-white shadow-sm transition-all duration-150 active:scale-[0.98]"
             onClick={() => navigate({ to: '/investments/sell' })}
           >
             <Plus className="h-3 w-3 mr-1" /> New
@@ -231,7 +230,10 @@ export default function MyRequestsList() {
           title="No requests yet"
           description="Create a liquidity request to sell your shares"
           action={
-            <Button onClick={() => navigate({ to: '/investments/sell' })}>
+            <Button
+              className="bg-terracotta hover:bg-clay text-white shadow-sm transition-all"
+              onClick={() => navigate({ to: '/investments/sell' })}
+            >
               <Plus className="h-4 w-4 mr-2" />
               Sell Shares
             </Button>
@@ -250,17 +252,19 @@ export default function MyRequestsList() {
               <Button
                 size="sm"
                 variant="outline"
+                className="border-sand hover:bg-sand-light text-slate text-xs font-semibold"
                 disabled={page <= 1}
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
               >
                 Previous
               </Button>
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-gray-400 font-medium font-numbers" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
                 {page} of {totalPages}
               </span>
               <Button
                 size="sm"
                 variant="outline"
+                className="border-sand hover:bg-sand-light text-slate text-xs font-semibold"
                 disabled={page >= totalPages}
                 onClick={() => setPage((p) => p + 1)}
               >
