@@ -33,14 +33,14 @@ export default function Reports() {
   if (isLoading) {
     return (
       <div className="space-y-4">
-        <Skeleton className="h-8 w-48" />
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <Skeleton className="h-8 w-48 bg-sand-light/60 animate-pulse" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {[1, 2, 3, 4].map((i) => (
-            <Card key={i}>
-              <CardContent className="p-4">
-                <Skeleton className="h-5 w-32 mb-2" />
-                <Skeleton className="h-3 w-48 mb-3" />
-                <Skeleton className="h-8 w-24" />
+            <Card key={i} className="glass-card border-sand bg-white/50 rounded-2xl overflow-hidden">
+              <CardContent className="p-5">
+                <Skeleton className="h-5 w-32 mb-2 bg-sand-light" />
+                <Skeleton className="h-3 w-48 mb-4 bg-sand-light" />
+                <Skeleton className="h-8 w-full bg-sand-light" />
               </CardContent>
             </Card>
           ))}
@@ -69,35 +69,46 @@ export default function Reports() {
           <h1 className="text-xl font-bold text-slate">Reports</h1>
           <p className="text-sm text-gray-500">{reportList.length} reports available</p>
         </div>
-        <Button size="sm" variant="outline" onClick={() => refetch()}>
-          <RefreshCw className="h-3 w-3" />
+        <Button 
+          size="sm" 
+          variant="outline" 
+          onClick={() => refetch()}
+          className="border-sand hover:bg-sand-light text-slate transition-colors"
+        >
+          <RefreshCw className="h-3.5 w-3.5 text-slate/75" />
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {reportList.map((report) => (
-          <Card key={report.id} className="hover:shadow-md transition-shadow">
-            <CardContent className="p-4">
-              <div className="flex items-start justify-between">
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
+          <Card key={report.id} className="glass-card border-sand bg-white/95 shadow-subtle rounded-2xl overflow-hidden hover:shadow-md transition-all duration-200 card-lift">
+            <CardContent className="p-5 flex flex-col justify-between h-full">
+              <div>
+                <div className="flex items-start gap-3 mb-2">
+                  <div className={`h-9 w-9 rounded-lg flex items-center justify-center border ${
+                    report.type === 'chart' 
+                      ? 'bg-terracotta/10 border-terracotta/20' 
+                      : 'bg-blue-500/10 border-blue-500/20'
+                  }`}>
                     {report.type === 'chart' ? (
-                      <BarChart3 className="h-4 w-4 text-terracotta" />
+                      <BarChart3 className="h-5 w-5 text-terracotta" />
                     ) : (
-                      <FileText className="h-4 w-4 text-blue-500" />
+                      <FileText className="h-5 w-5 text-blue-500" />
                     )}
-                    <h3 className="font-semibold text-slate text-sm">{report.name}</h3>
                   </div>
-                  <p className="text-xs text-gray-500 mb-3">{report.description}</p>
+                  <div>
+                    <h3 className="font-bold text-slate text-sm leading-tight mt-0.5">{report.name}</h3>
+                    <p className="text-xs text-gray-400 mt-1 leading-normal">{report.description}</p>
+                  </div>
                 </div>
               </div>
               <Button
                 size="sm"
                 variant="outline"
-                className="w-full"
+                className="w-full mt-4 border-sand hover:bg-sand-light text-slate hover:text-terracotta transition-colors shadow-subtle font-semibold"
                 onClick={() => handleDownload(report.id)}
               >
-                <Download className="h-3 w-3 mr-1" /> Download
+                <Download className="h-3.5 w-3.5 mr-1.5" /> Download Report
               </Button>
             </CardContent>
           </Card>
