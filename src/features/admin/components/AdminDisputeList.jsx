@@ -9,10 +9,10 @@ import { formatKES, formatTimeAgo } from '../../../utils/format';
 import DataTable from './DataTable';
 
 const disputeStatusColors = {
-  open: 'bg-danger/10 text-danger',
-  under_review: 'bg-alert/10 text-alert',
-  resolved: 'bg-success/10 text-success',
-  closed: 'bg-gray-200 text-gray-600',
+  open: 'bg-danger/10 text-danger border-danger/20',
+  under_review: 'bg-alert/10 text-alert border-alert/20',
+  resolved: 'bg-success/10 text-success border-success/20',
+  closed: 'bg-sand text-slate border-sand-dark/20',
 };
 
 export default function AdminDisputeList() {
@@ -47,17 +47,17 @@ export default function AdminDisputeList() {
       key: 'id',
       header: 'ID',
       width: '80px',
-      render: (value) => <span className="font-mono text-xs">#{value}</span>,
+      render: (value) => <span className="font-mono text-xs font-semibold text-slate/75">#{value}</span>,
     },
     {
       key: 'reason',
       header: 'Reason',
       render: (_, row) => (
         <div>
-          <p className="text-sm font-medium text-slate">
+          <p className="text-sm font-semibold text-slate">
             {row.reason_display || row.reason}
           </p>
-          <p className="text-xs text-gray-500 truncate max-w-[200px]">
+          <p className="text-xs text-gray-400 truncate max-w-[200px]">
             {row.description}
           </p>
         </div>
@@ -66,13 +66,13 @@ export default function AdminDisputeList() {
     {
       key: 'sacco_name',
       header: 'SACCO',
-      render: (value) => <span className="text-sm">{value || '—'}</span>,
+      render: (value) => <span className="text-sm font-medium text-slate">{value || '—'}</span>,
     },
     {
       key: 'settlement_amount',
       header: 'Amount',
       render: (value) => (
-        <span className="text-sm font-semibold">{formatKES(value)}</span>
+        <span className="text-sm font-bold text-slate">{formatKES(value)}</span>
       ),
     },
     {
@@ -80,7 +80,7 @@ export default function AdminDisputeList() {
       header: 'Status',
       render: (value) => (
         <Badge
-          className={disputeStatusColors[value] || 'bg-gray-100 text-gray-600'}
+          className={`${disputeStatusColors[value] || 'bg-sand text-slate border-sand-dark/20'} border`}
           variant="outline"
         >
           {value?.replace('_', ' ')}
@@ -100,6 +100,7 @@ export default function AdminDisputeList() {
     <Button
       size="sm"
       variant="ghost"
+      className="text-terracotta hover:text-clay hover:bg-sand-light transition-all rounded-lg font-medium"
       onClick={() => navigate({ to: `/admin/disputes/${row.id}` })}
     >
       Review
@@ -120,15 +121,20 @@ export default function AdminDisputeList() {
               setStatus(e.target.value);
               setPage(1);
             }}
-            className="text-xs border rounded-md px-2 py-1.5 bg-white"
+            className="text-xs border border-sand bg-white/90 hover:border-terracotta focus:outline-none focus:ring-1 focus:ring-terracotta rounded-lg px-2.5 py-1.5 text-slate font-medium shadow-subtle transition-all cursor-pointer"
           >
             <option value="all">All</option>
             <option value="open">Open</option>
             <option value="under_review">Under Review</option>
             <option value="resolved">Resolved</option>
           </select>
-          <Button size="sm" variant="outline" onClick={() => refetch()}>
-            <RefreshCw className="h-3 w-3" />
+          <Button 
+            size="sm" 
+            variant="outline" 
+            onClick={() => refetch()}
+            className="border-sand hover:bg-sand-light text-slate transition-colors"
+          >
+            <RefreshCw className="h-3.5 w-3.5 text-slate/75" />
           </Button>
         </div>
       </div>
