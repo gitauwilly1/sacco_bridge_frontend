@@ -5,8 +5,8 @@ import { z } from 'zod';
 import { useNavigate, useParams } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
 import {
-  ArrowLeft, HandCoins, Calculator, Shield, Save,
-  AlertCircle, TrendingUp, Wallet, Info,
+  ArrowLeft, HandCoins, Calculator, Shield,
+  AlertCircle, Info,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -28,12 +28,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
 import { PageSpinner } from '@/components/feedback/LoadingState';
 import { ErrorState } from '@/components/feedback/ErrorState';
 import { toast } from 'sonner';
 import { chamaApi } from '../api/chamaApi';
-import { formatKES } from '../../../utils/format';
+import { formatKES, formatDate } from '../../../utils/format';
 
 const loanSchema = z.object({
   purpose: z
@@ -110,13 +109,12 @@ export default function LoanApplication() {
   const watchedTerm = parseInt(form.watch('term_months') || '0', 10);
 
   const availableBalance = dashboard?.available_balance || 0;
-  const maxLoanAmount = availableBalance * 3; // Example: 3x available balance
+  const maxLoanAmount = availableBalance * 3;
 
   const estimatedInterestRate = useMemo(() => {
     if (!watchedAmount || !watchedTerm) return null;
-    // Simple interest rate calculation based on term
-    const baseRate = 5; // 5% base rate
-    const termPremium = Math.min(watchedTerm * 0.5, 10); // 0.5% per month, max 10%
+    const baseRate = 5;
+    const termPremium = Math.min(watchedTerm * 0.5, 10);
     return baseRate + termPremium;
   }, [watchedAmount, watchedTerm]);
 
@@ -183,32 +181,36 @@ export default function LoanApplication() {
   return (
     <div className="pb-4">
       {/* Header */}
-      <div className="sticky top-14 z-30 bg-white border-b px-4 py-3">
+      <div className="sticky top-14 z-30 bg-white/80 backdrop-blur-lg border-b border-sand px-4 py-3">
         <div className="flex items-center gap-3">
-          <button onClick={() => navigate({ to: `/chamas/${chamaId}` })}>
+          <button
+            onClick={() => navigate({ to: `/chamas/${chamaId}` })}
+            className="p-1 rounded-lg text-slate hover:bg-sand-light transition-colors"
+            aria-label="Back to chama"
+          >
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div className="flex-1">
-            <h1 className="text-lg font-bold text-slate">Apply for Loan</h1>
-            <p className="text-xs text-gray-500">Submit a loan application</p>
+            <h1 className="text-base font-bold font-heading text-slate leading-tight">Apply for Loan</h1>
+            <p className="text-[11px] text-gray-400 font-medium uppercase tracking-wider mt-0.5">Submit a loan application</p>
           </div>
         </div>
       </div>
 
       <div className="p-4">
         {/* Eligibility Card */}
-        <Card className="mb-6 bg-sand-light border-0">
+        <Card className="mb-6 bg-sand border border-sand-dark/20 shadow-subtle overflow-hidden">
           <CardContent className="p-4">
-            <div className="grid grid-cols-2 gap-4 text-center">
+            <div className="grid grid-cols-2 gap-4 text-center divide-x divide-sand-dark/25">
               <div>
-                <p className="text-xs text-gray-500 mb-1">Available Balance</p>
-                <p className="text-lg font-bold text-success">
+                <p className="text-xs text-gray-400 font-medium mb-1">Available Balance</p>
+                <p className="text-lg font-bold text-success font-numbers" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
                   {formatKES(availableBalance)}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-gray-500 mb-1">Max Loan</p>
-                <p className="text-lg font-bold text-terracotta">
+                <p className="text-xs text-gray-400 font-medium mb-1">Max Loan Limit</p>
+                <p className="text-lg font-bold text-terracotta font-numbers" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
                   {formatKES(maxLoanAmount)}
                 </p>
               </div>
@@ -219,10 +221,10 @@ export default function LoanApplication() {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             {/* Loan Details */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Loan Details</CardTitle>
-                <CardDescription>Tell us about the loan you need</CardDescription>
+            <Card className="border-sand bg-white shadow-subtle">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-bold text-slate">Loan Details</CardTitle>
+                <CardDescription className="text-xs text-gray-400">Tell us about the loan you need</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <FormField
@@ -230,16 +232,16 @@ export default function LoanApplication() {
                   name="purpose"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Purpose</FormLabel>
+                      <FormLabel className="text-slate font-medium text-xs">Purpose</FormLabel>
                       <FormControl>
                         <Textarea
                           placeholder="e.g., Business expansion, school fees, emergency..."
-                          className="resize-none"
+                          className="resize-none border-sand bg-white focus-visible:border-terracotta"
                           rows={2}
                           {...field}
                         />
                       </FormControl>
-                      <FormDescription>
+                      <FormDescription className="text-[10px] text-gray-400 font-medium">
                         Briefly describe why you need this loan
                       </FormDescription>
                       <FormMessage />
@@ -252,7 +254,7 @@ export default function LoanApplication() {
                   name="amount"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Amount (KES)</FormLabel>
+                      <FormLabel className="text-slate font-medium text-xs">Amount (KES)</FormLabel>
                       <FormControl>
                         <Input
                           placeholder="e.g., 50000"
@@ -260,16 +262,19 @@ export default function LoanApplication() {
                           min="0"
                           step="0.01"
                           max={maxLoanAmount}
+                          className="font-numbers"
+                          style={{ fontFamily: "'JetBrains Mono', monospace" }}
                           {...field}
                         />
                       </FormControl>
                       {isAmountExceeded && (
-                        <p className="text-xs text-danger mt-1">
+                        <p className="text-xs text-danger font-semibold flex items-center gap-1 mt-1.5">
+                          <AlertCircle className="h-3.5 w-3.5" />
                           Maximum loan amount is {formatKES(maxLoanAmount)}
                         </p>
                       )}
                       {isAmountValid && (
-                        <p className="text-xs text-success mt-1">
+                        <p className="text-xs text-success font-semibold flex items-center gap-1 mt-1.5">
                           Amount is within eligible limit
                         </p>
                       )}
@@ -284,13 +289,15 @@ export default function LoanApplication() {
                     name="term_months"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Term (Months)</FormLabel>
+                        <FormLabel className="text-slate font-medium text-xs">Term (Months)</FormLabel>
                         <FormControl>
                           <Input
                             placeholder="e.g., 12"
                             type="number"
                             min="1"
                             max="60"
+                            className="font-numbers"
+                            style={{ fontFamily: "'JetBrains Mono', monospace" }}
                             {...field}
                           />
                         </FormControl>
@@ -304,16 +311,16 @@ export default function LoanApplication() {
                     name="repayment_frequency"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Repayment</FormLabel>
+                        <FormLabel className="text-slate font-medium text-xs">Repayment</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
-                            <SelectTrigger>
+                            <SelectTrigger className="border-sand bg-white">
                               <SelectValue placeholder="Select" />
                             </SelectTrigger>
                           </FormControl>
-                          <SelectContent>
+                          <SelectContent className="border-sand bg-white">
                             {Object.entries(frequencyLabels).map(([value, label]) => (
-                              <SelectItem key={value} value={value}>
+                              <SelectItem key={value} value={value} className="focus:bg-sand-light focus:text-terracotta">
                                 {label}
                               </SelectItem>
                             ))}
@@ -329,43 +336,43 @@ export default function LoanApplication() {
 
             {/* Loan Preview */}
             {watchedAmount > 0 && watchedTerm > 0 && estimatedInterestRate && (
-              <Card className="border-terracotta/30">
-                <CardHeader>
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <Calculator className="h-5 w-5 text-terracotta" />
+              <Card className="border-terracotta/30 bg-sand-light/20 shadow-subtle overflow-hidden">
+                <CardHeader className="pb-3 border-b border-sand/40 bg-sand-light/40">
+                  <CardTitle className="text-sm font-bold text-slate flex items-center gap-2">
+                    <Calculator className="h-4.5 w-4.5 text-terracotta" />
                     Loan Preview
                   </CardTitle>
-                  <CardDescription>Estimated repayment breakdown</CardDescription>
+                  <CardDescription className="text-xs text-gray-400">Estimated repayment breakdown</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="flex justify-between text-sm">
+                <CardContent className="space-y-3 pt-4">
+                  <div className="flex justify-between text-sm font-medium">
                     <span className="text-gray-500">Loan Amount</span>
-                    <span className="font-semibold text-slate">{formatKES(watchedAmount)}</span>
+                    <span className="font-bold text-slate font-numbers" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{formatKES(watchedAmount)}</span>
                   </div>
-                  <div className="flex justify-between text-sm">
+                  <div className="flex justify-between text-sm font-medium">
                     <span className="text-gray-500">Interest Rate</span>
-                    <span className="font-semibold text-slate">{estimatedInterestRate}% p.a.</span>
+                    <span className="font-bold text-slate font-numbers" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{estimatedInterestRate}% p.a.</span>
                   </div>
-                  <div className="flex justify-between text-sm">
+                  <div className="flex justify-between text-sm font-medium">
                     <span className="text-gray-500">Term</span>
-                    <span className="font-semibold text-slate">{watchedTerm} months</span>
+                    <span className="font-bold text-slate">{watchedTerm} months</span>
                   </div>
                   {estimatedMonthlyPayment && (
-                    <div className="flex justify-between text-sm pt-2 border-t">
+                    <div className="flex justify-between text-sm pt-3 border-t border-sand/40 font-medium">
                       <span className="text-gray-500">Monthly Payment</span>
-                      <span className="font-semibold text-terracotta">
+                      <span className="font-extrabold text-terracotta font-numbers" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
                         {formatKES(estimatedMonthlyPayment)}
                       </span>
                     </div>
                   )}
                   {totalRepayment && (
-                    <div className="flex justify-between text-sm">
+                    <div className="flex justify-between text-sm font-medium">
                       <span className="text-gray-500">Total Repayment</span>
-                      <span className="font-semibold text-slate">{formatKES(totalRepayment)}</span>
+                      <span className="font-bold text-slate font-numbers" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{formatKES(totalRepayment)}</span>
                     </div>
                   )}
-                  <div className="bg-sand-light rounded-lg p-3 text-xs text-gray-500 flex items-start gap-2">
-                    <Info className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                  <div className="bg-sand-light rounded-xl p-3 text-xs text-gray-400 font-medium border border-sand/40 flex items-start gap-2 mt-2">
+                    <Info className="h-4.5 w-4.5 flex-shrink-0 text-slate mt-0.5" />
                     <span>
                       This is an estimate. Final terms will be confirmed upon approval.
                     </span>
@@ -375,13 +382,13 @@ export default function LoanApplication() {
             )}
 
             {/* Guarantor */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Shield className="h-5 w-5 text-terracotta" />
+            <Card className="border-sand bg-white shadow-subtle">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-bold text-slate flex items-center gap-2">
+                  <Shield className="h-4.5 w-4.5 text-terracotta" />
                   Guarantor (Optional)
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-xs text-gray-400">
                   Select a member to guarantee your loan
                 </CardDescription>
               </CardHeader>
@@ -393,19 +400,19 @@ export default function LoanApplication() {
                     <FormItem>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
-                          <SelectTrigger>
+                          <SelectTrigger className="border-sand bg-white">
                             <SelectValue placeholder="Select a guarantor (optional)" />
                           </SelectTrigger>
                         </FormControl>
-                        <SelectContent>
+                        <SelectContent className="border-sand bg-white">
                           {members.map((member) => (
-                            <SelectItem key={member.id} value={member.id.toString()}>
+                            <SelectItem key={member.id} value={member.id.toString()} className="focus:bg-sand-light focus:text-terracotta">
                               {member.user_name || member.user?.full_name}
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
-                      <FormDescription>
+                      <FormDescription className="text-[10px] text-gray-400 font-medium">
                         A guarantor may be required for larger loan amounts
                       </FormDescription>
                       <FormMessage />
@@ -416,10 +423,10 @@ export default function LoanApplication() {
             </Card>
 
             {/* Notes */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Additional Notes</CardTitle>
-                <CardDescription>
+            <Card className="border-sand bg-white shadow-subtle">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-bold text-slate">Additional Notes</CardTitle>
+                <CardDescription className="text-xs text-gray-400">
                   Any other information you'd like to share
                 </CardDescription>
               </CardHeader>
@@ -432,12 +439,12 @@ export default function LoanApplication() {
                       <FormControl>
                         <Textarea
                           placeholder="Additional details about your loan request..."
-                          className="resize-none"
+                          className="resize-none border-sand bg-white focus-visible:border-terracotta"
                           rows={3}
                           {...field}
                         />
                       </FormControl>
-                      <FormDescription>
+                      <FormDescription className="text-[10px] text-gray-400 font-medium">
                         {field.value?.length || 0}/500 characters
                       </FormDescription>
                       <FormMessage />
@@ -448,22 +455,25 @@ export default function LoanApplication() {
             </Card>
 
             {/* Submit */}
-            <div className="flex gap-3">
+            <div className="flex gap-3 pt-2">
               <Button
                 type="button"
                 variant="outline"
-                className="flex-1"
+                className="flex-1 border-sand hover:bg-sand-light text-slate transition-all"
                 onClick={() => navigate({ to: `/chamas/${chamaId}` })}
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
-                className="flex-1"
+                className="flex-1 bg-terracotta hover:bg-clay text-white shadow-sm transition-all duration-150 active:scale-[0.98]"
                 disabled={isLoading || isAmountExceeded}
               >
                 {isLoading ? (
-                  'Submitting...'
+                  <span className="flex items-center gap-2">
+                    <span className="h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                    Submitting...
+                  </span>
                 ) : (
                   <>
                     <HandCoins className="h-4 w-4 mr-2" />
