@@ -109,16 +109,20 @@ export default function SecuritySettings({ profile }) {
   return (
     <div className="space-y-6">
       {/* Password */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <Key className="h-5 w-5 text-terracotta" /> Password
+      <Card className="border-sand bg-white shadow-subtle">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm font-bold text-slate flex items-center gap-2">
+            <Key className="h-4.5 w-4.5 text-terracotta" /> Password
           </CardTitle>
-          <CardDescription>Update your account password</CardDescription>
+          <CardDescription className="text-xs text-gray-400 font-medium">Update your account password</CardDescription>
         </CardHeader>
         <CardContent>
           {!showPasswordForm ? (
-            <Button variant="outline" onClick={() => setShowPasswordForm(true)}>
+            <Button
+              variant="outline"
+              onClick={() => setShowPasswordForm(true)}
+              className="border-sand hover:bg-sand-light text-slate cursor-pointer h-10 rounded-xl text-xs font-semibold"
+            >
               Change Password
             </Button>
           ) : (
@@ -132,11 +136,15 @@ export default function SecuritySettings({ profile }) {
                   name="current_password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Current Password</FormLabel>
+                      <FormLabel className="text-xs font-bold text-slate">Current Password</FormLabel>
                       <FormControl>
-                        <Input type="password" {...field} />
+                        <Input
+                          type="password"
+                          className="border-input rounded-xl bg-white text-sm focus:border-terracotta focus:ring-1 focus:ring-terracotta"
+                          {...field}
+                        />
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className="text-xs text-danger font-semibold" />
                     </FormItem>
                   )}
                 />
@@ -145,11 +153,15 @@ export default function SecuritySettings({ profile }) {
                   name="new_password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>New Password</FormLabel>
+                      <FormLabel className="text-xs font-bold text-slate">New Password</FormLabel>
                       <FormControl>
-                        <Input type="password" {...field} />
+                        <Input
+                          type="password"
+                          className="border-input rounded-xl bg-white text-sm focus:border-terracotta focus:ring-1 focus:ring-terracotta"
+                          {...field}
+                        />
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className="text-xs text-danger font-semibold" />
                     </FormItem>
                   )}
                 />
@@ -158,21 +170,30 @@ export default function SecuritySettings({ profile }) {
                   name="new_password_confirm"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Confirm New Password</FormLabel>
+                      <FormLabel className="text-xs font-bold text-slate">Confirm New Password</FormLabel>
                       <FormControl>
-                        <Input type="password" {...field} />
+                        <Input
+                          type="password"
+                          className="border-input rounded-xl bg-white text-sm focus:border-terracotta focus:ring-1 focus:ring-terracotta"
+                          {...field}
+                        />
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className="text-xs text-danger font-semibold" />
                     </FormItem>
                   )}
                 />
-                <div className="flex gap-2">
-                  <Button type="submit" disabled={changingPassword}>
+                <div className="flex gap-3 pt-2">
+                  <Button
+                    type="submit"
+                    className="bg-terracotta hover:bg-terracotta-dark text-white border-0 shadow-subtle cursor-pointer h-10 rounded-xl text-xs font-semibold px-4"
+                    disabled={changingPassword}
+                  >
                     {changingPassword ? 'Changing...' : 'Update Password'}
                   </Button>
                   <Button
                     type="button"
-                    variant="ghost"
+                    variant="outline"
+                    className="border-sand hover:bg-sand-light text-slate cursor-pointer h-10 rounded-xl text-xs font-semibold px-4"
                     onClick={() => {
                       setShowPasswordForm(false);
                       passwordForm.reset();
@@ -188,30 +209,30 @@ export default function SecuritySettings({ profile }) {
       </Card>
 
       {/* 2FA */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <Shield className="h-5 w-5 text-terracotta" />
+      <Card className="border-sand bg-white shadow-subtle">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm font-bold text-slate flex items-center gap-2">
+            <Shield className="h-4.5 w-4.5 text-terracotta" />
             Two-Factor Authentication
           </CardTitle>
-          <CardDescription>Add extra security to your account</CardDescription>
+          <CardDescription className="text-xs text-gray-400 font-medium">Add extra security to your account</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-4 bg-sand-light/40 border border-sand/40 rounded-xl p-3">
             <div>
-              <p className="text-sm font-medium">Authenticator App</p>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs font-bold text-slate">Authenticator App</p>
+              <p className="text-[11px] text-gray-405 font-medium mt-0.5">
                 {profile?.two_factor_enabled
                   ? '2FA is enabled'
                   : 'Protect your account with 2FA'}
               </p>
             </div>
             <Badge
-              className={
+              className={`px-2 py-0.5 rounded-full text-[10px] font-semibold shadow-none capitalize ${
                 profile?.two_factor_enabled
-                  ? 'bg-success/10 text-success'
-                  : 'bg-gray-200 text-gray-600'
-              }
+                  ? 'bg-success/10 text-success border border-success/20'
+                  : 'bg-gray-100 text-gray-500 border border-gray-200'
+              }`}
               variant="outline"
             >
               {profile?.two_factor_enabled ? 'Enabled' : 'Disabled'}
@@ -220,27 +241,27 @@ export default function SecuritySettings({ profile }) {
 
           {/* QR Setup */}
           {qrCode && (
-            <div className="mb-4 p-4 bg-white rounded-lg border text-center">
+            <div className="mb-4 p-4 bg-sand-light/50 rounded-2xl border border-sand/40 text-center animate-in fade-in duration-250 space-y-3">
               <div
                 dangerouslySetInnerHTML={{ __html: qrCode }}
-                className="mb-3 flex justify-center"
+                className="mb-1 flex justify-center bg-white p-3 rounded-xl border border-sand/40 shadow-subtle w-48 mx-auto"
               />
-              <p className="text-xs text-gray-500 mb-2">
+              <p className="text-[11px] text-gray-400 font-semibold">
                 Scan with Google Authenticator or Authy
               </p>
-              <p className="text-xs font-mono bg-gray-100 p-2 rounded mb-3 break-all">
+              <p className="text-[11px] font-numbers bg-white border border-sand/40 p-2.5 rounded-xl break-all select-all" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
                 {totpSecret}
               </p>
               <Input
                 placeholder="Enter 6-digit code"
-                className="text-center"
+                className="text-center border-input rounded-xl bg-white text-sm font-numbers focus:border-terracotta focus:ring-1 focus:ring-terracotta h-10"
                 maxLength={6}
                 value={totpCode}
                 onChange={(e) => setTotpCode(e.target.value)}
               />
               <Button
                 onClick={onEnable2FA}
-                className="mt-3 w-full"
+                className="w-full bg-terracotta hover:bg-terracotta-dark text-white border-0 shadow-subtle cursor-pointer h-10 rounded-xl text-xs font-semibold"
                 disabled={!totpCode || totpCode.length < 6}
               >
                 Verify & Enable 2FA
@@ -253,12 +274,13 @@ export default function SecuritySettings({ profile }) {
             <div className="space-y-3">
               <Input
                 placeholder="Enter code to disable 2FA"
+                className="border-input rounded-xl bg-white text-sm font-numbers focus:border-terracotta focus:ring-1 focus:ring-terracotta h-10"
                 value={totpCode}
                 onChange={(e) => setTotpCode(e.target.value)}
               />
               <Button
                 variant="outline"
-                className="w-full text-danger"
+                className="w-full border border-danger/30 text-danger hover:bg-danger/5 hover:border-danger/45 cursor-pointer h-10 rounded-xl text-xs font-semibold"
                 onClick={onDisable2FA}
               >
                 Disable 2FA
@@ -270,6 +292,7 @@ export default function SecuritySettings({ profile }) {
                 variant="outline"
                 onClick={onSetup2FA}
                 disabled={settingUp2FA}
+                className="border-sand hover:bg-sand-light text-slate cursor-pointer h-10 rounded-xl text-xs font-semibold px-4"
               >
                 {settingUp2FA ? 'Loading...' : 'Setup 2FA'}
               </Button>
