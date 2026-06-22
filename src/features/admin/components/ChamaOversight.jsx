@@ -51,20 +51,20 @@ export default function ChamaOversight() {
       sortable: true,
       render: (_, row) => (
         <div>
-          <p className="font-medium text-slate text-sm">{row.chama_name}</p>
-          <p className="text-xs text-gray-500">{row.chama_type}</p>
+          <p className="font-semibold text-slate text-sm">{row.chama_name}</p>
+          <p className="text-xs text-gray-400">{row.chama_type}</p>
         </div>
       ),
     },
     {
       key: 'total_members',
       header: 'Members',
-      render: (value) => <span className="text-sm">{value?.toLocaleString() || '0'}</span>,
+      render: (value) => <span className="text-sm font-medium text-slate">{value?.toLocaleString() || '0'}</span>,
     },
     {
       key: 'total_savings',
       header: 'Savings',
-      render: (value) => <span className="text-sm font-semibold">{formatKES(value)}</span>,
+      render: (value) => <span className="text-sm font-bold text-slate">{formatKES(value)}</span>,
     },
     {
       key: 'status',
@@ -73,8 +73,8 @@ export default function ChamaOversight() {
         <Badge
           className={
             value === 'active'
-              ? 'bg-success/10 text-success'
-              : 'bg-danger/10 text-danger'
+              ? 'bg-success/10 text-success border border-success/20'
+              : 'bg-danger/10 text-danger border border-danger/20'
           }
           variant="outline"
         >
@@ -91,12 +91,12 @@ export default function ChamaOversight() {
   ];
 
   const rowActions = (row) => (
-    <div className="flex items-center gap-1 justify-end">
+    <div className="flex items-center gap-2 justify-end">
       {row.status === 'active' ? (
         <Button
           size="sm"
           variant="ghost"
-          className="text-alert"
+          className="text-alert hover:text-alert/80 hover:bg-alert/5 transition-all rounded-lg font-medium"
           onClick={() => {
             if (window.confirm(`Suspend ${row.chama_name}?`)) {
               manageMutation.mutate({ chamaId: row.id, action: 'suspend' });
@@ -109,7 +109,7 @@ export default function ChamaOversight() {
         <Button
           size="sm"
           variant="ghost"
-          className="text-success"
+          className="text-success hover:text-success/80 hover:bg-success/5 transition-all rounded-lg font-medium"
           onClick={() => manageMutation.mutate({ chamaId: row.id, action: 'reactivate' })}
         >
           <CheckCircle2 className="h-3 w-3 mr-1" /> Reactivate
@@ -129,14 +129,19 @@ export default function ChamaOversight() {
           <select
             value={status}
             onChange={(e) => { setStatus(e.target.value); setPage(1); }}
-            className="text-xs border rounded-md px-2 py-1.5 bg-white"
+            className="text-xs border border-sand bg-white/90 hover:border-terracotta focus:outline-none focus:ring-1 focus:ring-terracotta rounded-lg px-2.5 py-1.5 text-slate font-medium shadow-subtle transition-all cursor-pointer"
           >
             <option value="all">All</option>
             <option value="active">Active</option>
             <option value="suspended">Suspended</option>
           </select>
-          <Button size="sm" variant="outline" onClick={() => refetch()}>
-            <RefreshCw className="h-3 w-3" />
+          <Button 
+            size="sm" 
+            variant="outline" 
+            onClick={() => refetch()}
+            className="border-sand hover:bg-sand-light text-slate transition-colors"
+          >
+            <RefreshCw className="h-3.5 w-3.5 text-slate/75" />
           </Button>
         </div>
       </div>
