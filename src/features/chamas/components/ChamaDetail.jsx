@@ -9,11 +9,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Skeleton } from '@/components/ui/skeleton';
 import { PageSpinner } from '../../../components/feedback/LoadingState';
 import { ErrorState } from '../../../components/feedback/ErrorState';
 import { chamaApi } from '../api/chamaApi';
-import { formatKES, formatDate, formatPhone } from '../../../utils/format';
+import { formatKES, formatDate } from '../../../utils/format';
 import MembersList from './MembersList';
 import ContributionsList from './ContributionsList';
 import LoansList from './LoansList';
@@ -58,20 +57,29 @@ export default function ChamaDetail() {
   return (
     <div className="pb-4">
       {/* Header */}
-      <div className="sticky top-14 z-30 bg-white border-b px-4 py-3">
+      <div className="sticky top-14 z-30 bg-white/80 backdrop-blur-lg border-b border-sand px-4 py-3">
         <div className="flex items-center gap-3">
-          <button onClick={() => navigate({ to: '/chamas' })}>
+          <button
+            onClick={() => navigate({ to: '/chamas' })}
+            className="p-1 rounded-lg text-slate hover:bg-sand-light transition-colors"
+            aria-label="Back to chamas"
+          >
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div className="flex-1">
-            <h1 className="text-lg font-bold text-slate">{chama.chama_name}</h1>
-            <p className="text-xs text-gray-500">{chama.chama_type}</p>
+            <h1 className="text-base font-bold font-heading text-slate leading-tight">{chama.chama_name}</h1>
+            <p className="text-[11px] text-gray-400 font-medium uppercase tracking-wider mt-0.5">{chama.chama_type}</p>
           </div>
-          <Button size="sm" variant="outline" onClick={() => {
-            if (inviteData?.invite_code) {
-              navigator.clipboard.writeText(inviteData.invite_code);
-            }
-          }}>
+          <Button
+            size="sm"
+            variant="outline"
+            className="border-sand hover:bg-sand-light text-slate hover:text-terracotta transition-colors"
+            onClick={() => {
+              if (inviteData?.invite_code) {
+                navigator.clipboard.writeText(inviteData.invite_code);
+              }
+            }}
+          >
             <Share2 className="h-4 w-4 mr-1" /> Invite
           </Button>
         </div>
@@ -79,10 +87,10 @@ export default function ChamaDetail() {
 
       {/* Health Score */}
       {chama.health?.grade && (
-        <div className="px-4 py-3 bg-white border-b">
+        <div className="px-4 py-3 bg-sand-light/50 border-b border-sand">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-slate">Health Score</span>
-            <Badge className={gradeColors[chama.health.grade] || 'bg-gray-400'}>
+            <span className="text-sm font-medium text-slate">Chama Health Grade</span>
+            <Badge className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border-0 ${gradeColors[chama.health.grade] || 'bg-gray-400'}`}>
               {chama.health.grade} · {chama.health.score}/100
             </Badge>
           </div>
@@ -90,115 +98,158 @@ export default function ChamaDetail() {
       )}
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-2 gap-2 p-4">
-        <Card>
+      <div className="grid grid-cols-2 gap-3 p-4">
+        <Card className="border-sand bg-white shadow-subtle card-lift">
           <CardContent className="p-4 text-center">
-            <Users className="h-5 w-5 text-terracotta mx-auto mb-1" />
-            <p className="text-2xl font-bold text-slate">{chama.total_members}</p>
-            <p className="text-xs text-gray-500">Members</p>
+            <div className="mx-auto mb-2 flex h-9 w-9 items-center justify-center rounded-xl bg-terracotta/10">
+              <Users className="h-5 w-5 text-terracotta" />
+            </div>
+            <p className="text-2xl font-bold font-numbers text-slate leading-none mb-1" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+              {chama.total_members}
+            </p>
+            <p className="text-xs text-gray-400 font-medium">Members</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border-sand bg-white shadow-subtle card-lift">
           <CardContent className="p-4 text-center">
-            <Wallet className="h-5 w-5 text-success mx-auto mb-1" />
-            <p className="text-2xl font-bold text-slate">{formatKES(chama.total_savings)}</p>
-            <p className="text-xs text-gray-500">Savings</p>
+            <div className="mx-auto mb-2 flex h-9 w-9 items-center justify-center rounded-xl bg-success/10">
+              <Wallet className="h-5 w-5 text-success" />
+            </div>
+            <p className="text-lg font-bold font-numbers text-slate leading-none mb-1 truncate" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+              {formatKES(chama.total_savings)}
+            </p>
+            <p className="text-xs text-gray-400 font-medium">Savings</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border-sand bg-white shadow-subtle card-lift">
           <CardContent className="p-4 text-center">
-            <Scale className="h-5 w-5 text-alert mx-auto mb-1" />
-            <p className="text-2xl font-bold text-slate">{formatKES(chama.outstanding_loans)}</p>
-            <p className="text-xs text-gray-500">Outstanding</p>
+            <div className="mx-auto mb-2 flex h-9 w-9 items-center justify-center rounded-xl bg-alert/10">
+              <Scale className="h-5 w-5 text-alert" />
+            </div>
+            <p className="text-lg font-bold font-numbers text-slate leading-none mb-1 truncate" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+              {formatKES(chama.outstanding_loans)}
+            </p>
+            <p className="text-xs text-gray-400 font-medium">Outstanding</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border-sand bg-white shadow-subtle card-lift">
           <CardContent className="p-4 text-center">
-            <TrendingUp className="h-5 w-5 text-blue-500 mx-auto mb-1" />
-            <p className="text-2xl font-bold text-slate">{formatKES(chama.available_balance)}</p>
-            <p className="text-xs text-gray-500">Available</p>
+            <div className="mx-auto mb-2 flex h-9 w-9 items-center justify-center rounded-xl bg-blue-500/10">
+              <TrendingUp className="h-5 w-5 text-blue-500" />
+            </div>
+            <p className="text-lg font-bold font-numbers text-slate leading-none mb-1 truncate" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+              {formatKES(chama.available_balance)}
+            </p>
+            <p className="text-xs text-gray-400 font-medium">Available</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Quick Actions */}
-      <div className="px-4 flex gap-2 mb-4">
+      <div className="px-4 flex gap-3 mb-6">
         <Button
           size="sm"
-          className="flex-1"
+          className="flex-1 bg-terracotta hover:bg-clay text-white shadow-sm transition-all"
           onClick={() => navigate({ to: `/chamas/${chamaId}/contribute` })}
         >
-          <Plus className="h-4 w-4 mr-1" /> Contribute
+          <Plus className="h-4 w-4 mr-1.5" /> Contribute
         </Button>
         <Button
           size="sm"
           variant="outline"
-          className="flex-1"
+          className="flex-1 border-sand hover:bg-sand-light text-slate hover:text-terracotta transition-all"
           onClick={() => navigate({ to: `/chamas/${chamaId}/loan` })}
         >
-          <HandCoins className="h-4 w-4 mr-1" /> Loan
+          <HandCoins className="h-4 w-4 mr-1.5" /> Request Loan
         </Button>
         <Button
           size="sm"
           variant="outline"
+          className="border-sand hover:bg-sand-light transition-all px-2.5"
           onClick={() => refetch()}
         >
-          <RefreshCw className="h-4 w-4" />
+          <RefreshCw className="h-4 w-4 text-gray-400" />
         </Button>
       </div>
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="px-4">
-        <TabsList className="w-full justify-start overflow-x-auto">
-          <TabsTrigger value="overview">
-            <Calendar className="h-4 w-4 mr-1" /> Recent
+        <TabsList className="w-full justify-start overflow-x-auto flex gap-1 bg-sand/40 p-1 rounded-full border border-sand">
+          <TabsTrigger
+            value="overview"
+            className="rounded-full text-xs font-semibold px-3 py-1.5 transition-all data-[state=active]:bg-terracotta data-[state=active]:text-white data-[state=active]:shadow-sm cursor-pointer"
+          >
+            <Calendar className="h-3.5 w-3.5 mr-1" /> Recent
           </TabsTrigger>
-          <TabsTrigger value="members">
-            <Users className="h-4 w-4 mr-1" /> Members
+          <TabsTrigger
+            value="members"
+            className="rounded-full text-xs font-semibold px-3 py-1.5 transition-all data-[state=active]:bg-terracotta data-[state=active]:text-white data-[state=active]:shadow-sm cursor-pointer"
+          >
+            <Users className="h-3.5 w-3.5 mr-1" /> Members
           </TabsTrigger>
-          <TabsTrigger value="contributions">Contributions</TabsTrigger>
-          <TabsTrigger value="loans">Loans</TabsTrigger>
-          <TabsTrigger value="meetings">Meetings</TabsTrigger>
-          <TabsTrigger value="polls">
-            <Vote className="h-4 w-4 mr-1" />
+          <TabsTrigger
+            value="contributions"
+            className="rounded-full text-xs font-semibold px-3 py-1.5 transition-all data-[state=active]:bg-terracotta data-[state=active]:text-white data-[state=active]:shadow-sm cursor-pointer"
+          >
+            Contributions
+          </TabsTrigger>
+          <TabsTrigger
+            value="loans"
+            className="rounded-full text-xs font-semibold px-3 py-1.5 transition-all data-[state=active]:bg-terracotta data-[state=active]:text-white data-[state=active]:shadow-sm cursor-pointer"
+          >
+            Loans
+          </TabsTrigger>
+          <TabsTrigger
+            value="meetings"
+            className="rounded-full text-xs font-semibold px-3 py-1.5 transition-all data-[state=active]:bg-terracotta data-[state=active]:text-white data-[state=active]:shadow-sm cursor-pointer"
+          >
+            Meetings
+          </TabsTrigger>
+          <TabsTrigger
+            value="polls"
+            className="rounded-full text-xs font-semibold px-3 py-1.5 transition-all data-[state=active]:bg-terracotta data-[state=active]:text-white data-[state=active]:shadow-sm cursor-pointer"
+          >
+            <Vote className="h-3.5 w-3.5 mr-1" /> Polls
             {chama.active_polls > 0 && (
-              <Badge className="ml-1 h-4 w-4 p-0 text-[10px] bg-danger">
+              <Badge className="ml-1 h-4 w-4 p-0 flex items-center justify-center text-[10px] bg-danger text-white rounded-full border-0">
                 {chama.active_polls}
               </Badge>
             )}
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview" className="mt-4">
+        <TabsContent value="overview" className="mt-4 space-y-4 outline-none">
           <div className="space-y-4">
             {chama.recent_contributions?.length > 0 && (
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm">Recent Contributions</CardTitle>
+              <Card className="border-sand shadow-subtle overflow-hidden">
+                <CardHeader className="pb-3 pt-4 border-b border-sand bg-sand-light/30">
+                  <CardTitle className="text-sm font-semibold text-slate">Recent Contributions</CardTitle>
                 </CardHeader>
-                <CardContent className="p-0">
+                <CardContent className="p-0 divide-y divide-sand">
                   {chama.recent_contributions.map((c) => (
-                    <div key={c.id} className="flex items-center justify-between px-4 py-2 border-t">
+                    <div key={c.id} className="flex items-center justify-between px-4 py-3 hover:bg-sand-light/25 transition-colors">
                       <div>
-                        <p className="text-sm font-medium">{c.member_name}</p>
-                        <p className="text-xs text-gray-500">{formatDate(c.created_at)}</p>
+                        <p className="text-sm font-medium text-slate-dark">{c.member_name}</p>
+                        <p className="text-xs text-gray-400 font-medium">{formatDate(c.created_at)}</p>
                       </div>
-                      <p className="text-sm font-semibold text-success">{formatKES(c.amount)}</p>
+                      <p className="text-sm font-semibold font-numbers text-success" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                        {formatKES(c.amount)}
+                      </p>
                     </div>
                   ))}
                 </CardContent>
               </Card>
             )}
             {chama.upcoming_meetings?.length > 0 && (
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm">Upcoming Meetings</CardTitle>
+              <Card className="border-sand shadow-subtle overflow-hidden">
+                <CardHeader className="pb-3 pt-4 border-b border-sand bg-sand-light/30">
+                  <CardTitle className="text-sm font-semibold text-slate">Upcoming Meetings</CardTitle>
                 </CardHeader>
-                <CardContent className="p-0">
+                <CardContent className="p-0 divide-y divide-sand">
                   {chama.upcoming_meetings.map((m) => (
-                    <div key={m.id} className="px-4 py-2 border-t">
-                      <p className="text-sm font-medium">{m.title}</p>
-                      <p className="text-xs text-gray-500">
+                    <div key={m.id} className="px-4 py-3 hover:bg-sand-light/25 transition-colors">
+                      <p className="text-sm font-medium text-slate-dark">{m.title}</p>
+                      <p className="text-xs text-gray-400 font-medium mt-1">
                         {formatDate(m.date)} at {m.start_time?.slice(0, 5)}
                       </p>
                     </div>
@@ -209,23 +260,23 @@ export default function ChamaDetail() {
           </div>
         </TabsContent>
 
-        <TabsContent value="members" className="mt-4">
+        <TabsContent value="members" className="mt-4 outline-none">
           <MembersList chamaId={chamaId} />
         </TabsContent>
 
-        <TabsContent value="contributions" className="mt-4">
+        <TabsContent value="contributions" className="mt-4 outline-none">
           <ContributionsList chamaId={chamaId} />
         </TabsContent>
 
-        <TabsContent value="loans" className="mt-4">
+        <TabsContent value="loans" className="mt-4 outline-none">
           <LoansList chamaId={chamaId} />
         </TabsContent>
 
-        <TabsContent value="meetings" className="mt-4">
+        <TabsContent value="meetings" className="mt-4 outline-none">
           <MeetingsList chamaId={chamaId} />
         </TabsContent>
 
-        <TabsContent value="polls" className="mt-4">
+        <TabsContent value="polls" className="mt-4 outline-none">
           <PollsList chamaId={chamaId} />
         </TabsContent>
       </Tabs>
