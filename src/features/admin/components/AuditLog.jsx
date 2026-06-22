@@ -9,13 +9,13 @@ import { formatDateTime } from '../../../utils/format';
 import DataTable from './DataTable';
 
 const actionColors = {
-  CREATE: 'bg-success/10 text-success',
-  UPDATE: 'bg-blue-500/10 text-blue-500',
-  DELETE: 'bg-danger/10 text-danger',
-  SUSPEND: 'bg-alert/10 text-alert',
-  VERIFY: 'bg-success/10 text-success',
-  LOGIN: 'bg-gray-200 text-gray-600',
-  FRAUD: 'bg-danger/10 text-danger',
+  CREATE: 'bg-success/10 text-success border-success/20',
+  UPDATE: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+  DELETE: 'bg-danger/10 text-danger border-danger/20',
+  SUSPEND: 'bg-alert/10 text-alert border-alert/20',
+  VERIFY: 'bg-success/10 text-success border-success/20',
+  LOGIN: 'bg-sand text-slate border-sand-dark/20',
+  FRAUD: 'bg-danger/10 text-danger border-danger/20',
 };
 
 export default function AuditLog() {
@@ -68,7 +68,7 @@ export default function AuditLog() {
       header: 'Time',
       width: '160px',
       render: (_, row) => (
-        <span className="text-xs text-gray-500">
+        <span className="text-xs text-gray-500 font-medium">
           {formatDateTime(row.timestamp || row.created_at)}
         </span>
       ),
@@ -79,7 +79,7 @@ export default function AuditLog() {
       width: '100px',
       render: (value) => (
         <Badge
-          className={actionColors[value] || 'bg-gray-100 text-gray-600'}
+          className={`${actionColors[value] || 'bg-sand text-slate border-sand-dark/20'} border`}
           variant="outline"
         >
           {value}
@@ -90,8 +90,8 @@ export default function AuditLog() {
       key: 'actor',
       header: 'Actor',
       render: (_, row) => (
-        <div className="flex items-center gap-1 text-sm">
-          <User className="h-3 w-3 text-gray-400" />
+        <div className="flex items-center gap-1.5 text-sm font-medium text-slate">
+          <User className="h-3.5 w-3.5 text-gray-400" />
           <span>{row.actor_name || row.user_email || 'System'}</span>
         </div>
       ),
@@ -100,7 +100,7 @@ export default function AuditLog() {
       key: 'description',
       header: 'Description',
       render: (_, row) => (
-        <p className="text-sm text-slate max-w-[300px] truncate">
+        <p className="text-sm text-slate font-medium max-w-[300px] truncate">
           {row.description || row.event || row.action}
         </p>
       ),
@@ -110,7 +110,7 @@ export default function AuditLog() {
       header: 'IP',
       width: '120px',
       render: (value) => (
-        <span className="text-xs text-gray-500 font-mono">{value || '—'}</span>
+        <span className="text-xs text-gray-400 font-mono">{value || '—'}</span>
       ),
     },
   ];
@@ -123,23 +123,33 @@ export default function AuditLog() {
           <p className="text-sm text-gray-500">{total} audit entries</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button size="sm" variant="outline" onClick={handleExportCSV}>
-            <Download className="h-3 w-3 mr-1" /> Export CSV
+          <Button 
+            size="sm" 
+            variant="outline" 
+            onClick={handleExportCSV}
+            className="border-sand hover:bg-sand-light text-slate hover:text-terracotta transition-colors shadow-subtle font-medium"
+          >
+            <Download className="h-3.5 w-3.5 mr-1 text-slate/75" /> Export CSV
           </Button>
-          <Button size="sm" variant="outline" onClick={() => refetch()}>
-            <RefreshCw className="h-3 w-3" />
+          <Button 
+            size="sm" 
+            variant="outline" 
+            onClick={() => refetch()}
+            className="border-sand hover:bg-sand-light text-slate transition-colors"
+          >
+            <RefreshCw className="h-3.5 w-3.5 text-slate/75" />
           </Button>
         </div>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-3">
         <select
           value={actionType}
           onChange={(e) => {
             setActionType(e.target.value);
             setPage(1);
           }}
-          className="text-xs border rounded-md px-2 py-1.5 bg-white"
+          className="text-xs border border-sand bg-white/90 hover:border-terracotta focus:outline-none focus:ring-1 focus:ring-terracotta rounded-lg px-2.5 py-1.5 text-slate font-medium shadow-subtle transition-all cursor-pointer"
         >
           <option value="all">All Actions</option>
           <option value="CREATE">Create</option>
@@ -156,7 +166,7 @@ export default function AuditLog() {
             setDateRange(e.target.value);
             setPage(1);
           }}
-          className="text-xs border rounded-md px-2 py-1.5 bg-white"
+          className="text-xs border border-sand bg-white/90 hover:border-terracotta focus:outline-none focus:ring-1 focus:ring-terracotta rounded-lg px-2.5 py-1.5 text-slate font-medium shadow-subtle transition-all cursor-pointer"
         >
           <option value="all">All Time</option>
           <option value="today">Today</option>
