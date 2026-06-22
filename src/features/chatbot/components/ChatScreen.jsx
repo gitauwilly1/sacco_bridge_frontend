@@ -33,14 +33,14 @@ const actionChips = {
 function TypingIndicator() {
   return (
     <div className="flex items-start gap-2 mb-4">
-      <div className="h-8 w-8 rounded-full bg-sand-light flex items-center justify-center flex-shrink-0">
+      <div className="h-8 w-8 rounded-full bg-sand-light border border-sand/30 flex items-center justify-center flex-shrink-0 shadow-subtle">
         <Bot className="h-4 w-4 text-terracotta" />
       </div>
-      <div className="bg-sand-light rounded-2xl rounded-tl-sm px-4 py-3">
-        <div className="flex gap-1">
-          <span className="h-2 w-2 bg-gray-300 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-          <span className="h-2 w-2 bg-gray-300 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-          <span className="h-2 w-2 bg-gray-300 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+      <div className="bg-sand-light rounded-2xl rounded-tl-sm px-4 py-3 border border-sand/35">
+        <div className="flex gap-1.5 items-center h-2">
+          <span className="h-1.5 w-1.5 bg-clay/40 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+          <span className="h-1.5 w-1.5 bg-clay/60 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+          <span className="h-1.5 w-1.5 bg-clay/80 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
         </div>
       </div>
     </div>
@@ -155,31 +155,31 @@ export default function ChatScreen() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-3.5rem)]">
+    <div className="flex h-[calc(100vh-3.5rem)] bg-surface">
       {/* Sidebar Overlay */}
       {showSidebar && (
         <div
-          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+          className="fixed inset-0 bg-black/40 z-30 lg:hidden backdrop-blur-xs"
           onClick={() => setShowSidebar(false)}
         />
       )}
 
       {/* Sidebar */}
       <div
-        className={`fixed inset-y-0 left-0 z-40 w-72 bg-white border-r transform transition-transform lg:relative lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 w-72 bg-white border-r border-sand transform transition-transform lg:relative lg:translate-x-0 ${
           showSidebar ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
       >
-        <div className="flex items-center justify-between p-4 border-b">
-          <h2 className="font-semibold text-slate text-sm">Chats</h2>
-          <button onClick={() => setShowSidebar(false)} className="lg:hidden">
-            <X className="h-5 w-5" />
+        <div className="flex items-center justify-between p-4 border-b border-sand/40">
+          <h2 className="font-bold text-slate text-xs uppercase tracking-wider">Chats</h2>
+          <button onClick={() => setShowSidebar(false)} className="lg:hidden p-1 hover:bg-sand-light rounded-lg transition-colors cursor-pointer">
+            <X className="h-4.5 w-4.5 text-slate" />
           </button>
         </div>
-        <div className="p-2">
+        <div className="p-3">
           <Button
             size="sm"
-            className="w-full mb-3"
+            className="w-full mb-3 bg-terracotta hover:bg-terracotta-dark text-white border-0 shadow-subtle cursor-pointer h-9 rounded-xl text-xs font-semibold"
             onClick={() => {
               setActiveSessionId(null);
               setShowSidebar(false);
@@ -190,22 +190,22 @@ export default function ChatScreen() {
           {sessionsLoading ? (
             <div className="space-y-2">
               {[1, 2, 3].map((i) => (
-                <Skeleton key={i} className="h-12 w-full" />
+                <div key={i} className="skeleton-shimmer h-10 w-full rounded-lg" />
               ))}
             </div>
           ) : sessions.length === 0 ? (
-            <p className="text-xs text-gray-500 text-center py-4">
+            <p className="text-xs text-gray-400 font-medium text-center py-6">
               No chats yet
             </p>
           ) : (
-            <div className="space-y-1">
+            <div className="space-y-1 overflow-y-auto max-h-[calc(100vh-10rem)] scrollbar-none">
               {sessions.map((session) => (
                 <div
                   key={session.id}
-                  className={`flex items-center justify-between p-2 rounded-lg cursor-pointer text-sm ${
+                  className={`flex items-center justify-between p-2.5 rounded-xl cursor-pointer text-xs font-bold transition-all ${
                     activeSessionId === session.id
-                      ? 'bg-terracotta/10 text-terracotta'
-                      : 'hover:bg-gray-100 text-slate'
+                      ? 'bg-sand-light text-terracotta border-l-2 border-terracotta shadow-none'
+                      : 'hover:bg-sand-light/50 text-slate'
                   }`}
                   onClick={() => {
                     setActiveSessionId(session.id);
@@ -213,7 +213,7 @@ export default function ChatScreen() {
                   }}
                 >
                   <div className="flex items-center gap-2 min-w-0">
-                    <MessageSquare className="h-4 w-4 flex-shrink-0" />
+                    <MessageSquare className="h-4 w-4 flex-shrink-0 text-slate/60" />
                     <span className="truncate">
                       {session.title || 'New Chat'}
                     </span>
@@ -223,9 +223,9 @@ export default function ChatScreen() {
                       e.stopPropagation();
                       deleteSessionMutation.mutate(session.id);
                     }}
-                    className="p-1 hover:bg-gray-200 rounded flex-shrink-0"
+                    className="p-1 hover:bg-danger/10 hover:text-danger rounded-lg transition-colors cursor-pointer flex-shrink-0"
                   >
-                    <Trash2 className="h-3 w-3 text-gray-400" />
+                    <Trash2 className="h-3.5 w-3.5 text-gray-400 hover:text-danger" />
                   </button>
                 </div>
               ))}
@@ -237,45 +237,46 @@ export default function ChatScreen() {
       {/* Main Chat */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
-        <div className="flex items-center gap-3 px-4 py-3 border-b bg-white">
+        <div className="flex items-center gap-3 px-4 py-3 border-b border-sand/40 bg-white/80 backdrop-blur-md sticky top-0 z-10">
           <button
-            className="lg:hidden"
+            className="lg:hidden p-1 hover:bg-sand-light rounded-lg cursor-pointer transition-colors"
             onClick={() => setShowSidebar(true)}
           >
-            <Menu className="h-5 w-5" />
+            <Menu className="h-5 w-5 text-slate" />
           </button>
           <div className="flex items-center gap-2 flex-1">
-            <div className="h-8 w-8 rounded-full bg-terracotta/10 flex items-center justify-center">
-              <Bot className="h-4 w-4 text-terracotta" />
+            <div className="h-8 w-8 rounded-full bg-terracotta/10 flex items-center justify-center border border-terracotta/20 shadow-none">
+              <Bot className="h-4.5 w-4.5 text-terracotta" />
             </div>
             <div>
-              <h1 className="text-sm font-semibold text-slate">
+              <h1 className="text-xs font-bold text-slate">
                 Sacco Bridge Assistant
               </h1>
-              <p className="text-xs text-gray-500">Online · Ask me anything</p>
+              <p className="text-[10px] text-gray-400 font-medium mt-0.5">Online · Ask me anything</p>
             </div>
           </div>
           <Button
             size="sm"
             variant="ghost"
             onClick={() => setShowContext(!showContext)}
+            className="h-8 w-8 p-0 cursor-pointer rounded-lg text-slate"
           >
             {showContext ? (
-              <ChevronUp className="h-4 w-4" />
+              <ChevronUp className="h-4.5 w-4.5" />
             ) : (
-              <ChevronDown className="h-4 w-4" />
+              <ChevronDown className="h-4.5 w-4.5" />
             )}
           </Button>
         </div>
 
         {/* Context Bar */}
         {showContext && (
-          <div className="bg-sand-light px-4 py-2 flex items-center gap-2 text-xs">
-            <span className="text-gray-500">Context:</span>
-            <Badge className="bg-terracotta/10 text-terracotta" variant="outline">
+          <div className="bg-sand-light/60 border-b border-sand/35 px-4 py-2 flex items-center gap-2 text-xs">
+            <span className="text-gray-400 font-medium">Context:</span>
+            <Badge className="bg-terracotta/10 text-terracotta border border-terracotta/20 rounded-full font-bold shadow-none text-[10px]" variant="outline">
               Active Chama: Upendo Group
             </Badge>
-            <Badge className="bg-blue-500/10 text-blue-500" variant="outline">
+            <Badge className="bg-blue-500/10 text-blue-500 border border-blue-500/20 rounded-full font-bold shadow-none text-[10px]" variant="outline">
               Role: Treasurer
             </Badge>
           </div>
@@ -285,48 +286,48 @@ export default function ChatScreen() {
         <div className="flex-1 overflow-y-auto p-4 space-y-1">
           {!activeSessionId && !messagesLoading ? (
             /* Quick Topics */
-            <div className="max-w-lg mx-auto pt-8">
+            <div className="max-w-lg mx-auto pt-6 px-2">
               <div className="text-center mb-6">
-                <div className="h-16 w-16 rounded-full bg-sand-light flex items-center justify-center mx-auto mb-3">
-                  <Bot className="h-8 w-8 text-terracotta" />
+                <div className="h-14 w-14 rounded-2xl bg-sand-light border border-sand/40 flex items-center justify-center mx-auto mb-3 shadow-subtle animate-bounce duration-1000">
+                  <Bot className="h-7 w-7 text-terracotta" />
                 </div>
-                <h2 className="text-lg font-bold text-slate mb-2">
+                <h2 className="text-base font-bold text-slate mb-1">
                   What would you like help with?
                 </h2>
-                <p className="text-sm text-gray-500">
-                  I can help you with chamas, loans, investments, and more.
+                <p className="text-xs text-gray-400 font-medium">
+                  I can help you with chamas, loans, investments, and platform settlements.
                 </p>
               </div>
-              <div className="grid grid-cols-1 gap-2">
+              <div className="grid grid-cols-1 gap-2.5">
                 {quickTopics.map((topic) => {
                   const TopicIcon = topic.icon;
                   return (
                     <button
                       key={topic.id}
                       onClick={() => handleQuickTopic(topic)}
-                      className="flex items-center gap-3 p-3 rounded-lg border hover:border-terracotta/50 hover:bg-terracotta/5 transition-colors text-left"
+                      className="flex items-center gap-3.5 p-3.5 rounded-xl border border-sand/45 bg-white card-lift hover:border-terracotta/40 hover:bg-sand-light/10 transition-all text-left cursor-pointer shadow-subtle"
                     >
-                      <div className="h-8 w-8 rounded-lg bg-sand-light flex items-center justify-center flex-shrink-0">
-                        <TopicIcon className="h-4 w-4 text-terracotta" />
+                      <div className="h-9 w-9 rounded-xl bg-sand-light border border-sand/30 flex items-center justify-center flex-shrink-0 shadow-subtle">
+                        <TopicIcon className="h-4.5 w-4.5 text-terracotta/80" />
                       </div>
-                      <span className="text-sm text-slate">{topic.label}</span>
+                      <span className="text-xs font-bold text-slate leading-relaxed">{topic.label}</span>
                     </button>
                   );
                 })}
               </div>
             </div>
           ) : messagesLoading ? (
-            <div className="space-y-4">
+            <div className="space-y-4 p-4">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="flex items-start gap-2">
-                  <Skeleton className="h-8 w-8 rounded-full" />
-                  <Skeleton className="h-16 w-64 rounded-2xl" />
+                <div key={i} className="flex items-start gap-2.5">
+                  <div className="skeleton-shimmer h-8 w-8 rounded-full flex-shrink-0" />
+                  <div className="skeleton-shimmer h-14 w-60 rounded-2xl" />
                 </div>
               ))}
             </div>
           ) : messages.length === 0 ? (
             <div className="flex items-center justify-center h-full">
-              <p className="text-sm text-gray-500">Send a message to start</p>
+              <p className="text-xs text-gray-400 font-medium">Send a message to start</p>
             </div>
           ) : (
             messages.map((msg) => {
@@ -334,19 +335,19 @@ export default function ChatScreen() {
               return (
                 <div
                   key={msg.id}
-                  className={`flex items-start gap-2 mb-4 ${isUser ? 'justify-end' : ''}`}
+                  className={`flex items-start gap-2.5 mb-4 ${isUser ? 'justify-end' : ''}`}
                 >
                   {!isUser && (
-                    <div className="h-8 w-8 rounded-full bg-sand-light flex items-center justify-center flex-shrink-0">
+                    <div className="h-8 w-8 rounded-full bg-sand-light border border-sand/30 flex items-center justify-center flex-shrink-0 shadow-subtle">
                       <Bot className="h-4 w-4 text-terracotta" />
                     </div>
                   )}
-                  <div className="max-w-[80%]">
+                  <div className="max-w-[80%] min-w-0">
                     <div
-                      className={`rounded-2xl px-4 py-3 text-sm ${
+                      className={`rounded-2xl px-3.5 py-2.5 text-xs font-medium leading-relaxed ${
                         isUser
-                          ? 'bg-terracotta text-white rounded-tr-sm'
-                          : 'bg-sand-light text-slate rounded-tl-sm'
+                          ? 'bg-terracotta text-white rounded-tr-sm shadow-subtle'
+                          : 'bg-sand-light text-slate rounded-tl-sm border border-sand/35'
                       }`}
                     >
                       <p className="whitespace-pre-wrap">
@@ -363,7 +364,7 @@ export default function ChatScreen() {
                             <button
                               key={index}
                               onClick={() => handleActionChip(action)}
-                              className="px-3 py-1.5 bg-terracotta/10 text-terracotta text-xs rounded-full hover:bg-terracotta/20 transition-colors"
+                              className="px-3.5 py-1.5 bg-terracotta/10 text-terracotta text-xs font-bold rounded-full hover:bg-terracotta/20 border border-terracotta/20 cursor-pointer transition-all shadow-none"
                             >
                               {chip.label}
                             </button>
@@ -371,12 +372,12 @@ export default function ChatScreen() {
                         })}
                       </div>
                     )}
-                    <p className="text-xs text-gray-400 mt-1 px-1">
+                    <p className="text-[10px] text-gray-400/90 mt-1 px-1 font-medium font-numbers">
                       {formatTimeAgo(msg.created_at)}
                     </p>
                   </div>
                   {isUser && (
-                    <div className="h-8 w-8 rounded-full bg-terracotta/10 flex items-center justify-center flex-shrink-0">
+                    <div className="h-8 w-8 rounded-full bg-terracotta/10 border border-terracotta/20 flex items-center justify-center flex-shrink-0 shadow-subtle">
                       <User className="h-4 w-4 text-terracotta" />
                     </div>
                   )}
@@ -389,7 +390,7 @@ export default function ChatScreen() {
         </div>
 
         {/* Input */}
-        <div className="border-t bg-white p-4">
+        <div className="border-t border-sand/40 bg-white p-4">
           <div className="flex items-center gap-2 max-w-2xl mx-auto">
             <Input
               ref={inputRef}
@@ -406,7 +407,7 @@ export default function ChatScreen() {
                 sendMessageMutation.isPending ||
                 createSessionMutation.isPending
               }
-              className="flex-1"
+              className="flex-1 border-input rounded-xl bg-white text-sm focus:border-terracotta focus:ring-1 focus:ring-terracotta h-10"
             />
             <Button
               size="icon"
@@ -416,6 +417,7 @@ export default function ChatScreen() {
                 sendMessageMutation.isPending ||
                 createSessionMutation.isPending
               }
+              className="bg-terracotta hover:bg-terracotta-dark text-white rounded-xl shadow-subtle cursor-pointer h-10 w-10 flex-shrink-0"
             >
               <Send className="h-4 w-4" />
             </Button>
