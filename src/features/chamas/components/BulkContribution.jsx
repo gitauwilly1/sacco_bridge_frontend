@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, Upload, Plus, Trash2, Save, Users } from 'lucide-react';
+import { ArrowLeft, Upload, Plus, Trash2, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -195,59 +195,63 @@ export default function BulkContribution() {
   return (
     <div className="pb-4">
       {/* Header */}
-      <div className="sticky top-14 z-30 bg-white border-b px-4 py-3">
+      <div className="sticky top-14 z-30 bg-white/80 backdrop-blur-lg border-b border-sand px-4 py-3">
         <div className="flex items-center gap-3">
-          <button onClick={() => navigate({ to: `/chamas/${chamaId}` })}>
+          <button
+            onClick={() => navigate({ to: `/chamas/${chamaId}` })}
+            className="p-1 rounded-lg text-slate hover:bg-sand-light transition-colors"
+            aria-label="Back to chama"
+          >
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div className="flex-1">
-            <h1 className="text-lg font-bold text-slate">Bulk Contribution</h1>
-            <p className="text-xs text-gray-500">Record multiple contributions at once</p>
+            <h1 className="text-base font-bold font-heading text-slate leading-tight">Bulk Contribution</h1>
+            <p className="text-[11px] text-gray-400 font-medium uppercase tracking-wider mt-0.5">Record multiple contributions at once</p>
           </div>
         </div>
       </div>
 
       <div className="p-4 space-y-6">
         {/* Period & Payment Settings */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Contribution Period</CardTitle>
-            <CardDescription>Set period and payment method for all entries</CardDescription>
+        <Card className="border-sand bg-white shadow-subtle">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-bold text-slate">Contribution Period</CardTitle>
+            <CardDescription className="text-xs text-gray-400">Set period and payment method for all entries</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium mb-1 block">Period Start</label>
+                <label className="text-slate font-medium text-xs mb-1 block">Period Start</label>
                 <Input
                   type="date"
                   value={periodStart}
                   onChange={(e) => setPeriodStart(e.target.value)}
                 />
                 {errors.periodStart && (
-                  <p className="text-xs text-danger mt-1">{errors.periodStart}</p>
+                  <p className="text-xs text-danger mt-1 font-medium">{errors.periodStart}</p>
                 )}
               </div>
               <div>
-                <label className="text-sm font-medium mb-1 block">Period End</label>
+                <label className="text-slate font-medium text-xs mb-1 block">Period End</label>
                 <Input
                   type="date"
                   value={periodEnd}
                   onChange={(e) => setPeriodEnd(e.target.value)}
                 />
                 {errors.periodEnd && (
-                  <p className="text-xs text-danger mt-1">{errors.periodEnd}</p>
+                  <p className="text-xs text-danger mt-1 font-medium">{errors.periodEnd}</p>
                 )}
               </div>
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Payment Method</label>
+              <label className="text-slate font-medium text-xs mb-1 block">Payment Method</label>
               <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                <SelectTrigger>
+                <SelectTrigger className="border-sand bg-white">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="border-sand bg-white">
                   {Object.entries(paymentMethodLabels).map(([value, label]) => (
-                    <SelectItem key={value} value={value}>
+                    <SelectItem key={value} value={value} className="focus:bg-sand-light focus:text-terracotta">
                       {label}
                     </SelectItem>
                   ))}
@@ -258,11 +262,11 @@ export default function BulkContribution() {
         </Card>
 
         {/* CSV Upload */}
-        <Card>
+        <Card className="border-sand bg-white shadow-subtle">
           <CardContent className="p-4">
-            <label className="flex items-center justify-center gap-2 border-2 border-dashed border-gray-300 rounded-lg p-4 cursor-pointer hover:border-terracotta/50 transition-colors">
+            <label className="flex items-center justify-center gap-2.5 border-2 border-dashed border-sand rounded-xl p-4 cursor-pointer hover:border-terracotta/50 hover:bg-sand-light/20 transition-all duration-200">
               <Upload className="h-5 w-5 text-gray-400" />
-              <span className="text-sm text-gray-500">Upload CSV file</span>
+              <span className="text-sm text-gray-500 font-medium">Upload CSV file</span>
               <input
                 type="file"
                 accept=".csv"
@@ -270,64 +274,71 @@ export default function BulkContribution() {
                 onChange={handleCSVUpload}
               />
             </label>
-            <p className="text-xs text-gray-400 mt-2 text-center">
+            <p className="text-[10px] text-gray-400 font-medium mt-2 text-center">
               CSV format: member_id, amount, payment_reference, notes
             </p>
           </CardContent>
         </Card>
 
         {/* Entries */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
+        <Card className="border-sand bg-white shadow-subtle">
+          <CardHeader className="flex flex-row items-center justify-between pb-3">
             <div>
-              <CardTitle className="text-base">Contributions</CardTitle>
-              <CardDescription>
-                {entries.length} entr{entries.length === 1 ? 'y' : 'ies'} · Total: {formatKES(getTotalAmount())}
+              <CardTitle className="text-sm font-bold text-slate">Contributions</CardTitle>
+              <CardDescription className="text-xs text-gray-400">
+                {entries.length} entr{entries.length === 1 ? 'y' : 'ies'} &middot; Total: <span className="font-numbers font-semibold text-slate">{formatKES(getTotalAmount())}</span>
               </CardDescription>
             </div>
-            <Button type="button" variant="outline" size="sm" onClick={addEntry}>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="border-sand hover:bg-sand-light text-slate hover:text-terracotta transition-colors"
+              onClick={addEntry}
+            >
               <Plus className="h-4 w-4 mr-1" /> Add Row
             </Button>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-4">
             {errors.duplicates && (
-              <p className="text-xs text-danger bg-danger/5 p-2 rounded">{errors.duplicates}</p>
+              <p className="text-xs text-danger bg-danger/5 border border-danger/10 p-2.5 rounded-lg font-medium">{errors.duplicates}</p>
             )}
             
             {entries.map((entry, index) => (
-              <div key={index} className="border rounded-lg p-3 space-y-2">
+              <div key={index} className="border border-sand rounded-xl p-3.5 space-y-3 bg-sand-light/20">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-gray-500">
+                  <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
                     Entry {index + 1}
                   </span>
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
+                    className="hover:bg-danger/10 hover:text-danger rounded-lg transition-colors h-8 w-8"
                     onClick={() => removeEntry(index)}
                   >
-                    <Trash2 className="h-4 w-4 text-danger" />
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
 
-                <div>
+                <div className="space-y-1">
                   <Select
                     value={entry.member_id}
                     onValueChange={(value) => updateEntry(index, 'member_id', value)}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="border-sand bg-white">
                       <SelectValue placeholder="Select member" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="border-sand bg-white">
                       {members.map((member) => (
-                        <SelectItem key={member.id} value={member.id.toString()}>
+                        <SelectItem key={member.id} value={member.id.toString()} className="focus:bg-sand-light focus:text-terracotta">
                           {member.user_name || member.user?.full_name}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                   {errors[`entry_${index}_member`] && (
-                    <p className="text-xs text-danger mt-1">{errors[`entry_${index}_member`]}</p>
+                    <p className="text-xs text-danger font-medium mt-1">{errors[`entry_${index}_member`]}</p>
                   )}
                 </div>
 
@@ -339,16 +350,19 @@ export default function BulkContribution() {
                       min="0"
                       step="0.01"
                       value={entry.amount}
+                      className="font-numbers"
+                      style={{ fontFamily: "'JetBrains Mono', monospace" }}
                       onChange={(e) => updateEntry(index, 'amount', e.target.value)}
                     />
                     {errors[`entry_${index}_amount`] && (
-                      <p className="text-xs text-danger mt-1">{errors[`entry_${index}_amount`]}</p>
+                      <p className="text-xs text-danger font-medium mt-1">{errors[`entry_${index}_amount`]}</p>
                     )}
                   </div>
                   <div className="col-span-2">
                     <Input
                       placeholder="Reference (optional)"
                       value={entry.payment_reference}
+                      className="font-numbers"
                       onChange={(e) => updateEntry(index, 'payment_reference', e.target.value)}
                     />
                   </div>
@@ -365,23 +379,26 @@ export default function BulkContribution() {
         </Card>
 
         {/* Submit */}
-        <div className="flex gap-3">
+        <div className="flex gap-3 pt-2">
           <Button
             type="button"
             variant="outline"
-            className="flex-1"
+            className="flex-1 border-sand hover:bg-sand-light text-slate transition-all"
             onClick={() => navigate({ to: `/chamas/${chamaId}` })}
           >
             Cancel
           </Button>
           <Button
             type="button"
-            className="flex-1"
+            className="flex-1 bg-terracotta hover:bg-clay text-white shadow-sm transition-all duration-150 active:scale-[0.98]"
             disabled={isLoading || entries.length === 0}
             onClick={handleSubmit}
           >
             {isLoading ? (
-              'Recording...'
+              <span className="flex items-center gap-2">
+                <span className="h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                Recording...
+              </span>
             ) : (
               <>
                 <Save className="h-4 w-4 mr-2" />
