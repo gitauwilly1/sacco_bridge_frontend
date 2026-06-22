@@ -3,12 +3,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import {
   Vote, Clock, CheckCircle2, Users, ChevronRight,
-  BarChart3, RefreshCw, Timer, AlertCircle, Lock,
+  RefreshCw, Timer, AlertCircle, Lock,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorState, EmptyState } from '@/components/feedback';
 import { toast } from 'sonner';
 import { chamaApi } from '../api/chamaApi';
@@ -17,22 +16,22 @@ import { formatDate, formatTimeAgo } from '../../../utils/format';
 const pollStatusConfig = {
   active: {
     label: 'Active',
-    color: 'bg-success/10 text-success border-success/20',
+    color: 'bg-success/10 text-success border border-success/20',
     icon: CheckCircle2,
   },
   closed: {
     label: 'Closed',
-    color: 'bg-gray-200 text-gray-600 border-gray-300',
+    color: 'bg-gray-100 text-gray-400 border border-gray-200',
     icon: Lock,
   },
   upcoming: {
     label: 'Upcoming',
-    color: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+    color: 'bg-blue-50 text-blue-600 border border-blue-100',
     icon: Clock,
   },
   draft: {
     label: 'Draft',
-    color: 'bg-alert/10 text-alert border-alert/20',
+    color: 'bg-alert/10 text-alert border border-alert/20',
     icon: AlertCircle,
   },
 };
@@ -73,32 +72,32 @@ function PollCard({ poll, chamaId }) {
   };
 
   return (
-    <Card className="hover:shadow-md transition-shadow">
+    <Card className="border-sand shadow-subtle hover:shadow-md transition-all duration-200">
       <CardContent className="p-4">
-        <div className="flex items-start justify-between mb-3">
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-1">
-              <h3 className="font-semibold text-slate text-sm">
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex-1 min-w-0 pr-2">
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
+              <h3 className="font-semibold text-slate text-sm leading-snug">
                 {poll.question || poll.title}
               </h3>
-              <Badge className={status.color} variant="outline">
+              <Badge className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border-0 shadow-none capitalize ${status.color}`}>
                 <StatusIcon className="h-3 w-3 mr-1" />
                 {status.label}
               </Badge>
             </div>
-            <div className="flex items-center gap-3 text-xs text-gray-500">
-              <span className="flex items-center gap-1">
-                <Users className="h-3 w-3" />
+            <div className="flex items-center gap-3 text-xs text-gray-400 font-medium mt-1">
+              <span className="flex items-center gap-1 font-numbers" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                <Users className="h-3.5 w-3.5" />
                 {totalVotes} vote{totalVotes !== 1 ? 's' : ''}
               </span>
               {poll.expires_at && (
                 <span className="flex items-center gap-1">
-                  <Timer className="h-3 w-3" />
+                  <Timer className="h-3.5 w-3.5" />
                   {isExpired ? 'Closed' : `Ends ${formatTimeAgo(poll.expires_at)}`}
                 </span>
               )}
               {hasVoted && (
-                <Badge className="bg-terracotta/10 text-terracotta text-[10px]">
+                <Badge className="bg-terracotta/10 text-terracotta border-0 text-[10px] font-semibold">
                   Voted
                 </Badge>
               )}
@@ -107,6 +106,7 @@ function PollCard({ poll, chamaId }) {
           <Button
             size="sm"
             variant="ghost"
+            className="text-gray-400 hover:text-slate rounded-lg p-2"
             onClick={() => navigate({ to: `/chamas/${chamaId}/polls/${poll.id}` })}
           >
             <ChevronRight className="h-4 w-4" />
@@ -114,7 +114,7 @@ function PollCard({ poll, chamaId }) {
         </div>
 
         {/* Poll Options */}
-        <div className="space-y-2">
+        <div className="space-y-2.5">
           {poll.options?.map((option) => {
             const percentage = totalVotes > 0
               ? Math.round(((option.votes || 0) / totalVotes) * 100)
@@ -131,20 +131,20 @@ function PollCard({ poll, chamaId }) {
                     poll.status === 'closed' ||
                     voteMutation.isPending
                   }
-                  className={`w-full text-left p-2 rounded-md border transition-all ${
+                  className={`w-full text-left p-3 rounded-xl border transition-all duration-200 ${
                     isSelected
                       ? 'border-terracotta bg-terracotta/5'
                       : hasVoted
-                      ? 'border-gray-200 bg-gray-50 cursor-default'
-                      : 'border-gray-200 hover:border-terracotta/50 hover:bg-terracotta/5 cursor-pointer'
+                      ? 'border-sand bg-sand-light/35 cursor-default'
+                      : 'border-sand hover:border-terracotta/40 hover:bg-sand-light/45 cursor-pointer'
                   }`}
                 >
-                  <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center justify-between mb-1.5">
                     <span className="text-sm font-medium text-slate">
                       {option.text || option.option_text}
                     </span>
                     {(hasVoted || poll.status === 'closed') && (
-                      <span className="text-xs font-semibold text-slate">
+                      <span className="text-xs font-bold text-slate font-numbers" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
                         {percentage}%
                       </span>
                     )}
@@ -152,10 +152,10 @@ function PollCard({ poll, chamaId }) {
                   
                   {/* Vote Progress Bar (shown after voting or for closed polls) */}
                   {(hasVoted || poll.status === 'closed') && (
-                    <div className="w-full bg-sand rounded-full h-1.5">
+                    <div className="w-full bg-sand rounded-full h-2">
                       <div
-                        className={`rounded-full h-1.5 transition-all ${
-                          isSelected ? 'bg-terracotta' : 'bg-gray-300'
+                        className={`rounded-full h-2 transition-all duration-300 ${
+                          isSelected ? 'bg-terracotta' : 'bg-slate/30'
                         }`}
                         style={{ width: `${percentage}%` }}
                       />
@@ -168,14 +168,14 @@ function PollCard({ poll, chamaId }) {
         </div>
 
         {/* Footer */}
-        <div className="mt-3 pt-3 border-t flex items-center justify-between text-xs text-gray-500">
+        <div className="mt-4 pt-3.5 border-t border-sand/40 flex items-center justify-between text-xs text-gray-400 font-medium">
           <span>
             Created {formatTimeAgo(poll.created_at)}
             {poll.created_by_name && ` by ${poll.created_by_name}`}
           </span>
           {poll.is_anonymous && (
-            <span className="flex items-center gap-1">
-              <Lock className="h-3 w-3" />
+            <span className="flex items-center gap-1 text-slate">
+              <Lock className="h-3.5 w-3.5" />
               Anonymous
             </span>
           )}
@@ -189,18 +189,18 @@ function PollsListSkeleton() {
   return (
     <div className="space-y-3">
       {[1, 2, 3].map((i) => (
-        <Card key={i}>
-          <CardContent className="p-4">
-            <div className="flex items-start justify-between mb-3">
-              <div className="flex-1">
-                <Skeleton className="h-5 w-48 mb-2" />
-                <Skeleton className="h-3 w-32" />
+        <Card key={i} className="border-sand">
+          <CardContent className="p-4 space-y-4">
+            <div className="flex items-start justify-between">
+              <div className="flex-1 space-y-2">
+                <div className="skeleton-shimmer h-5 w-48 rounded-lg" />
+                <div className="skeleton-shimmer h-3.5 w-32 rounded-lg" />
               </div>
-              <Skeleton className="h-8 w-8" />
+              <div className="skeleton-shimmer h-8 w-8 rounded-lg" />
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2.5">
               {[1, 2, 3].map((j) => (
-                <Skeleton key={j} className="h-12 w-full" />
+                <div key={j} className="skeleton-shimmer h-12 w-full rounded-xl" />
               ))}
             </div>
           </CardContent>
@@ -279,15 +279,20 @@ export default function PollsList({ chamaId }) {
               setStatus(e.target.value);
               setPage(1);
             }}
-            className="text-xs border rounded-md px-2 py-1 bg-white"
+            className="text-xs border border-input rounded-lg px-2.5 py-1.5 bg-white text-slate font-medium outline-none focus:border-terracotta focus:ring-1 focus:ring-terracotta transition-colors"
           >
-            <option value="all">All</option>
+            <option value="all">All Statuses</option>
             <option value="active">Active</option>
             <option value="closed">Closed</option>
             <option value="upcoming">Upcoming</option>
           </select>
-          <Button size="sm" variant="outline" onClick={() => refetch()}>
-            <RefreshCw className="h-3 w-3" />
+          <Button
+            size="sm"
+            variant="outline"
+            className="border-sand hover:bg-sand-light transition-all px-2.5"
+            onClick={() => refetch()}
+          >
+            <RefreshCw className="h-3 w-3 text-gray-400" />
           </Button>
         </div>
       </div>
@@ -305,17 +310,19 @@ export default function PollsList({ chamaId }) {
           <Button
             size="sm"
             variant="outline"
+            className="border-sand hover:bg-sand-light text-slate text-xs font-semibold"
             disabled={page <= 1}
             onClick={() => setPage((p) => Math.max(1, p - 1))}
           >
             Previous
           </Button>
-          <span className="text-xs text-gray-500">
+          <span className="text-xs text-gray-400 font-medium font-numbers" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
             {page} of {totalPages}
           </span>
           <Button
             size="sm"
             variant="outline"
+            className="border-sand hover:bg-sand-light text-slate text-xs font-semibold"
             disabled={page >= totalPages}
             onClick={() => setPage((p) => p + 1)}
           >
