@@ -19,6 +19,20 @@ import RecordContribution from './features/chamas/components/RecordContribution'
 import { dashboardApi } from './features/dashboard/api/dashboardApi';
 import { getInitials, formatKES } from './utils/format';
 
+import AdminDashboard from './features/admin/components/AdminDashboard';
+import UserList from './features/admin/components/UserList';
+import UserDetail from './features/admin/components/UserDetail';
+import SACCOManagement from './features/admin/components/SACCOManagement';
+import ChamaOversight from './features/admin/components/ChamaOversight';
+import AdminDisputeList from './features/admin/components/AdminDisputeList';
+import AdminDisputeDetail from './features/admin/components/AdminDisputeDetail';
+import FraudReview from './features/admin/components/FraudReview';
+import EscrowManagement from './features/admin/components/EscrowManagement';
+import AuditLog from './features/admin/components/AuditLog';
+import WebhookManagement from './features/admin/components/WebhookManagement';
+import LegalDocuments from './features/admin/components/LegalDocuments';
+import Reports from './features/admin/components/Reports';
+
 // Simple ChamaListPage rendered on /chamas path
 function ChamaListPage() {
   const navigate = useNavigate();
@@ -158,6 +172,84 @@ const loginRoute = createRoute({
   component: DashboardHome,
 });
 
+const adminDashboardRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/admin',
+  component: AdminDashboard,
+});
+
+const adminUsersRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/admin/users',
+  component: UserList,
+});
+
+const adminUserDetailRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/admin/users/$userId',
+  component: UserDetail,
+});
+
+const adminSaccosRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/admin/saccos',
+  component: SACCOManagement,
+});
+
+const adminChamasRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/admin/chamas',
+  component: ChamaOversight,
+});
+
+const adminDisputesRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/admin/disputes',
+  component: AdminDisputeList,
+});
+
+const adminDisputeDetailRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/admin/disputes/$disputeId',
+  component: AdminDisputeDetail,
+});
+
+const adminFraudRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/admin/fraud',
+  component: FraudReview,
+});
+
+const adminEscrowRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/admin/escrow',
+  component: EscrowManagement,
+});
+
+const adminAuditRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/admin/audit',
+  component: AuditLog,
+});
+
+const adminWebhooksRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/admin/webhooks',
+  component: WebhookManagement,
+});
+
+const adminLegalRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/admin/legal',
+  component: LegalDocuments,
+});
+
+const adminReportsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/admin/reports',
+  component: Reports,
+});
+
 const catchAllRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '$',
@@ -178,6 +270,19 @@ const routeTree = rootRoute.addChildren([
   investmentsSellRoute,
   investmentsSaccoSellRoute,
   loginRoute,
+  adminDashboardRoute,
+  adminUsersRoute,
+  adminUserDetailRoute,
+  adminSaccosRoute,
+  adminChamasRoute,
+  adminDisputesRoute,
+  adminDisputeDetailRoute,
+  adminFraudRoute,
+  adminEscrowRoute,
+  adminAuditRoute,
+  adminWebhooksRoute,
+  adminLegalRoute,
+  adminReportsRoute,
   catchAllRoute,
 ]);
 
