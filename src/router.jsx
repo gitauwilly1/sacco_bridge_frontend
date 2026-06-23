@@ -152,9 +152,15 @@ const investmentsSaccoSellRoute = createRoute({
   component: LiquidityRequestForm,
 });
 
+const loginRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/login',
+  component: DashboardHome,
+});
+
 const catchAllRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '*',
+  path: '$',
   component: DashboardHome,
 });
 
@@ -171,6 +177,7 @@ const routeTree = rootRoute.addChildren([
   investmentsRequestsRoute,
   investmentsSellRoute,
   investmentsSaccoSellRoute,
+  loginRoute,
   catchAllRoute,
 ]);
 
