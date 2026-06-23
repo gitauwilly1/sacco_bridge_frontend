@@ -93,11 +93,14 @@ export default function UserList() {
       key: 'role',
       header: 'Role',
       sortable: true,
-      render: (value) => (
-        <Badge className={`${roleColors[value] || 'bg-gray-100 text-gray-605 border-gray-200'} text-[10px] font-extrabold rounded-full px-2 py-0.5 shadow-none`} variant="outline">
-          {value?.replace('_', ' ') || 'Member'}
-        </Badge>
-      ),
+      render: (value, row) => {
+        const displayRole = row.roles?.[0] || value;
+        return (
+          <Badge className={`${roleColors[displayRole] || 'bg-gray-100 text-gray-600 border-gray-200'} text-[10px] font-extrabold rounded-full px-2 py-0.5 shadow-none`} variant="outline">
+            {displayRole?.replace('_', ' ') || 'Member'}
+          </Badge>
+        );
+      },
     },
     {
       key: 'status',

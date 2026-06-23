@@ -58,6 +58,7 @@ export default function UserDetail() {
   if (!userData) return <ErrorState message="User not found" />;
 
   const user = userData;
+  const primaryRole = user.roles?.[0] || user.role;
 
   return (
     <div className="space-y-6">
@@ -88,8 +89,8 @@ export default function UserDetail() {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <Badge className={`${roleColors[user.role] || 'bg-sand text-slate border-sand-dark/20'} border`} variant="outline">
-                  {user.role?.replace('_', ' ') || 'Member'}
+                <Badge className={`${roleColors[primaryRole] || 'bg-sand text-slate border-sand-dark/20'} border`} variant="outline">
+                  {primaryRole?.replace('_', ' ') || 'Member'}
                 </Badge>
                 <Badge
                   className={
