@@ -79,8 +79,9 @@ export default function DashboardHome() {
     data: unreadCount,
   } = useQuery({
     queryKey: ['unreadNotifications'],
-    queryFn: () => dashboardApi.getNotifications().then((r) => r.data.data),
+    queryFn: () => dashboardApi.getNotifications().then((r) => r.data?.data ?? { unread_count: 0 }),
     refetchInterval: 30000,
+    initialData: { unread_count: 0 },
   });
 
   if (dashboardLoading) return <PageSpinner />;
