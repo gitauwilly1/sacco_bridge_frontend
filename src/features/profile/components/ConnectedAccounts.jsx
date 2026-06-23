@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Link, ExternalLink } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -8,21 +9,62 @@ import { toast } from 'sonner';
 export default function ConnectedAccounts({ profile }) {
   const { googleLogin } = useAuthStore();
 
-  const handleConnectGoogle = async () => {
-    try {
-      toast.info('Initiating Google OAuth flow...');
-      // Simulated Google Login trigger:
-      // const credential = await triggerGoogleAuthPopup();
-      // await googleLogin(credential.idToken);
-    } catch (error) {
-      toast.error('Google connection failed');
-    }
-  };
-
   // Google status check:
   // Usually checks profile.google_connected or profile.google_email
   const isGoogleConnected = !!(profile?.google_connected || profile?.google_email || profile?.social_accounts?.google);
   const googleEmail = profile?.google_email || profile?.email;
+
+  const handleGoogleCredentialResponse = async (response) => {
+    try {
+      toast.loading('Linking Google account...');
+      await googleLogin(response.credential);
+      toast.dismiss();
+      toast.success('Google account connected successfully!');
+      if (typeof window !== 'undefined') {
+        window.location.reload();
+      }
+    } catch (error) {
+      toast.dismiss();
+      toast.error('Google connection failed');
+    }
+  };
+
+  useEffect(() => {
+    let intervalId;
+    
+    const initGoogleBtn = () => {
+      if (window.google && !isGoogleConnected) {
+        try {
+          window.google.accounts.id.initialize({
+            client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || '134711840304-ockr8g82imvcnfhk387oodp1uikno8pc.apps.googleusercontent.com',
+            callback: handleGoogleCredentialResponse,
+          });
+          
+          const container = document.getElementById("google-connect-btn-container");
+          if (container) {
+            window.google.accounts.id.renderButton(container, {
+              theme: "outline",
+              size: "medium",
+              text: "signup_with",
+            });
+          }
+          if (intervalId) clearInterval(intervalId);
+        } catch (err) {
+          console.error("Google Client SDK init failed:", err);
+        }
+      }
+    };
+
+    initGoogleBtn();
+    if (!window.google && !isGoogleConnected) {
+      intervalId = setInterval(initGoogleBtn, 300);
+    }
+    
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [isGoogleConnected]);
+
 
   return (
     <Card className="glass-card border-sand bg-white/95 shadow-subtle rounded-2xl overflow-hidden mb-4">
@@ -79,14 +121,20 @@ export default function ConnectedAccounts({ profile }) {
                 </div>
               </div>
             ) : (
-              <Button
-                size="sm"
-                variant="outline"
-                className="border-sand hover:bg-sand-light text-slate hover:text-terracotta text-xs font-semibold h-8 rounded-lg shadow-subtle px-3 transition-all flex items-center gap-1.5"
-                onClick={handleConnectGoogle}
-              >
-                Connect <ExternalLink className="h-3 w-3" />
-              </Button>
+              <div className="relative">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="border-sand hover:bg-sand-light text-slate hover:text-terracotta text-xs font-semibold h-8 rounded-lg shadow-subtle px-3 transition-all flex items-center gap-1.5"
+                  type="button"
+                >
+                  Connect <ExternalLink className="h-3 w-3" />
+                </Button>
+                <div
+                  id="google-connect-btn-container"
+                  className="absolute inset-0 opacity-0 overflow-hidden cursor-pointer"
+                />
+              </div>
             )}
           </div>
         </div>
