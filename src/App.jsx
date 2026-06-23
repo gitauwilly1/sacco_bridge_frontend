@@ -6,12 +6,20 @@ import { FullPageLoader } from './components/feedback/LoadingState';
 import { Toaster } from '@/components/ui/sonner';
 import AuthLayout from './features/auth/components/AuthLayout';
 import AppShell from './components/layout/AppShell';
-import { Outlet } from '@tanstack/react-router';
+import AdminLayout from './features/admin/components/AdminLayout';
+import { Outlet, useNavigate } from '@tanstack/react-router';
 
 export default function App() {
-  const { initialize, isLoading, isInitialized, isAuthenticated } = useAuthStore();
+  const { initialize, isLoading, isInitialized, isAuthenticated, user } = useAuthStore();
   const { setOnlineStatus } = useUIStore();
   const { connect, disconnect } = useSocketStore();
+  const navigate = useNavigate();
+
+  const isAdmin =
+    user?.roles?.includes('PLATFORM_ADMIN') ||
+    user?.roles?.includes('SUPPORT_AGENT') ||
+    user?.role === 'PLATFORM_ADMIN' ||
+    user?.role === 'SUPPORT_AGENT';
 
   useEffect(() => {
     initialize();
@@ -35,6 +43,17 @@ export default function App() {
     };
   }, []);
 
+  useEffect(() => {
+    if (isAuthenticated) {
+      const isPathAdmin = window.location.pathname.startsWith('/admin');
+      if (isAdmin && window.location.pathname === '/') {
+        navigate({ to: '/admin' });
+      } else if (!isAdmin && isPathAdmin) {
+        navigate({ to: '/' });
+      }
+    }
+  }, [isAuthenticated, isAdmin, navigate]);
+
   if (!isInitialized || isLoading) {
     return <FullPageLoader />;
   }
@@ -42,9 +61,15 @@ export default function App() {
   return (
     <div className="min-h-screen bg-surface">
       {isAuthenticated ? (
-        <AppShell>
-          <Outlet />
-        </AppShell>
+        isAdmin ? (
+          <AdminLayout>
+            <Outlet />
+          </AdminLayout>
+        ) : (
+          <AppShell>
+            <Outlet />
+          </AppShell>
+        )
       ) : (
         <AuthLayout />
       )}
