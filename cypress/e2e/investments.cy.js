@@ -102,7 +102,7 @@ describe('Investments E2E Flows', () => {
     cy.contains('Stima Class B Shares').should('exist');
 
     // 3. Navigate to Holdings
-    cy.intercept('GET', '**/investments/holdings/**', {
+    cy.intercept('GET', '**/investments/holdings/?*', {
       statusCode: 200,
       body: { data: mockHoldings }
     }).as('getHoldings');
