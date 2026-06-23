@@ -14,7 +14,7 @@ const useAuthStore = create(
         const { data } = await apiClient.post('/auth/login/', {
           email,
           password,
-          device_info: navigator.userAgent,
+          device_info: navigator.userAgent.slice(0, 50),
         });
 
         if (data.data?.requires_2fa) {
@@ -51,7 +51,7 @@ const useAuthStore = create(
       googleLogin: async (idToken) => {
         const { data } = await apiClient.post('/auth/google/', {
           id_token: idToken,
-          device_info: navigator.userAgent,
+          device_info: navigator.userAgent.slice(0, 50),
         });
 
         setAccessToken(data.data.access_token);
@@ -93,9 +93,9 @@ const useAuthStore = create(
             return;
           }
         } catch (e) {
-          // Not authenticated
+          clearAccessToken();
         }
-        set({ isLoading: false, isInitialized: true });
+        set({ user: null, isAuthenticated: false, isLoading: false, isInitialized: true });
       },
 
       setUser: (user) => set({ user }),
