@@ -35,7 +35,18 @@ export function EmptyState({ icon: Icon, title, description, action }) {
       {description && (
         <p className="text-sm text-gray-400 mb-5 max-w-xs leading-relaxed">{description}</p>
       )}
-      {action}
+      {action && (
+        typeof action === 'object' && action.label && action.onClick ? (
+          <Button
+            onClick={action.onClick}
+            className="bg-terracotta hover:bg-clay text-white font-semibold py-2 px-4 rounded-lg transition-all shadow-subtle border-none cursor-pointer"
+          >
+            {action.label}
+          </Button>
+        ) : (
+          action
+        )
+      )}
     </div>
   );
 }
