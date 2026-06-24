@@ -32,6 +32,8 @@ import AuditLog from './features/admin/components/AuditLog';
 import WebhookManagement from './features/admin/components/WebhookManagement';
 import LegalDocuments from './features/admin/components/LegalDocuments';
 import Reports from './features/admin/components/Reports';
+import NotFound from './components/feedback/NotFound';
+import HelpPage from './features/help/components/HelpPage';
 
 // Simple ChamaListPage rendered on /chamas path
 function ChamaListPage() {
@@ -250,10 +252,28 @@ const adminReportsRoute = createRoute({
   component: Reports,
 });
 
+const settingsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/settings',
+  component: () => <ProfilePage defaultTab="appearance" />,
+});
+
+const securityRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/security',
+  component: () => <ProfilePage defaultTab="security" />,
+});
+
+const helpRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/help',
+  component: HelpPage,
+});
+
 const catchAllRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '$',
-  component: DashboardHome,
+  component: NotFound,
 });
 
 const routeTree = rootRoute.addChildren([
@@ -270,6 +290,9 @@ const routeTree = rootRoute.addChildren([
   investmentsSellRoute,
   investmentsSaccoSellRoute,
   loginRoute,
+  settingsRoute,
+  securityRoute,
+  helpRoute,
   adminDashboardRoute,
   adminUsersRoute,
   adminUserDetailRoute,

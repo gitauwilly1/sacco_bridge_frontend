@@ -16,6 +16,7 @@ import useUIStore from '../../stores/uiStore';
 import { getInitials } from '../../utils/format';
 import NotificationBell from '../../features/notifications/components/NotificationBell';
 import BridgeLogo from '../brand/BridgeLogo';
+import Footer from './Footer';
 
 const navItems = [
   { id: 'home', label: 'Home', icon: Home, path: '/' },
@@ -170,9 +171,13 @@ export default function AppShell({ children }) {
       </header>
 
       {/* ── Main Content ────────────────────────────────────────────── */}
-      <main className="flex-1 pb-20 lg:pb-6">
+      <main className="flex-1">
         {children}
       </main>
+
+      <div className="pb-16 lg:pb-0">
+        <Footer />
+      </div>
 
       {/* ── Mobile Bottom Navigation ────────────────────────────────── */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-sand bg-white/90 backdrop-blur-lg lg:hidden">

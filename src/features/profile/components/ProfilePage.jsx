@@ -20,8 +20,8 @@ import VerificationStatus from './VerificationStatus';
 import ConnectedAccounts from './ConnectedAccounts';
 
 
-export default function ProfilePage() {
-  const [activeTab, setActiveTab] = useState('profile');
+export default function ProfilePage({ defaultTab = 'profile' }) {
+  const [activeTab, setActiveTab] = useState(defaultTab);
 
   const {
     data: profile,
