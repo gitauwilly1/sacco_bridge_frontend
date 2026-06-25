@@ -294,6 +294,39 @@ describe('RBAC and New Pages E2E Flows', () => {
       cy.contains('[role="tab"]', 'Security').should('have.attr', 'data-state', 'active');
     });
 
+    it('Should test quick actions routing and behavior', () => {
+      // Mock user dashboard with chamas
+      cy.intercept('GET', '**/analytics/dashboard/user/', {
+        statusCode: 200,
+        body: {
+          data: {
+            summary: { total_savings: 5000, total_chamas: 1, total_settlement_volume: 0 },
+            chamas: [{ id: 101, name: 'Mavuno Welfare Group', role: 'President', balance: 250000, standing: 'Active' }]
+          }
+        }
+      });
+
+      cy.visit('/');
+      
+      // Click contribute - should go to /chamas/101/contribute
+      cy.get('#quick-action-contribute').click();
+      cy.url().should('include', '/chamas/101/contribute');
+
+      // Go back
+      cy.visit('/');
+
+      // Click Request Loan - should go to /chamas/101/loan
+      cy.get('#quick-action-loan').click();
+      cy.url().should('include', '/chamas/101/loan');
+
+      // Go back
+      cy.visit('/');
+
+      // Click Invest - should go to /investments
+      cy.get('#quick-action-invest').click();
+      cy.url().should('include', '/investments');
+    });
+
     it('Should display 404 page when visiting a non-existent path', () => {
       cy.visit('/this-route-does-not-exist-at-all');
       cy.contains('Page Not Found').should('exist');

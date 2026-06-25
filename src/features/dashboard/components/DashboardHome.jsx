@@ -16,6 +16,7 @@ import { formatKES, formatTimeAgo, truncate } from '../../../utils/format';
 import { getInitials } from '../../../utils/format';
 import useAuthStore from '../../../stores/authStore';
 import useUIStore from '../../../stores/uiStore';
+import { toast } from 'sonner';
 
 /* ── Quick action definition ───────────────────────────────────────── */
 const quickActions = [
@@ -83,6 +84,25 @@ export default function DashboardHome() {
     refetchInterval: 30000,
     initialData: { unread_count: 0 },
   });
+
+  const handleQuickAction = (action) => {
+    if (action.id === 'contribute' || action.id === 'loan') {
+      const chamasList = dashboardData?.chamas || [];
+      if (chamasList.length === 0) {
+        toast.error('Please join or create a Chama first!');
+        navigate({ to: '/chamas' });
+        return;
+      }
+      const firstChamaId = chamasList[0].id;
+      if (action.id === 'contribute') {
+        navigate({ to: `/chamas/${firstChamaId}/contribute` });
+      } else {
+        navigate({ to: `/chamas/${firstChamaId}/loan` });
+      }
+    } else {
+      navigate({ to: action.path });
+    }
+  };
 
   if (dashboardLoading) return <PageSpinner />;
   if (dashboardError) return <ErrorState message="Failed to load dashboard" />;
@@ -172,7 +192,7 @@ export default function DashboardHome() {
           <button
             key={action.id}
             id={`quick-action-${action.id}`}
-            onClick={() => navigate({ to: action.path })}
+            onClick={() => handleQuickAction(action)}
             className="flex flex-col items-center gap-2 p-4 rounded-xl border border-sand bg-white hover:border-terracotta/40 hover:bg-sand-light hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 active:scale-[0.97]"
           >
             <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${action.color} shadow-sm`}>
