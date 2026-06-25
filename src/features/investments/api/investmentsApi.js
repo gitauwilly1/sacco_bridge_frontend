@@ -38,4 +38,10 @@ export const investmentsApi = {
   getMySettlements: (params) => apiClient.get('/transactions/settlements/', { params }),
   getSettlementDetail: (id) => apiClient.get(`/transactions/settlements/${id}/`),
   getSettlementTimeline: (id) => apiClient.get(`/transactions/settlements/${id}/timeline/`),
+  
+  // Payments / M-Pesa STK Push
+  initiateStkPush: (data) => apiClient.post('/payments/mpesa/stk-push/', data),
+
+  // Analytics
+  getSACCOAnalytics: (saccoId) => apiClient.get(`/analytics/sacco/${saccoId}/`),
 };

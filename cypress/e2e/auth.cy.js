@@ -1,5 +1,6 @@
 describe('Authentication Flows', () => {
   beforeEach(() => {
+    cy.clearLocalStorage();
     // Intercept default token initialization to simulate unauthenticated state on load
     cy.intercept('POST', '**/auth/token/refresh/', {
       statusCode: 200,

@@ -3,7 +3,7 @@ import { useNavigate } from '@tanstack/react-router';
 import {
   Home, Users, ArrowLeftRight, Activity, User,
   Menu, X, LogOut, Settings, HelpCircle,
-  Shield, ChevronDown, WifiOff,
+  Shield, ChevronDown, WifiOff, Bot,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -307,6 +307,16 @@ export default function AppShell({ children }) {
           </div>
         </div>
       )}
+      {/* ── Floating AI Assistant FAB ── */}
+      <button
+        id="ai-assistant-fab"
+        onClick={() => navigate({ to: '/assistant' })}
+        className="fixed bottom-20 right-4 lg:bottom-6 lg:right-6 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-terracotta hover:bg-clay text-white shadow-elevated transition-all hover:scale-105 active:scale-95 cursor-pointer"
+        aria-label="AI Assistant"
+      >
+        <Bot className="h-6 w-6" />
+      </button>
+
     </div>
   );
 }

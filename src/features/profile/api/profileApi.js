@@ -34,4 +34,12 @@ export const profileApi = {
   deactivateAccount: (data) => apiClient.post('/users/deactivate/', data),
   requestAccountDeletion: (data) => apiClient.post('/users/delete-account/', data),
   cancelAccountDeletion: () => apiClient.delete('/users/delete-account/'),
+
+  // Scoring
+  getMyScore: () => apiClient.get('/scoring/my-score/'),
+
+  // Digital Signatures
+  requestSignature: (data) => apiClient.post('/legal/sign/request/', data),
+  confirmSignature: (data) => apiClient.post('/legal/sign/confirm/', data),
+  verifySignature: (hash) => apiClient.get(`/legal/sign/verify/${hash}/`),
 };

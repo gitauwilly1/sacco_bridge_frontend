@@ -18,6 +18,7 @@ import TransactionLimits from './TransactionLimits';
 import AppearanceSettings from './AppearanceSettings';
 import VerificationStatus from './VerificationStatus';
 import ConnectedAccounts from './ConnectedAccounts';
+import UserProfileScore from './UserProfileScore';
 
 
 export default function ProfilePage({ defaultTab = 'profile' }) {
@@ -113,6 +114,7 @@ export default function ProfilePage({ defaultTab = 'profile' }) {
         </TabsList>
 
         <TabsContent value="profile" className="mt-4 space-y-4">
+          <UserProfileScore />
           <VerificationStatus profile={profile} />
           <EditProfileForm profile={profile} />
         </TabsContent>

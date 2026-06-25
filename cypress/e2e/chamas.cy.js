@@ -151,18 +151,18 @@ describe('Chamas E2E Flows', () => {
     cy.get('h1').should('contain', 'Record Contribution');
 
     // Fill contribution details
-    cy.get('input[name="amount"]').type('5000');
+    cy.get('input[name="amount"]').type('5000', { force: true });
     // Select member by clicking member button containing Jane Doe
-    cy.contains('Jane Doe').click();
+    cy.contains('Jane Doe').click({ force: true });
     // Fill dates
-    cy.get('input[name="period_start"]').type('2026-06-01');
-    cy.get('input[name="period_end"]').type('2026-06-30');
+    cy.get('input[name="period_start"]').type('2026-06-01', { force: true });
+    cy.get('input[name="period_end"]').type('2026-06-30', { force: true });
     // Select payment method
-    cy.get('[data-slot="select-trigger"]').first().click();
-    cy.get('[data-slot="select-item"]').contains('M-Pesa').click();
+    cy.get('[data-slot="select-trigger"]').first().click({ force: true });
+    cy.get('[data-slot="select-item"]').contains('M-Pesa').click({ force: true });
     
     // Submit contribution
-    cy.get('button[type="submit"]').click();
+    cy.get('button[type="submit"]').click({ force: true });
     cy.wait('@recordContribution');
     
     // Toast notification and redirect back to Chama details

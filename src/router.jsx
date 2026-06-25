@@ -35,6 +35,20 @@ import Reports from './features/admin/components/Reports';
 import NotFound from './components/feedback/NotFound';
 import HelpPage from './features/help/components/HelpPage';
 
+import TransactionList from './features/transactions/components/TransactionList';
+import TransactionDetail from './features/transactions/components/TransactionDetail';
+import LedgerList from './features/transactions/components/LedgerList';
+import NotificationList from './features/notifications/components/NotificationList';
+import ChatScreen from './features/chatbot/components/ChatScreen';
+import LoanApplication from './features/chamas/components/LoanApplication';
+import ConnectionList from './features/investments/components/ConnectionList';
+import ConnectionDetail from './features/investments/components/ConnectionDetail';
+import DisputeList from './features/transactions/components/DisputeList';
+import RaiseDisputeForm from './features/transactions/components/RaiseDisputeForm';
+import DisputeDetail from './features/transactions/components/DisputeDetail';
+import BuySharesForm from './features/investments/components/BuySharesForm';
+import ShareReceipt from './features/receipts/components/ShareReceipt';
+
 // Simple ChamaListPage rendered on /chamas path
 function ChamaListPage() {
   const navigate = useNavigate();
@@ -270,6 +284,90 @@ const helpRoute = createRoute({
   component: HelpPage,
 });
 
+const activityRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/activity',
+  component: TransactionList,
+});
+
+const transactionsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/transactions',
+  component: TransactionList,
+});
+
+const transactionDetailRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/transactions/$transactionId',
+  component: TransactionDetail,
+});
+
+const transactionRaiseDisputeRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/transactions/$transactionId/dispute',
+  component: RaiseDisputeForm,
+});
+
+const ledgerRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/ledger',
+  component: LedgerList,
+});
+
+const notificationsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/notifications',
+  component: NotificationList,
+});
+
+const assistantRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/assistant',
+  component: ChatScreen,
+});
+
+const chamaLoanRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/chamas/$chamaId/loan',
+  component: LoanApplication,
+});
+
+const buySharesRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/investments/saccos/$saccoId/buy',
+  component: BuySharesForm,
+});
+
+const shareReceiptRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/receipts/$receiptId',
+  component: ShareReceipt,
+});
+
+const connectionListRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/profile/connections',
+  component: ConnectionList,
+});
+
+const connectionDetailRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/profile/connections/$connectionId',
+  component: ConnectionDetail,
+});
+
+const disputeListRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/disputes',
+  component: DisputeList,
+});
+
+const disputeDetailRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/disputes/$disputeId',
+  component: DisputeDetail,
+});
+
 const catchAllRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '$',
@@ -293,6 +391,20 @@ const routeTree = rootRoute.addChildren([
   settingsRoute,
   securityRoute,
   helpRoute,
+  activityRoute,
+  transactionsRoute,
+  transactionDetailRoute,
+  transactionRaiseDisputeRoute,
+  ledgerRoute,
+  notificationsRoute,
+  assistantRoute,
+  chamaLoanRoute,
+  buySharesRoute,
+  shareReceiptRoute,
+  connectionListRoute,
+  connectionDetailRoute,
+  disputeListRoute,
+  disputeDetailRoute,
   adminDashboardRoute,
   adminUsersRoute,
   adminUserDetailRoute,

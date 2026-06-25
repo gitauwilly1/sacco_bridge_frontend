@@ -13,7 +13,15 @@ import { PageSpinner } from '@/components/feedback/LoadingState';
 import { ErrorState } from '@/components/feedback/ErrorState';
 import { toast } from 'sonner';
 import { investmentsApi } from '../api/investmentsApi';
+import { profileApi } from '../../profile/api/profileApi';
 import { formatKES, formatDate, formatTimeAgo } from '../../../utils/format';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
 
 const offerStatusConfig = {
   pending: { label: 'Pending', color: 'bg-alert/10 text-alert border border-alert/20' },
@@ -94,6 +102,12 @@ export default function ConnectionDetail() {
       );
     },
   });
+  // Digital signature states
+  const [isSignDialogOpen, setIsSignDialogOpen] = useState(false);
+  const [signStep, setSignStep] = useState('requesting'); // 'requesting' | 'otp_sent' | 'confirming'
+  const [otpCode, setOtpCode] = useState('');
+  const [signatureId, setSignatureId] = useState(null);
+  const [currentOfferId, setCurrentOfferId] = useState(null);
 
   const handleMakeOffer = () => {
     if (!offerPrice || parseFloat(offerPrice) <= 0) {
@@ -106,6 +120,91 @@ export default function ConnectionDetail() {
     });
   };
 
+  const handleStartAccept = (offerId) => {
+    setCurrentOfferId(offerId);
+    setIsSignDialogOpen(true);
+    setSignStep('requesting');
+    setOtpCode('');
+
+    profileApi.requestSignature({
+      document_type: 'SHARE_TRANSFER',
+      document_reference: connectionId,
+      document_title: `Share Purchase Agreement - ${connection.sacco_name}`,
+    })
+      .then((res) => {
+        const data = res.data?.data || res.data;
+        if (data.already_signed) {
+          toast.success('Document already signed! Finalizing offer acceptance...');
+          acceptOfferMutation.mutate(offerId);
+          setIsSignDialogOpen(false);
+        } else {
+          setSignatureId(data.signature_id);
+          setSignStep('otp_sent');
+          toast.success('OTP sent to your registered phone number');
+        }
+      })
+      .catch((err) => {
+        setIsSignDialogOpen(false);
+        toast.error(
+          err.response?.data?.error?.message || 'Failed to request digital signature OTP'
+        );
+      });
+  };
+
+  const handleVerifySignature = () => {
+    if (!otpCode || otpCode.length !== 6) {
+      toast.error('Please enter a valid 6-digit OTP code');
+      return;
+    }
+
+    setSignStep('confirming');
+
+    profileApi.confirmSignature({
+      signature_id: signatureId,
+      otp: otpCode,
+    })
+      .then((res) => {
+        toast.success('Agreement signed digitally!');
+        // Now finalize the offer acceptance
+        acceptOfferMutation.mutate(currentOfferId, {
+          onSuccess: () => {
+            setIsSignDialogOpen(false);
+          },
+          onError: () => {
+            setSignStep('otp_sent');
+          }
+        });
+      })
+      .catch((err) => {
+        setSignStep('otp_sent');
+        toast.error(
+          err.response?.data?.error?.message || 'Invalid verification OTP'
+        );
+      });
+  };
+
+  const handleResendOTP = () => {
+    if (signStep === 'confirming') return;
+    
+    toast.info('Requesting a new OTP...');
+    profileApi.requestSignature({
+      document_type: 'SHARE_TRANSFER',
+      document_reference: connectionId,
+      document_title: `Share Purchase Agreement - ${connection.sacco_name}`,
+    })
+      .then((res) => {
+        const data = res.data?.data || res.data;
+        setSignatureId(data.signature_id);
+        setOtpCode('');
+        setSignStep('otp_sent');
+        toast.success('New OTP sent successfully');
+      })
+      .catch((err) => {
+        toast.error(
+          err.response?.data?.error?.message || 'Failed to resend OTP'
+        );
+      });
+  };
   if (isLoading) return <PageSpinner />;
   if (error) return <ErrorState message="Failed to load connection" onRetry={refetch} />;
   if (!connection) return <ErrorState message="Connection not found" />;
@@ -274,8 +373,8 @@ export default function ConnectionDetail() {
                           <Button
                             size="sm"
                             className="flex-1 bg-success hover:bg-success-dark text-white border-0 shadow-subtle cursor-pointer h-8 text-xs font-semibold rounded-lg"
-                            onClick={() => acceptOfferMutation.mutate(offer.id)}
-                            disabled={acceptOfferMutation.isPending}
+                            onClick={() => handleStartAccept(offer.id)}
+                            disabled={acceptOfferMutation.isPending || isSignDialogOpen}
                           >
                             <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
                             Accept
@@ -329,6 +428,112 @@ export default function ConnectionDetail() {
           </Card>
         )}
       </div>
+
+      {/* Digital Signature Verification Dialog */}
+      <Dialog open={isSignDialogOpen} onOpenChange={setIsSignDialogOpen}>
+        <DialogContent className="border-sand bg-white shadow-subtle p-5 max-w-sm">
+          <DialogHeader className="space-y-1.5 pb-2">
+            <DialogTitle className="text-base font-bold text-slate flex items-center gap-2">
+              <Shield className="h-5 w-5 text-terracotta" />
+              Bilateral Agreement Signing
+            </DialogTitle>
+            <DialogDescription className="text-xs text-gray-500 leading-normal">
+              Authorize the transfer of shares securely using a one-time cryptographic signature.
+            </DialogDescription>
+          </DialogHeader>
+
+          {signStep === 'requesting' ? (
+            <div className="flex flex-col items-center justify-center py-8 space-y-3">
+              <RefreshCcw className="h-8 w-8 text-terracotta animate-spin" />
+              <p className="text-xs font-semibold text-slate">Generating legal signature request...</p>
+            </div>
+          ) : (
+            <div className="space-y-4 pt-1">
+              <div className="bg-sand-light/40 border border-sand/40 rounded-xl p-3 space-y-2 text-xs">
+                <p className="font-semibold text-slate flex items-center gap-1.5">
+                  <FileText className="h-3.5 w-3.5 text-terracotta" />
+                  Share Purchase Agreement
+                </p>
+                <div className="grid grid-cols-2 gap-2 text-gray-500 font-medium">
+                  <div>
+                    <p className="text-[9px] uppercase tracking-wider text-gray-400">Seller</p>
+                    <p className="text-slate font-semibold truncate">{connection.counterparty_name}</p>
+                  </div>
+                  <div>
+                    <p className="text-[9px] uppercase tracking-wider text-gray-400">Shares</p>
+                    <p className="text-slate font-bold font-numbers">{connection.quantity?.toLocaleString()}</p>
+                  </div>
+                  <div>
+                    <p className="text-[9px] uppercase tracking-wider text-gray-400">Total Price</p>
+                    <p className="text-terracotta font-bold font-numbers">{connection.agreed_price ? formatKES(connection.agreed_price) : '—'}</p>
+                  </div>
+                  <div>
+                    <p className="text-[9px] uppercase tracking-wider text-gray-400">Security ID</p>
+                    <p className="text-slate font-mono font-semibold truncate text-[10px]">
+                      {signatureId ? signatureId.substring(0, 8) : 'Pending...'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[10px] uppercase font-bold tracking-wider text-gray-400 block">
+                  SMS Verification Code (OTP)
+                </label>
+                <Input
+                  type="text"
+                  maxLength={6}
+                  value={otpCode}
+                  onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
+                  placeholder="•••••"
+                  className="w-full text-center text-xl font-bold tracking-[0.75em] pl-[0.75em] h-12 border-sand focus:border-terracotta focus:ring-terracotta rounded-xl"
+                  style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                  disabled={signStep === 'confirming' || acceptOfferMutation.isPending}
+                />
+                <p className="text-[10px] text-gray-400 text-center font-medium leading-relaxed">
+                  Enter the 6-digit OTP code sent to your phone to digitally sign this agreement.
+                </p>
+              </div>
+
+              <div className="flex gap-2.5 pt-2">
+                <Button
+                  variant="outline"
+                  className="flex-1 border-sand hover:bg-sand-light text-slate cursor-pointer h-10 text-xs font-semibold rounded-xl"
+                  onClick={() => setIsSignDialogOpen(false)}
+                  disabled={signStep === 'confirming' || acceptOfferMutation.isPending}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  className="flex-1 bg-terracotta hover:bg-terracotta-dark text-white border-0 shadow-subtle cursor-pointer h-10 text-xs font-semibold rounded-xl"
+                  onClick={handleVerifySignature}
+                  disabled={otpCode.length !== 6 || signStep === 'confirming' || acceptOfferMutation.isPending}
+                >
+                  {signStep === 'confirming' || acceptOfferMutation.isPending ? (
+                    <span className="flex items-center justify-center gap-1.5">
+                      <RefreshCcw className="h-3.5 w-3.5 animate-spin" />
+                      Signing...
+                    </span>
+                  ) : (
+                    'Verify & Sign'
+                  )}
+                </Button>
+              </div>
+
+              <div className="text-center pt-1.5 border-t border-sand/40">
+                <button
+                  type="button"
+                  onClick={handleResendOTP}
+                  className="text-xs text-terracotta hover:text-terracotta-dark font-semibold transition-colors"
+                  disabled={signStep === 'confirming' || acceptOfferMutation.isPending}
+                >
+                  Didn't receive code? Resend OTP
+                </button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

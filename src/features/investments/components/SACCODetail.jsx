@@ -14,6 +14,7 @@ import { PageSpinner } from '@/components/feedback/LoadingState';
 import { ErrorState } from '@/components/feedback/ErrorState';
 import { investmentsApi } from '../api/investmentsApi';
 import { formatKES } from '../../../utils/format';
+import SACCOMarketChart from './SACCOMarketChart';
 
 const tierConfig = {
   1: { label: 'Tier 1', color: 'bg-success/10 text-success border border-success/20', icon: Award },
@@ -163,6 +164,9 @@ export default function SACCODetail() {
         </TabsList>
 
         <TabsContent value="overview" className="mt-4 space-y-4 outline-none">
+          {/* Market Activity Chart */}
+          <SACCOMarketChart saccoId={saccoId} />
+
           {/* About */}
           {sacco.description && (
             <Card className="border-sand bg-white shadow-subtle">
@@ -239,7 +243,7 @@ export default function SACCODetail() {
                       )}
                     </div>
                   </div>
-                  <div className="text-right flex-shrink-0">
+                  <div className="text-right shrink-0">
                     <p className="text-sm font-extrabold text-slate font-numbers" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
                       {formatKES(sc.current_price || sc.price_per_share)}
                     </p>
