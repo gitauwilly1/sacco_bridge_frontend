@@ -39,6 +39,7 @@ export const adminApi = {
   getAuditLog: (params) => apiClient.get('/users/admin/audit/', { params }),
   getUnifiedAudit: (params) => apiClient.get('/users/admin/unified-audit/', { params }),
   getDeletionRequests: (params) => apiClient.get('/users/admin/deletion-requests/', { params }),
+  getDeletionRequestDetail: (id) => apiClient.get(`/users/admin/deletion-requests/${id}/`),
   reviewDeletionRequest: (id, data) =>
     apiClient.post(`/users/admin/deletion-requests/${id}/review/`, data),
 
@@ -64,6 +65,17 @@ export const adminApi = {
   createKnowledgeArticle: (data) => apiClient.post('/chatbot/knowledge/', data),
   updateKnowledgeArticle: (id, data) => apiClient.patch(`/chatbot/knowledge/${id}/`, data),
 
+  // Overview & Health
+  getAdminOverview: () => apiClient.get('/analytics/admin/overview/'),
+  getAdminHealth: () => apiClient.get('/analytics/admin/health/'),
+  getAdminVolume: (params) => apiClient.get('/analytics/admin/volume/', { params }),
+  getAdminSettlements: (params) => apiClient.get('/analytics/admin/settlements/', { params }),
+  getAdminExport: (params) => apiClient.get('/analytics/admin/export/', { params }),
+  refreshAnalytics: () => apiClient.post('/analytics/refresh/'),
+
   // Reports
   getReports: () => apiClient.get('/reports/'),
+  createReport: (data) => apiClient.post('/reports/', data),
+  getReportStatus: (id) => apiClient.get(`/reports/${id}/status/`),
+  downloadReport: (id) => apiClient.get(`/reports/${id}/download/`, { responseType: 'blob' }),
 };

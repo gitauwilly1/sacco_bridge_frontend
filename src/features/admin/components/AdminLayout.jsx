@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Users, Building2, HandCoins, AlertCircle,
   Shield, Lock, FileText, Webhook, BookOpen, BarChart3,
   ChevronLeft, ChevronRight, Menu, X, Search, ShieldCheck, Trash2, User,
-  LogOut, Settings,
+  LogOut, Settings, TrendingUp, Scale,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -29,6 +29,9 @@ const navItems = [
   { to: '/admin/webhooks', label: 'Webhooks', icon: Webhook },
   { to: '/admin/legal', label: 'Legal', icon: BookOpen },
   { to: '/admin/knowledge', label: 'Knowledge Base', icon: BookOpen },
+  { to: '/admin/underwriting', label: 'Underwriting', icon: Scale },
+  { to: '/admin/settlements', label: 'Settlements', icon: HandCoins },
+  { to: '/admin/volume', label: 'Volume', icon: TrendingUp },
   { to: '/admin/deletion-requests', label: 'Deletions', icon: Trash2 },
   { to: '/admin/reports', label: 'Reports', icon: BarChart3 },
 ];
@@ -39,6 +42,15 @@ export default function AdminLayout({ children }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuthStore();
+  const userRoles = user?.roles || (user?.role ? [user.role] : []);
+  const isSupportAgent = userRoles.includes('SUPPORT_AGENT');
+  const isPlatformAdmin = userRoles.includes('PLATFORM_ADMIN');
+
+  // Sensitive pages restricted to PLATFORM_ADMIN only
+  const restrictedItems = ['/admin/audit', '/admin/webhooks', '/admin/legal', '/admin/deletion-requests', '/admin/deletions'];
+  const visibleNavItems = navItems.filter(
+    (item) => !isSupportAgent || !restrictedItems.includes(item.to)
+  );
 
   const sidebarContent = (
     <div className="flex flex-col h-full bg-white">
@@ -64,7 +76,7 @@ export default function AdminLayout({ children }) {
 
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto p-2 space-y-1 scrollbar-none">
-        {navItems.map((item) => {
+        {visibleNavItems.map((item) => {
           const Icon = item.icon;
           const isActive = location.pathname === item.to;
           return (
@@ -138,7 +150,7 @@ export default function AdminLayout({ children }) {
       {/* Main */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Bar */}
-        <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-lg border-b border-sand/40 px-4 py-3.5 flex items-center gap-3 shadow-sm">
+        <header className="sticky top-0 z-30 glass-header px-4 py-3.5 flex items-center gap-3">
           <button
             className="lg:hidden p-1.5 hover:bg-sand-light rounded-lg transition-colors cursor-pointer"
             onClick={() => setMobileOpen(true)}
