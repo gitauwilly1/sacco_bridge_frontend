@@ -63,10 +63,13 @@ export default function AdminDisputeDetail() {
     queryKey: ['admin-dispute', disputeId],
     queryFn: () =>
       adminApi
-        .getDisputesAdmin({})
+        .getDisputesAdmin({ dispute_id: disputeId })
         .then((r) => {
-          const disputes = r.data.results || r.data.data || [];
-          return disputes.find((d) => d.id?.toString() === disputeId);
+          // Try backend filter first; fallback to client-side find
+          const results = r.data.results || r.data.data || r.data;
+          return Array.isArray(results)
+            ? results.find((d) => d.id?.toString() === disputeId)
+            : results;
         }),
     enabled: !!disputeId,
   });
@@ -167,11 +170,7 @@ export default function AdminDisputeDetail() {
                   <button
                     key={action.action}
                     onClick={() => setSelectedAction(action.action)}
-                    className={`text-left p-3.5 rounded-xl border transition-all duration-200 ${
-                      selectedAction === action.action
-                        ? 'border-terracotta bg-terracotta/5 shadow-subtle ring-1 ring-terracotta/30'
-                        : 'border-sand hover:border-terracotta/50 bg-white/50 hover:bg-sand-light/10'
-                    }`}
+                    className={`text-left p-3.5 rounded-xl border transition-all duration-200 ${selectedAction === action.action ? 'border-terracotta bg-terracotta/5 shadow-subtle ring-1 ring-terracotta/30' : 'border-sand hover:border-terracotta/50 bg-white/50 hover:bg-sand-light/10'}`}
                   >
                     <div className="flex items-center gap-2">
                       <Icon className={`h-4 w-4 ${action.color}`} />
