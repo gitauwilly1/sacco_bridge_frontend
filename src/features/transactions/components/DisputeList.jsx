@@ -1,13 +1,17 @@
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import {
   AlertCircle, CheckCircle2, Clock, ChevronRight,
-  XCircle, FileText,
+  XCircle, FileText, RefreshCw, ChevronLeft, ChevronRight as ChevronRightIcon,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorState, EmptyState } from '@/components/feedback';
+import SearchInput from '@/components/ui/SearchInput';
+import DateRangeFilter from '@/components/ui/DateRangeFilter';
 import { transactionApi } from '../api/transactionApi';
 import { formatKES, formatTimeAgo } from '../../../utils/format';
 
@@ -107,21 +111,35 @@ function DisputeListSkeleton() {
 }
 
 export default function DisputeList() {
+  const [search, setSearch] = useState('');
+  const [days, setDays] = useState('all');
+  const [page, setPage] = useState(1);
   const {
     data: disputesData,
     isLoading,
     error,
     refetch,
   } = useQuery({
-    queryKey: ['my-disputes'],
+    queryKey: ['my-disputes', search, days, page],
     queryFn: () =>
-      transactionApi.getMyDisputes().then((r) => r.data),
+      transactionApi.getMyDisputes({ page, page_size: 10, search: search || undefined, ...(days !== 'all' && { days }) }).then((r) => r.data),
   });
 
-  const disputes = disputesData?.results || disputesData?.data || [];
+  const disputes = disputesData?.data || disputesData?.results || [];
+  const total = disputesData?.pagination?.count || disputesData?.count || disputes.length;
+  const totalPages = Math.ceil(total / 10);
 
   return (
     <div className="space-y-4">
+      <div className="flex flex-col sm:flex-row gap-2">
+        <SearchInput value={search} onChange={(v) => setSearch(v)} placeholder="Search disputes..." className="flex-1" />
+        <div className="flex items-center gap-2">
+          <DateRangeFilter value={days} onChange={setDays} />
+          <Button size="sm" variant="outline" onClick={() => refetch()} className="border-sand hover:bg-sand-light text-slate h-9 w-9 p-0 rounded-xl">
+            <RefreshCw className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
       <div className="flex items-center gap-2">
         <AlertCircle className="h-4 w-4 text-terracotta" />
         <h2 className="text-sm font-semibold text-slate">
@@ -144,6 +162,18 @@ export default function DisputeList() {
           {disputes.map((dispute) => (
             <DisputeCard key={dispute.id} dispute={dispute} />
           ))}
+        </div>
+      )}
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2 pt-2">
+          <Button size="sm" variant="outline" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))} className="border-sand hover:bg-sand-light text-slate h-8 rounded-lg text-xs px-3">
+            <ChevronLeft className="h-3.5 w-3.5" /> Prev
+          </Button>
+          <span className="text-xs text-gray-400 font-medium">{page} of {totalPages}</span>
+          <Button size="sm" variant="outline" disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)} className="border-sand hover:bg-sand-light text-slate h-8 rounded-lg text-xs px-3">
+            Next <ChevronRightIcon className="h-3.5 w-3.5" />
+          </Button>
         </div>
       )}
     </div>
