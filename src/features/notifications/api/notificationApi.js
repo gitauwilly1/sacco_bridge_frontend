@@ -8,4 +8,6 @@ export const notificationApi = {
   getPreferences: () => apiClient.get('/notifications/preferences/'),
   updatePreferences: (data) => apiClient.post('/notifications/preferences/', data),
   registerDevice: (data) => apiClient.post('/notifications/devices/', data),
+  getDevices: () => apiClient.get('/notifications/devices/'),
+  deleteDevice: (id) => apiClient.delete(`/notifications/devices/${id}/`),
 };

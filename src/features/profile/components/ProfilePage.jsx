@@ -16,6 +16,7 @@ import {
   AlertCircle,
   Activity,
   Gauge,
+  ShieldCheck,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { PageSpinner } from '@/components/feedback/LoadingState';
@@ -40,6 +41,8 @@ import AppearanceSettings from './AppearanceSettings';
 import VerificationStatus from './VerificationStatus';
 import ConnectedAccounts from './ConnectedAccounts';
 import UserProfileScore from './UserProfileScore';
+import LoginHistory from './LoginHistory';
+import DeviceManagement from '../../notifications/components/DeviceManagement';
 
 const SECTIONS = [
   {
@@ -169,7 +172,7 @@ function AccountHealthCard({ profile, onNavigate }) {
 
   return (
     <div className="rounded-3xl border border-sand/40 bg-white shadow-subtle overflow-hidden">
-      <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-start gap-3">
           <span className={`rounded-2xl p-2.5 ${statusStyles[health.status]}`}>
             <Activity className="h-5 w-5" />
@@ -448,11 +451,16 @@ export default function ProfilePage({ defaultTab = 'profile' }) {
           {profile?.full_name || `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim()}
         </h1>
         <p className="mt-0.5 text-xs font-medium text-gray-400">{profile?.email}</p>
-        {profile?.membership_status && (
-          <p className="mt-2 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
-            {profile.membership_status} member
-          </p>
-        )}
+        <div className="flex items-center justify-center gap-2 mt-3">
+          {profile?.membership_status && (
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+              {profile.membership_status} member
+            </span>
+          )}
+          <span className="security-badge">
+            <ShieldCheck className="h-3 w-3" /> Verified
+          </span>
+        </div>
       </div>
 
       {/* Mobile section picker */}
@@ -521,7 +529,7 @@ export default function ProfilePage({ defaultTab = 'profile' }) {
         <main className="min-w-0 space-y-5">
           <AccountHealthCard profile={profile} onNavigate={handleNavigate} />
 
-          <div className="rounded-3xl border border-sand/40 bg-white shadow-subtle">
+          <div className="bento-card">
             {/* Section header with toolbar */}
             <div className="border-b border-sand/30 px-6 py-5">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
@@ -550,12 +558,18 @@ export default function ProfilePage({ defaultTab = 'profile' }) {
                 <>
                   <ConnectedAccounts profile={profile} />
                   <SecuritySettings profile={profile} />
+                  <LoginHistory />
                 </>
               )}
 
               {activeSection.value === 'notifications' && <NotificationPreferences />}
 
-              {activeSection.value === 'sessions' && <SessionManager />}
+              {activeSection.value === 'sessions' && (
+                <>
+                  <SessionManager />
+                  <DeviceManagement />
+                </>
+              )}
 
               {activeSection.value === 'appearance' && <AppearanceSettings />}
 
