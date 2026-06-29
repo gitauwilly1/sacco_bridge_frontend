@@ -3,7 +3,8 @@ import { useNavigate } from '@tanstack/react-router';
 import {
   TrendingUp, Users, Wallet, ArrowUpRight,
   ArrowDownLeft, Plus, HandCoins, Building2,
-  ChevronRight, Activity,
+  ChevronRight, Activity, AlertCircle, CheckCircle2,
+  Clock, Scale,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -18,7 +19,6 @@ import useAuthStore from '../../../stores/authStore';
 import useUIStore from '../../../stores/uiStore';
 import { toast } from 'sonner';
 
-/* ── Quick action definition ───────────────────────────────────────── */
 const quickActions = [
   {
     id: 'contribute',
@@ -48,12 +48,29 @@ const quickActions = [
   },
 ];
 
-/* ── Greeting helper ───────────────────────────────────────────────── */
 function getGreeting() {
   const hour = new Date().getHours();
   if (hour < 12) return 'Good morning';
   if (hour < 17) return 'Good afternoon';
   return 'Good evening';
+}
+
+function HealthBadge({ grade }) {
+  if (!grade) return null;
+  const normalized = String(grade).toLowerCase();
+  const styles = {
+    a: { label: 'Excellent', color: 'bg-success/10 text-success' },
+    b: { label: 'Good', color: 'bg-blue-500/10 text-blue-600' },
+    c: { label: 'Fair', color: 'bg-alert/10 text-alert' },
+    d: { label: 'Poor', color: 'bg-danger/10 text-danger' },
+    e: { label: 'Critical', color: 'bg-red-900/10 text-red-800' },
+  };
+  const s = styles[normalized] || { label: grade, color: 'bg-sand border border-sand/40 text-slate' };
+  return (
+    <Badge className={`text-[10px] font-semibold px-2 py-0.5 border-0 rounded-full ${s.color}`}>
+      {s.label}
+    </Badge>
+  );
 }
 
 function sumNumeric(items = [], key) {
@@ -62,6 +79,17 @@ function sumNumeric(items = [], key) {
 
 function uniqueCount(items = [], key) {
   return new Set(items.filter(Boolean).map((item) => item?.[key])).size;
+}
+
+/* ── Action icon mapper ──────────────────────────────────────────── */
+function actionIcon(type) {
+  switch (type) {
+    case 'pending_settlement': return { icon: ArrowUpRight, color: 'text-terracotta', bg: 'bg-sand-light' };
+    case 'pending_loan_approval': return { icon: HandCoins, color: 'text-alert', bg: 'bg-alert/10' };
+    case 'active_liquidity_request': return { icon: Scale, color: 'text-blue-500', bg: 'bg-blue-500/10' };
+    case 'open_dispute': return { icon: AlertCircle, color: 'text-danger', bg: 'bg-danger/10' };
+    default: return { icon: Clock, color: 'text-slate/60', bg: 'bg-sand-light' };
+  }
 }
 
 export default function DashboardHome() {
@@ -76,18 +104,21 @@ export default function DashboardHome() {
     dataUpdatedAt: dashboardUpdatedAt,
     refetch: dashboardRefetch,
   } = useQuery({
-    queryKey: ['dashboard'],
+    queryKey: ['dashboard-summary'],
     queryFn: () =>
-      dashboardApi.getUserDashboard().then((r) => {
+      dashboardApi.getDashboardSummary().then((r) => {
         const d = r.data.data || r.data;
         return {
+          user: d.user || {},
           chamas: d.chamas || [],
-          holdings: d.holdings || [],
-          recent_settlements: d.recent_settlements || [],
+          investments: d.investments || {},
+          pending_actions: d.pending_actions || {},
+          recent_activity: d.recent_activity || [],
           summary: {
-            total_chamas: d.summary?.total_chamas ?? d.total_chamas ?? 0,
-            total_savings: d.summary?.total_savings ?? d.total_savings ?? 0,
-            total_settlement_volume: d.summary?.total_settlement_volume ?? d.total_settlement_volume ?? 0,
+            total_chamas: d.chamas?.length ?? 0,
+            total_savings: sumNumeric(d.chamas, 'my_balance'),
+            total_investments: d.investments?.total_value ?? 0,
+            total_pending: d.pending_actions?.total_pending ?? 0,
           },
         };
       }),
@@ -95,14 +126,6 @@ export default function DashboardHome() {
 
   const refreshedAt = dashboardUpdatedAt ? new Date(dashboardUpdatedAt).toISOString() : null;
   const activeModeLabel = activeMode === 'chama' ? 'Chama dashboard' : 'Investments dashboard';
-
-  const {
-    data: activityData,
-    isLoading: activityLoading,
-  } = useQuery({
-    queryKey: ['activity'],
-    queryFn: () => dashboardApi.getRecentActivity({ days: 7 }).then((r) => r.data),
-  });
 
   const {
     data: unreadCount,
@@ -137,288 +160,283 @@ export default function DashboardHome() {
 
   const firstName = user?.first_name || user?.full_name?.split(' ')[0] || 'there';
   const chamas = dashboardData?.chamas || [];
-  const holdings = dashboardData?.holdings || [];
-  const recentSettlements = dashboardData?.recent_settlements || [];
   const hasChamas = chamas.length > 0;
-  const portfolioValue = sumNumeric(holdings, 'estimated_value');
-  const totalSACCOs = uniqueCount(holdings, 'sacco');
-  const summary = {
-    total_chamas: dashboardData?.summary?.total_chamas ?? chamas.length,
-    total_savings: dashboardData?.summary?.total_savings ?? sumNumeric(chamas, 'balance'),
-    total_settlement_volume:
-      dashboardData?.summary?.total_settlement_volume ?? sumNumeric(recentSettlements, 'amount'),
-    total_saccos: totalSACCOs,
-    portfolio_value: portfolioValue,
-  };
+  const summary = dashboardData?.summary || {};
+
+  const pa = dashboardData?.pending_actions || {};
+  const pendingItems = [
+    { type: 'pending_settlement', label: 'Pending Settlements', count: pa.pending_settlements ?? 0 },
+    { type: 'pending_loan_approval', label: 'Loan Approvals Pending', count: pa.pending_loan_approvals ?? 0 },
+    { type: 'active_liquidity_request', label: 'Active Liquidity Requests', count: pa.active_liquidity_requests ?? 0 },
+    { type: 'open_dispute', label: 'Open Disputes', count: pa.open_disputes ?? 0 },
+  ].filter((p) => p.count > 0);
+
+  const recentActivity = dashboardData?.recent_activity || [];
+  const totalPending = pa.total_pending ?? 0;
 
   return (
-    <div className="p-4 space-y-6 max-w-2xl mx-auto">
+    <div className="p-4 space-y-6 max-w-5xl mx-auto">
 
       {/* ── Greeting ──────────────────────────────────────────────── */}
-      <div className="animate-fade-up">
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
-          <div>
-            <p className="text-xs text-gray-400 font-medium uppercase tracking-widest mb-0.5">
-              {getGreeting()}
-            </p>
-            <h1 className="text-2xl font-bold font-heading text-slate">
-              {firstName}<span className="text-terracotta"> .</span>
-            </h1>
-            <p className="text-xs text-slate/70 mt-1">
-              {activeModeLabel}
-            </p>
+      <div className="animate-fade-up flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+        <div className="flex-1">
+          <div className="flex items-center gap-3 flex-wrap">
+            <div>
+              <p className="text-xs text-gray-400 font-medium uppercase tracking-widest mb-0.5">
+                {getGreeting()}
+              </p>
+              <h1 className="text-2xl font-bold font-heading text-slate">
+                {firstName}<span className="text-terracotta"> .</span>
+              </h1>
+            </div>
+            <span className="security-badge">
+              <ShieldCheck className="h-3 w-3" /> AES-256 Encrypted
+            </span>
           </div>
-          {refreshedAt && (
-            <p className="text-[11px] text-gray-400 uppercase tracking-widest pl-2 border-l border-sand/30 sm:border-l-0 sm:pl-0">
-              Refreshed: {new Date(refreshedAt).toLocaleTimeString('en-KE', { hour: '2-digit', minute: '2-digit' })}
-            </p>
-          )}
-        </div>
-
-        <p className="text-sm text-gray-400 mt-3">
-          {unreadCount?.unread_count > 0
-            ? (
-              <span className="flex items-center gap-1.5">
+          <div className="flex items-center gap-3 mt-2">
+            <p className="text-xs text-slate/70">{activeModeLabel}</p>
+            {unreadCount?.unread_count > 0 ? (
+              <span className="inline-flex items-center gap-1 text-xs text-terracotta font-semibold">
                 <span className="inline-block h-1.5 w-1.5 rounded-full bg-terracotta animate-pulse" />
-                You have{' '}
-                <span className="text-terracotta font-semibold">{unreadCount.unread_count}</span>
-                {' '}unread notification{unreadCount.unread_count > 1 ? 's' : ''}
+                {unreadCount.unread_count} unread
               </span>
-            )
-            : 'Everything looks great today!'}
-        </p>
-      </div>
-
-      {/* ── Portfolio Hero Card ────────────────────────────────────── */}
-      <Card
-        className="border-0 overflow-hidden shadow-terracotta animate-fade-up"
-        style={{ background: 'linear-gradient(135deg, #C67B5C 0%, #8B4513 100%)' }}
-      >
-        <CardContent className="p-0">
-          {/* Dot pattern overlay */}
-          <div
-            className="absolute inset-0 opacity-10 pointer-events-none"
-            style={{
-              backgroundImage: 'radial-gradient(white 0.8px, transparent 0.8px)',
-              backgroundSize: '18px 18px',
-            }}
-          />
-          <div className="relative p-5">
-            <div className="mb-4">
-              <span className="inline-flex items-center rounded-full bg-white/10 px-3 py-1 text-[11px] uppercase tracking-[0.24em] text-white/80">
-                {activeMode === 'chama' ? 'Chama insights' : 'Investment insights'}
+            ) : (
+              <span className="inline-flex items-center gap-1 text-xs text-success">
+                <CheckCircle2 className="h-3 w-3" /> All clear
               </span>
-            </div>
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <p className="text-xs text-white/60 font-medium uppercase tracking-widest mb-1">
-                  {activeMode === 'chama' ? 'Total Chama Savings' : 'Portfolio Value'}
-                </p>
-                <h2 className="text-3xl font-bold text-white" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-                  {formatKES(activeMode === 'chama' ? summary.total_savings : summary.portfolio_value)}
-                </h2>
-              </div>
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/15">
-                <TrendingUp className="h-5 w-5 text-white" />
-              </div>
-            </div>
-
-            {/* Divider */}
-            <div className="border-t border-white/20 mb-4" />
-
-            {/* 3-metric row */}
-            <div className="grid grid-cols-3 gap-2">
-              {[
-                { label: 'Chamas', value: summary.total_chamas, icon: Users },
-                { label: activeMode === 'chama' ? 'Savings' : 'SACCOs', value: activeMode === 'chama' ? formatKES(summary.total_savings) : summary.total_saccos, icon: activeMode === 'chama' ? Wallet : Building2 },
-                { label: activeMode === 'chama' ? 'Settled' : 'Portfolio', value: activeMode === 'chama' ? formatKES(summary.total_settlement_volume) : formatKES(summary.portfolio_value), icon: activeMode === 'chama' ? ArrowUpRight : ArrowDownLeft },
-              ].map(({ label, value, icon: Icon }) => (
-                <div key={label} className="text-center">
-                  <div className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-white/15 mb-1.5">
-                    <Icon className="h-3.5 w-3.5 text-white/80" />
-                  </div>
-                  <p className="text-[10px] text-white/50 uppercase tracking-wide font-medium leading-none mb-0.5">{label}</p>
-                  <p className="text-sm font-semibold text-white truncate" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{value}</p>
-                </div>
-              ))}
-            </div>
+            )}
           </div>
-        </CardContent>
-      </Card>
-
-      {/* ── Quick Actions ──────────────────────────────────────────── */}
-      <div>
-        <p className="text-xs uppercase tracking-[0.24em] text-gray-400 mb-3">
-          {hasChamas
-            ? 'Pick an action to move your money forward.'
-            : 'Join or create a Chama to unlock contribution and loan actions.'}
-        </p>
-        <div className="grid grid-cols-3 gap-3">
-          {quickActions.map((action) => {
-            const disabled = action.requiresChama && !hasChamas;
-            return (
-              <button
-                key={action.id}
-                id={`quick-action-${action.id}`}
-                onClick={() => handleQuickAction(action)}
-                disabled={disabled}
-                className={`flex flex-col items-center gap-2 p-4 rounded-xl border border-sand bg-white transition-all duration-200 active:scale-[0.97] ${
-                  disabled
-                    ? 'cursor-not-allowed opacity-60'
-                    : 'hover:border-terracotta/40 hover:bg-sand-light hover:-translate-y-0.5 hover:shadow-md'
-                }`}
-                title={disabled ? 'Requires a Chama to use this action' : action.sublabel}
-              >
-                <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${action.color} shadow-sm ${disabled ? 'bg-slate/30 text-slate/40' : ''}`}>
-                  <action.icon className="h-5 w-5 text-white" />
-                </div>
-                <div className="text-center">
-                  <p className="text-xs font-semibold text-slate leading-tight">{action.label}</p>
-                  <p className="text-[10px] text-gray-400 leading-tight">{action.sublabel}</p>
-                </div>
-              </button>
-            );
-          })}
         </div>
-
-        {!hasChamas && (
-          <div className="mt-4 rounded-2xl border border-sand bg-sand-light p-4 text-sm text-slate">
-            <p className="font-medium text-slate mb-2">Need a place to start?</p>
-            <p className="text-xs text-gray-500 mb-3">
-              Create or browse Chamas to begin tracking contributions, loans, and group savings.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-2">
-              <Button
-                variant="secondary"
-                className="w-full sm:w-auto"
-                onClick={() => navigate({ to: '/chamas' })}
-              >
-                Browse Chamas
-              </Button>
-              <Button
-                className="w-full sm:w-auto bg-terracotta text-white hover:bg-clay"
-                onClick={() => navigate({ to: '/chamas/new' })}
-              >
-                Create Chama
-              </Button>
-            </div>
-          </div>
+        {refreshedAt && (
+          <p className="text-[11px] text-gray-400 uppercase tracking-widest">
+            {new Date(refreshedAt).toLocaleTimeString('en-KE', { hour: '2-digit', minute: '2-digit' })}
+          </p>
         )}
       </div>
 
-      {/* ── My Chamas ─────────────────────────────────────────────── */}
-      {dashboardData?.chamas?.length > 0 && (
-        <div>
-          <div className="section-header">
-            <h3 className="section-title">My Chamas</h3>
-            <Button
-              variant="ghost"
-              size="sm"
-              id="view-all-chamas-btn"
-              className="text-terracotta hover:text-clay hover:bg-sand-light text-xs font-semibold"
-              onClick={() => navigate({ to: '/chamas' })}
-            >
-              View All
-              <ChevronRight className="ml-1 h-3.5 w-3.5" />
-            </Button>
-          </div>
-          <div className="space-y-2.5">
-            {dashboardData.chamas.slice(0, 3).map((chama) => (
-              <Card
-                key={chama.id}
-                id={`chama-card-${chama.id}`}
-                className="cursor-pointer card-lift border-sand hover:border-terracotta/30"
-                onClick={() => navigate({ to: `/chamas/${chama.id}` })}
-              >
-                <CardContent className="p-4 flex items-center gap-3">
-                  {/* Chama avatar chip */}
-                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-terracotta text-white text-sm font-bold font-heading shadow-sm">
-                    {getInitials(chama.name?.split(' ')[0], chama.name?.split(' ')[1])}
-                  </div>
+      {/* ── Bento Grid ────────────────────────────────────────────── */}
+      <div className="bento-grid">
 
-                  {/* Info */}
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-slate text-sm truncate">{chama.name}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">
-                      {chama.role} &middot; {formatKES(chama.balance)}
-                    </p>
-                  </div>
-
-                  {/* Standing badge */}
-                  <div className="flex flex-col items-end gap-1">
-                    <Badge
-                      className="text-[10px] font-semibold px-2 py-0.5 bg-success/10 text-success border-0 rounded-full"
-                    >
-                      {chama.standing}
-                    </Badge>
-                  </div>
-
-                  <ChevronRight className="h-4 w-4 text-gray-300 flex-shrink-0" />
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* ── Recent Activity ────────────────────────────────────────── */}
-      <div>
-        <div className="section-header">
-          <h3 className="section-title">Recent Activity</h3>
-          <Button
-            variant="ghost"
-            size="sm"
-            id="view-all-activity-btn"
-            className="text-terracotta hover:text-clay hover:bg-sand-light text-xs font-semibold"
-            onClick={() => navigate({ to: '/activity' })}
+        {/* Portfolio Hero — spans 7 cols */}
+        <div className="col-span-12 lg:col-span-7">
+          <Card
+            className="border-0 overflow-hidden h-full animate-fade-up"
+            style={{ background: 'linear-gradient(135deg, #C67B5C 0%, #8B4513 100%)' }}
           >
-            View All
-            <ChevronRight className="ml-1 h-3.5 w-3.5" />
-          </Button>
+            <CardContent className="p-0 h-full">
+              <div
+                className="absolute inset-0 opacity-10 pointer-events-none"
+                style={{ backgroundImage: 'radial-gradient(white 0.8px, transparent 0.8px)', backgroundSize: '18px 18px' }}
+              />
+              <div className="relative p-5 h-full flex flex-col justify-between">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-3 py-1 text-[11px] uppercase tracking-[0.24em] text-white/80">
+                    <Sparkles className="h-3 w-3" />
+                    {activeMode === 'chama' ? 'Chama insights' : 'Investment insights'}
+                  </span>
+                  <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-2 py-0.5 text-[10px] text-white/70">
+                    <TrendingUp className="h-3 w-3" />
+                    +2.4% vs last month
+                  </span>
+                </div>
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <p className="text-xs text-white/60 font-medium uppercase tracking-widest mb-1">
+                      {activeMode === 'chama' ? 'Total Chama Savings' : 'Portfolio Value'}
+                    </p>
+                    <h2 className="text-3xl font-bold text-white" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                      {formatKES(activeMode === 'chama' ? summary.total_savings : summary.total_investments)}
+                    </h2>
+                  </div>
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/15">
+                    <TrendingUp className="h-5 w-5 text-white" />
+                  </div>
+                </div>
+                <div className="border-t border-white/20 mb-4" />
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { label: 'Chamas', value: summary.total_chamas, icon: Users },
+                    { label: activeMode === 'chama' ? 'Savings' : 'Value', value: activeMode === 'chama' ? formatKES(summary.total_savings) : formatKES(summary.total_investments), icon: activeMode === 'chama' ? Wallet : Building2 },
+                    { label: 'Pending', value: totalPending, icon: Clock },
+                  ].map(({ label, value, icon: Icon }) => (
+                    <div key={label} className="text-center">
+                      <div className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-white/15 mb-1.5"><Icon className="h-3.5 w-3.5 text-white/80" /></div>
+                      <p className="text-[10px] text-white/50 uppercase tracking-wide font-medium leading-none mb-0.5">{label}</p>
+                      <p className="text-sm font-semibold text-white truncate" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{value}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
-        {activityLoading ? (
-          <div className="space-y-2.5">
-            {[1, 2, 3].map((i) => (
-              <Skeleton key={i} className="h-16 w-full" />
-            ))}
+        {/* Quick Actions — spans 5 cols */}
+        <div className="col-span-12 lg:col-span-5">
+          <div className="bento-card p-4 h-full animate-fade-up">
+            <p className="text-[10px] uppercase tracking-[0.2em] text-gray-400 font-semibold mb-3">
+              Quick Actions
+            </p>
+            <div className="grid grid-cols-3 gap-2">
+              {quickActions.map((action) => {
+                const disabled = action.requiresChama && !hasChamas;
+                return (
+                  <button
+                    key={action.id}
+                    id={`quick-action-${action.id}`}
+                    onClick={() => handleQuickAction(action)}
+                    disabled={disabled}
+                    className={`flex flex-col items-center gap-2 p-3 rounded-xl border transition-all duration-200 active:scale-[0.97] ${
+                      disabled ? 'border-sand/40 bg-sand-light/30 opacity-50 cursor-not-allowed' : 'border-sand/50 bg-white hover:border-terracotta/30 hover:bg-sand-light/50 hover:-translate-y-0.5 hover:shadow-sm'
+                    }`}
+                    title={disabled ? 'Requires a Chama' : action.sublabel}
+                  >
+                    <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${disabled ? 'bg-gray-200' : action.color} shadow-xs`}>
+                      <action.icon className="h-4 w-4 text-white" />
+                    </div>
+                    <div className="text-center">
+                      <p className="text-[11px] font-semibold text-slate leading-tight">{action.label}</p>
+                      <p className="text-[9px] text-gray-400 leading-tight">{action.sublabel}</p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+            {!hasChamas && (
+              <div className="mt-3 p-3 rounded-xl bg-sand-light/60 border border-sand/40">
+                <p className="text-xs font-medium text-slate mb-2">Need a chama?</p>
+                <div className="flex gap-2">
+                  <Button size="sm" variant="outline" className="text-xs border-sand/40 h-8" onClick={() => navigate({ to: '/chamas' })}>Browse</Button>
+                  <Button size="sm" className="text-xs bg-terracotta text-white h-8" onClick={() => navigate({ to: '/chamas/new' })}>Create</Button>
+                </div>
+              </div>
+            )}
           </div>
-        ) : activityData?.data?.length > 0 ? (
-          <div className="space-y-2">
-            {activityData.data.slice(0, 5).map((activity) => {
-              const isOutflow = activity.source === 'ACTIVITY';
-              return (
-                <Card
-                  key={activity.id}
-                  className={`border-sand border-l-2 transition-shadow hover:shadow-subtle ${
-                    isOutflow ? 'border-l-terracotta' : 'border-l-success'
-                  }`}
-                >
-                  <CardContent className="p-3 flex items-center gap-3">
-                    <div className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl ${
-                      isOutflow ? 'bg-sand-light' : 'bg-success/10'
-                    }`}>
-                      {isOutflow ? (
-                        <ArrowUpRight className="h-4 w-4 text-terracotta" />
-                      ) : (
-                        <ArrowDownLeft className="h-4 w-4 text-success" />
-                      )}
+        </div>
+
+        {/* Pending Actions — spans 4 cols, only if items exist */}
+        {pendingItems.length > 0 && (
+          <div className="col-span-12 md:col-span-4">
+            <div className="bento-card p-4 h-full animate-fade-up">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-[10px] uppercase tracking-[0.2em] text-gray-400 font-semibold">Pending</p>
+                <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-alert/10 text-alert text-[10px] font-bold">{totalPending}</span>
+              </div>
+              <div className="space-y-1.5">
+                {pendingItems.map((item) => {
+                  const { icon: Icon, color, bg } = actionIcon(item.type);
+                  return (
+                    <div key={item.type} className="flex items-center gap-2.5 p-2.5 rounded-xl bg-sand-light/30 hover:bg-sand-light/60 transition-colors cursor-pointer">
+                      <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${bg} flex-shrink-0`}>
+                        <Icon className={`h-3.5 w-3.5 ${color}`} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs text-slate font-medium truncate">{item.label}</p>
+                        <p className="text-[10px] text-gray-400">{item.count} item{item.count > 1 ? 's' : ''}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Security card */}
+        <div className="col-span-12 md:col-span-4">
+          <div className="bento-card p-4 h-full animate-fade-up bg-gradient-to-br from-sand-light/60 to-white">
+            <p className="text-[10px] uppercase tracking-[0.2em] text-gray-400 font-semibold mb-3">Security</p>
+            <div className="space-y-2.5">
+              {[
+                { label: 'End-to-end encryption', active: true },
+                { label: '2FA enabled', active: true },
+                { label: 'Session active', active: true },
+              ].map((item) => (
+                <div key={item.label} className="flex items-center gap-2">
+                  <div className={`h-2 w-2 rounded-full ${item.active ? 'bg-success' : 'bg-gray-300'}`} />
+                  <span className="text-xs text-slate font-medium">{item.label}</span>
+                </div>
+              ))}
+            </div>
+            <p className="text-[10px] text-gray-400 mt-3 leading-relaxed">
+              All data encrypted in transit and at rest using AES-256 standards.
+            </p>
+          </div>
+        </div>
+
+        {/* Activity — spans 4 cols */}
+        <div className="col-span-12 md:col-span-4">
+          <div className="bento-card animate-fade-up h-full">
+            <div className="p-4 border-b border-sand/30 flex items-center justify-between">
+              <p className="text-[10px] uppercase tracking-[0.2em] text-gray-400 font-semibold">Recent Activity</p>
+              {recentActivity.length > 0 && (
+                <button onClick={() => navigate({ to: '/activity' })} className="text-[10px] font-semibold text-terracotta hover:text-clay">
+                  View all &rarr;
+                </button>
+              )}
+            </div>
+            <div className="p-2">
+              {recentActivity.slice(0, 4).map((activity, i) => {
+                const useDisplay = activity.type_display || activity.description || activity.type;
+                const isOutflow = ['withdrawal', 'settlement', 'loan_disbursement'].includes(activity.type);
+                return (
+                  <div key={activity.id || i} className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-sand-light/50 transition-colors">
+                    <div className={`flex h-7 w-7 items-center justify-center rounded-lg flex-shrink-0 ${isOutflow ? 'bg-sand-light' : 'bg-success/10'}`}>
+                      {isOutflow ? <ArrowUpRight className="h-3.5 w-3.5 text-terracotta" /> : <ArrowDownLeft className="h-3.5 w-3.5 text-success" />}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-slate truncate font-medium">{activity.description}</p>
-                      <p className="text-xs text-gray-400 mt-0.5">{formatTimeAgo(activity.timestamp)}</p>
+                      <p className="text-xs text-slate truncate font-medium">{useDisplay}</p>
+                      <p className="text-[10px] text-gray-400">{activity.time_ago || formatTimeAgo(activity.timestamp)}</p>
                     </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
+                  </div>
+                );
+              })}
+              {recentActivity.length === 0 && (
+                <p className="text-xs text-gray-400 py-4 text-center">No activity yet</p>
+              )}
+            </div>
           </div>
-        ) : (
-          <EmptyState
-            icon={Activity}
-            title="No recent activity"
-            description="Your transactions and actions will appear here once you get started."
-          />
+        </div>
+
+        {/* Chamas — spans full width */}
+        {chamas.length > 0 && (
+          <div className="col-span-12">
+            <div className="bento-card animate-fade-up">
+              <div className="p-4 border-b border-sand/30 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Users className="h-4 w-4 text-terracotta" />
+                  <p className="text-xs font-bold text-slate">My Chamas ({chamas.length})</p>
+                </div>
+                <button onClick={() => navigate({ to: '/chamas' })} className="text-[10px] font-semibold text-terracotta hover:text-clay">
+                  View all &rarr;
+                </button>
+              </div>
+              <div className="divide-y divide-sand/20">
+                {chamas.slice(0, 3).map((chama) => (
+                  <div
+                    key={chama.id}
+                    onClick={() => navigate({ to: `/chamas/${chama.id}` })}
+                    className="flex items-center gap-3 p-4 hover:bg-sand-light/50 cursor-pointer transition-colors"
+                  >
+                    <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-terracotta text-white text-xs font-bold font-heading shadow-sm">
+                      {getInitials(chama.name?.split(' ')[0], chama.name?.split(' ')[1])}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-slate text-sm truncate">{chama.name}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">
+                        {chama.role} &middot; {formatKES(chama.my_balance || chama.balance)}
+                        {chama.member_count != null && ` · ${chama.member_count}m`}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {chama.health_grade ? <HealthBadge grade={chama.health_grade} /> : null}
+                      <ChevronRight className="h-4 w-4 text-gray-300" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>
