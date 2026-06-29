@@ -65,7 +65,13 @@ export default function Reports() {
     return (
       <div className="space-y-4">
         <Skeleton className="h-8 w-48 bg-sand-light/60 animate-pulse" />
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {hasError && (
+        <div className="flex items-center gap-2 p-3 rounded-xl bg-danger/5 border border-danger/20 text-xs text-danger">
+          <span className="font-semibold">Failed to load reports from server.</span>
+          <button onClick={() => refetch()} className="ml-auto underline hover:no-underline">Retry</button>
+        </div>
+      )}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {[1, 2, 3, 4].map((i) => (
             <Card key={i} className="glass-card border-sand bg-white/50 rounded-2xl overflow-hidden">
               <CardContent className="p-5">
@@ -80,18 +86,8 @@ export default function Reports() {
     );
   }
 
-  if (error) {
-    return <ErrorState message="Failed to load reports" onRetry={refetch} />;
-  }
-
-  const reportList = Array.isArray(reports) ? reports : [
-    { id: 'user-growth', name: 'User Growth', description: 'New user registrations over time', type: 'chart' },
-    { id: 'transaction-volume', name: 'Transaction Volume', description: 'Total settlement volume by period', type: 'chart' },
-    { id: 'chama-activity', name: 'Chama Activity', description: 'Active chamas and contributions', type: 'chart' },
-    { id: 'dispute-summary', name: 'Dispute Summary', description: 'Disputes by type and resolution time', type: 'table' },
-    { id: 'fraud-overview', name: 'Fraud Overview', description: 'Fraud assessments and actions', type: 'table' },
-    { id: 'escrow-balances', name: 'Escrow Balances', description: 'Current escrow holdings', type: 'table' },
-  ];
+  const hasError = !!error;
+  const reportList = hasError ? fallbackReports : (Array.isArray(reports) ? reports : fallbackReports);
 
   return (
     <div className="space-y-4">
@@ -109,6 +105,13 @@ export default function Reports() {
           <RefreshCw className="h-3.5 w-3.5 text-slate/75" />
         </Button>
       </div>
+
+      {hasError && (
+        <div className="flex items-center gap-2 p-3 rounded-xl bg-danger/5 border border-danger/20 text-xs text-danger">
+          <span className="font-semibold">Failed to load reports from server.</span>
+          <button onClick={() => refetch()} className="ml-auto underline hover:no-underline">Retry</button>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {reportList.map((report) => (

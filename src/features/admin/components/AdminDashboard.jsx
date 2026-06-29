@@ -16,50 +16,91 @@ import { formatKES, formatTimeAgo } from '../../../utils/format';
 import { toast } from 'sonner';
 
 /* ── Simple SVG Line Chart ────────────────────────────────────────── */
-function SimpleLineChart({ data, width = 300, height = 96 }) {
+function SimpleLineChart({ data, width = 380, height = 128 }) {
   if (!data?.length) return null;
   const values = data.map((d) => Number(d.value ?? d.count ?? d));
+  const labels = data.map((d) => d.date || d.period || d.label || '');
   const max = Math.max(...values, 1);
   const min = Math.min(...values, 0);
   const range = max - min || 1;
-  const stepX = width / (values.length - 1 || 1);
+  const padL = 40, padB = 20;
+  const cw = width - padL, ch = height - padB;
+  const stepX = cw / (values.length - 1 || 1);
 
-  const points = values.map((v, i) =>
-    `${(i * stepX).toFixed(1)},${(height - ((v - min) / range) * (height - 8) - 4).toFixed(1)}`
-  ).join(' ');
+  const toY = (v) => (ch - ((v - min) / range) * (ch - 12) - 4).toFixed(1);
+  const points = values.map((v, i) => `${(padL + i * stepX).toFixed(1)},${toY(v)}`).join(' ');
+  const yTicks = [min, (min + max) / 2, max];
+  const xIndices = values.length > 2 ? [0, Math.floor(values.length / 2), values.length - 1] : [0];
 
   return (
-    <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-24">
+    <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-32">
+      {yTicks.map((tick, i) => (
+        <g key={i}>
+          <line x1={padL} y1={toY(tick)} x2={width} y2={toY(tick)} stroke="#E8DCCC" strokeWidth="0.5" />
+          <text x={padL - 4} y={Number(toY(tick)) + 3} fill="#A18E7B" fontSize="8" textAnchor="end">
+            {tick >= 1000 ? `${(tick / 1000).toFixed(0)}k` : tick}
+          </text>
+        </g>
+      ))}
       <polyline fill="none" stroke="#C67B5C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
         points={points} className="animate-draw-path" />
       {values.map((v, i) => (
-        <circle key={i} cx={(i * stepX).toFixed(1)} cy={(height - ((v - min) / range) * (height - 8) - 4).toFixed(1)}
+        <circle key={i} cx={(padL + i * stepX).toFixed(1)} cy={toY(v)}
           r="2.5" fill="#C67B5C" className="animate-fade-up" style={{ animationDelay: `${i * 0.05}s` }} />
+      ))}
+      {xIndices.map((i) => (
+        <text key={i} x={(padL + i * stepX).toFixed(1)} y={height - 3}
+          fill="#A18E7B" fontSize="8" textAnchor="middle">
+          {labels[i] ? (labels[i].length > 6 ? labels[i].slice(0, 6) : labels[i]) : ''}
+        </text>
       ))}
     </svg>
   );
 }
 
 /* ── Simple SVG Bar Chart ─────────────────────────────────────────── */
-function SimpleBarChart({ data, width = 300, height = 96 }) {
+function SimpleBarChart({ data, width = 380, height = 128 }) {
   if (!data?.length) return null;
   const values = data.map((d) => Number(d.value ?? d.amount ?? d));
+  const labels = data.map((d) => d.date || d.period || d.label || '');
   const max = Math.max(...values, 1);
-  const barWidth = Math.max(4, (width / values.length) * 0.6);
-  const gap = (width / values.length) * 0.4;
+  const padL = 40, padB = 20;
+  const cw = width - padL, ch = height - padB;
+  const barWidth = Math.max(4, (cw / values.length) * 0.6);
+  const gap = (cw / values.length) * 0.4;
+
+  const yTicks = [0, max / 2, max];
+  const xIndices = values.length > 2 ? [0, Math.floor(values.length / 2), values.length - 1] : [0];
 
   return (
-    <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-24">
+    <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-32">
+      {yTicks.map((tick, i) => {
+        const y = (ch - (tick / max) * (ch - 12) - 4).toFixed(1);
+        return (
+          <g key={i}>
+            <line x1={padL} y1={y} x2={width} y2={y} stroke="#E8DCCC" strokeWidth="0.5" />
+            <text x={padL - 4} y={Number(y) + 3} fill="#A18E7B" fontSize="8" textAnchor="end">
+              {tick >= 1000 ? `${(tick / 1000).toFixed(0)}k` : tick}
+            </text>
+          </g>
+        );
+      })}
       {values.map((v, i) => {
-        const barH = ((v / max) * (height - 12));
-        const x = i * (barWidth + gap) + gap / 2;
-        const y = height - barH - 4;
+        const barH = ((v / max) * (ch - 12));
+        const x = padL + i * (barWidth + gap) + gap / 2;
+        const y = ch - barH - 4;
         return (
           <rect key={i} x={x.toFixed(1)} y={y.toFixed(1)} width={barWidth.toFixed(1)}
             height={barH.toFixed(1)} rx="3" fill="#2D8B4E" className="animate-fade-up"
             style={{ animationDelay: `${i * 0.05}s` }} />
         );
       })}
+      {xIndices.map((i) => (
+        <text key={i} x={(padL + i * (barWidth + gap) + gap / 2 + barWidth / 2).toFixed(1)} y={height - 3}
+          fill="#A18E7B" fontSize="8" textAnchor="middle">
+          {labels[i] ? (labels[i].length > 6 ? labels[i].slice(0, 6) : labels[i]) : ''}
+        </text>
+      ))}
     </svg>
   );
 }
@@ -371,7 +412,7 @@ export default function AdminDashboard() {
             {trends?.user_growth?.length > 0 ? (
               <SimpleLineChart data={trends.user_growth} />
             ) : (
-              <div className="h-24 flex items-center justify-center text-xs text-gray-400">
+              <div className="h-32 flex items-center justify-center text-xs text-gray-400">
                 <TrendingUp className="h-5 w-5 mr-2 text-sand" />
                 No growth data yet
               </div>
@@ -390,7 +431,7 @@ export default function AdminDashboard() {
             {trends?.settlement_volume?.length > 0 ? (
               <SimpleBarChart data={trends.settlement_volume} />
             ) : (
-              <div className="h-24 flex items-center justify-center text-xs text-gray-400">
+              <div className="h-32 flex items-center justify-center text-xs text-gray-400">
                 <BarChart3 className="h-5 w-5 mr-2 text-sand" />
                 No volume data yet
               </div>
@@ -435,33 +476,67 @@ export default function AdminDashboard() {
         </Card>
       )}
 
-      {/* Recent Activity */}
-      {overview?.settlements?.total > 0 && (
-        <Card className="border-sand bg-white shadow-subtle rounded-2xl">
-          <CardHeader className="pb-2 border-b border-sand/40">
-            <CardTitle className="text-xs font-bold text-slate uppercase tracking-wider flex items-center gap-2">
-              <Activity className="h-4.5 w-4.5 text-terracotta" />
-              Platform Summary
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-4">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
-              {[
-                { label: 'Total Settlements', value: st.total || 0 },
-                { label: 'Completed', value: st.completed || 0, color: 'text-success' },
-                { label: 'Disputed', value: st.disputed || 0, color: 'text-alert' },
-                { label: 'Reversed', value: st.reversed || 0, color: 'text-danger' },
-              ].map((item) => (
-                <div key={item.label} className="p-3 rounded-xl bg-sand-light/40">
-                  <p className={`text-lg font-extrabold font-numbers ${item.color || 'text-slate'}`}>
-                    {item.value?.toLocaleString()}
-                  </p>
-                  <p className="text-[10px] text-gray-400 font-medium mt-0.5">{item.label}</p>
+      {/* Platform Summary — Chamas */}
+      {overview && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <Card className="border-sand bg-white shadow-subtle rounded-2xl">
+            <CardHeader className="pb-2 border-b border-sand/40">
+              <CardTitle className="text-xs font-bold text-slate uppercase tracking-wider flex items-center gap-2">
+                <HandCoins className="h-4 w-4 text-terracotta" />
+                Chamas
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-4">
+              <div className="grid grid-cols-2 gap-4 text-center">
+                <div className="p-3 rounded-xl bg-sand-light/40">
+                  <p className="text-lg font-extrabold font-numbers text-slate">{c.total_active?.toLocaleString() || '0'}</p>
+                  <p className="text-[10px] text-gray-400 font-medium mt-0.5">Active Chamas</p>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                <div className="p-3 rounded-xl bg-sand-light/40">
+                  <p className="text-lg font-extrabold font-numbers text-success">{formatKES(c.total_savings || 0)}</p>
+                  <p className="text-[10px] text-gray-400 font-medium mt-0.5">Total Savings</p>
+                </div>
+                <div className="p-3 rounded-xl bg-sand-light/40">
+                  <p className="text-lg font-extrabold font-numbers text-blue-500">{c.total_loans?.toLocaleString() || '—'}</p>
+                  <p className="text-[10px] text-gray-400 font-medium mt-0.5">Total Loans</p>
+                </div>
+                <div className="p-3 rounded-xl bg-sand-light/40">
+                  <p className="text-lg font-extrabold font-numbers text-slate">{c.total?.toLocaleString() || c.total_active?.toLocaleString() || '—'}</p>
+                  <p className="text-[10px] text-gray-400 font-medium mt-0.5">Registered Chamas</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-sand bg-white shadow-subtle rounded-2xl">
+            <CardHeader className="pb-2 border-b border-sand/40">
+              <CardTitle className="text-xs font-bold text-slate uppercase tracking-wider flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-success" />
+                Investments
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-4">
+              <div className="grid grid-cols-2 gap-4 text-center">
+                <div className="p-3 rounded-xl bg-sand-light/40">
+                  <p className="text-lg font-extrabold font-numbers text-slate">{formatKES(st.total_volume || 0)}</p>
+                  <p className="text-[10px] text-gray-400 font-medium mt-0.5">Total Volume</p>
+                </div>
+                <div className="p-3 rounded-xl bg-sand-light/40">
+                  <p className="text-lg font-extrabold font-numbers text-success">{st.completed?.toLocaleString() || '0'}</p>
+                  <p className="text-[10px] text-gray-400 font-medium mt-0.5">Completed</p>
+                </div>
+                <div className="p-3 rounded-xl bg-sand-light/40">
+                  <p className="text-lg font-extrabold font-numbers text-alert">{st.disputed?.toLocaleString() || '0'}</p>
+                  <p className="text-[10px] text-gray-400 font-medium mt-0.5">Disputed</p>
+                </div>
+                <div className="p-3 rounded-xl bg-sand-light/40">
+                  <p className="text-lg font-extrabold font-numbers text-amber-500">{formatKES(st.total_fees_collected || 0)}</p>
+                  <p className="text-[10px] text-gray-400 font-medium mt-0.5">Fees Collected</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       )}
     </div>
   );

@@ -64,6 +64,7 @@ export default function AdminSettlementList() {
           </Button>
           <h1 className="text-lg font-bold text-slate">Settlements</h1>
           <p className="text-xs text-gray-400">{totalCount} total</p>
+          <p className="text-[11px] text-gray-400 mt-0.5">Review and manage settlement transactions across the platform</p>
         </div>
         <Button
           variant="outline" size="sm"

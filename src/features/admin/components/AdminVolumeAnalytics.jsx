@@ -8,19 +8,36 @@ import { ErrorState } from '@/components/feedback';
 import { adminApi } from '../api/adminApi';
 import { formatKES } from '../../../utils/format';
 
-function VolumeBarChart({ data, width = 300, height = 160 }) {
+function VolumeBarChart({ data, width = 380, height = 180 }) {
   if (!data?.length) return null;
   const values = data.map((d) => Number(d.volume));
+  const labels = data.map((d) => d.date || '');
   const max = Math.max(...values, 1);
-  const barWidth = Math.max(8, (width / values.length) * 0.65);
-  const gap = (width / values.length) * 0.35;
+  const padL = 44, padB = 22;
+  const cw = width - padL, ch = height - padB;
+  const barWidth = Math.max(6, (cw / values.length) * 0.65);
+  const gap = (cw / values.length) * 0.35;
+
+  const yTicks = [0, max / 2, max];
+  const xIndices = values.length > 2 ? [0, Math.floor(values.length / 2), values.length - 1] : [0];
 
   return (
-    <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-40">
+    <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-44">
+      {yTicks.map((tick, i) => {
+        const y = (ch - (tick / max) * (ch - 16)).toFixed(1);
+        return (
+          <g key={i}>
+            <line x1={padL} y1={y} x2={width} y2={y} stroke="#E8DCCC" strokeWidth="0.5" />
+            <text x={padL - 4} y={Number(y) + 3} fill="#A18E7B" fontSize="8" textAnchor="end">
+              {tick >= 1000000 ? `${(tick / 1000000).toFixed(1)}M` : tick >= 1000 ? `${(tick / 1000).toFixed(0)}k` : tick}
+            </text>
+          </g>
+        );
+      })}
       {values.map((v, i) => {
-        const barH = ((v / max) * (height - 20));
-        const x = i * (barWidth + gap) + gap / 2;
-        const y = height - barH;
+        const barH = ((v / max) * (ch - 16));
+        const x = padL + i * (barWidth + gap) + gap / 2;
+        const y = ch - barH;
         return (
           <rect key={i} x={x.toFixed(1)} y={y.toFixed(1)} width={barWidth.toFixed(1)}
             height={barH.toFixed(1)} rx="3" fill="#C67B5C" className="animate-fade-up"
@@ -29,6 +46,12 @@ function VolumeBarChart({ data, width = 300, height = 160 }) {
           </rect>
         );
       })}
+      {xIndices.map((i) => (
+        <text key={i} x={(padL + i * (barWidth + gap) + gap / 2 + barWidth / 2).toFixed(1)} y={height - 4}
+          fill="#A18E7B" fontSize="8" textAnchor="middle">
+          {labels[i] ? (labels[i].length > 7 ? labels[i].slice(0, 7) : labels[i]) : ''}
+        </text>
+      ))}
     </svg>
   );
 }
@@ -122,7 +145,7 @@ export default function AdminVolumeAnalytics() {
           {data?.length > 0 ? (
             <VolumeBarChart data={data} />
           ) : (
-            <div className="h-40 flex items-center justify-center text-xs text-gray-400">No volume data</div>
+            <div className="h-44 flex items-center justify-center text-xs text-gray-400">No volume data</div>
           )}
         </CardContent>
       </Card>

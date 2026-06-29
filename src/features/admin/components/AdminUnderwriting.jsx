@@ -35,6 +35,7 @@ export default function AdminUnderwriting() {
   const [selectedChamaId, setSelectedChamaId] = useState(null);
   const [selectedLoanId, setSelectedLoanId] = useState(null);
   const [search, setSearch] = useState('');
+  const [loanPage, setLoanPage] = useState(1);
 
   /* Chamas list */
   const { data: chamas, isLoading: chamasLoading } = useQuery({
@@ -47,12 +48,17 @@ export default function AdminUnderwriting() {
   });
 
   /* Loans for selected chama */
-  const { data: loans, isLoading: loansLoading } = useQuery({
-    queryKey: ['chama-loans-uw', selectedChamaId],
+  const { data: loansRes, isLoading: loansLoading } = useQuery({
+    queryKey: ['chama-loans-uw', selectedChamaId, loanPage],
     queryFn: () =>
-      chamaApi.getLoans(selectedChamaId, { page_size: 50 }).then((r) => {
+      chamaApi.getLoans(selectedChamaId, { page: loanPage, page_size: 20 }).then((r) => {
         const d = r.data.data || r.data;
-        return Array.isArray(d) ? d : d.results || [];
+        const list = Array.isArray(d) ? d : d.results || [];
+        return {
+          loans: list,
+          totalPages: d.total_pages || Math.ceil((d.count || list.length) / 20) || 1,
+          totalCount: d.count || list.length,
+        };
       }),
     enabled: !!selectedChamaId,
   });
@@ -224,7 +230,7 @@ export default function AdminUnderwriting() {
                 <Card
                   key={chama.id}
                   className="border-sand bg-white shadow-subtle rounded-xl cursor-pointer card-lift hover:border-terracotta/30"
-                  onClick={() => setSelectedChamaId(chama.id)}
+                  onClick={() => { setSelectedChamaId(chama.id); setLoanPage(1); }}
                 >
                   <CardContent className="p-4 flex items-center justify-between">
                     <div>
@@ -246,7 +252,7 @@ export default function AdminUnderwriting() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setSelectedChamaId(null)}
+            onClick={() => { setSelectedChamaId(null); setLoanPage(1); }}
             className="text-xs text-gray-500 hover:text-slate"
           >
             <ArrowLeft className="h-3.5 w-3.5 mr-1" /> All chamas
@@ -255,41 +261,86 @@ export default function AdminUnderwriting() {
           {loansLoading ? (
             <div className="space-y-3">{[1, 2, 3].map((i) => <Skeleton key={i} className="h-16 w-full rounded-xl" />)}</div>
           ) : (
-            <div className="space-y-2">
-              {(loans || []).length === 0 ? (
-                <p className="text-sm text-gray-400 text-center py-8">No loans in this chama</p>
-              ) : (
-                (loans || []).map((loan) => (
-                  <Card
-                    key={loan.id}
-                    className="border-sand bg-white shadow-subtle rounded-xl cursor-pointer card-lift hover:border-terracotta/30"
-                    onClick={() => setSelectedLoanId(loan.id)}
-                  >
-                    <CardContent className="p-4 flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 rounded-full bg-sand-light flex items-center justify-center">
-                          <FileText className="h-4 w-4 text-gray-400" />
+            <>
+              {/* Summary stat cards */}
+              {(() => {
+                const loanList = loansRes?.loans || [];
+                const total = loanList.length;
+                const approved = loanList.filter((l) => l.status === 'APPROVED').length;
+                const approvalRate = total > 0 ? Math.round((approved / total) * 100) : 0;
+                const avgConf = loanList.reduce((s, l) => s + (Number(l.confidence) || 0), 0);
+                const avgConfVal = total > 0 && avgConf > 0 ? Math.round(avgConf / total) : null;
+                return (
+                  <div className="grid grid-cols-3 gap-3 mb-4">
+                    <div className="bento-card p-3 text-center">
+                      <p className="text-lg font-extrabold text-slate font-numbers">{total}</p>
+                      <p className="text-[10px] text-gray-400 font-medium mt-0.5">Total Loans Reviewed</p>
+                    </div>
+                    <div className="bento-card p-3 text-center">
+                      <p className="text-lg font-extrabold text-slate font-numbers">{approvalRate}%</p>
+                      <p className="text-[10px] text-gray-400 font-medium mt-0.5">Approval Rate</p>
+                    </div>
+                    <div className="bento-card p-3 text-center">
+                      <p className="text-lg font-extrabold text-slate font-numbers">{avgConfVal ?? '—'}</p>
+                      <p className="text-[10px] text-gray-400 font-medium mt-0.5">Average Confidence</p>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              <div className="space-y-2">
+                {(loansRes?.loans || []).length === 0 ? (
+                  <p className="text-sm text-gray-400 text-center py-8">No loans in this chama</p>
+                ) : (
+                  (loansRes?.loans || []).map((loan) => (
+                    <Card
+                      key={loan.id}
+                      className="border-sand bg-white shadow-subtle rounded-xl cursor-pointer card-lift hover:border-terracotta/30"
+                      onClick={() => setSelectedLoanId(loan.id)}
+                    >
+                      <CardContent className="p-4 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="h-8 w-8 rounded-full bg-sand-light flex items-center justify-center">
+                            <FileText className="h-4 w-4 text-gray-400" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-slate">{loan.borrower_name || loan.borrower || 'Unknown'}</p>
+                            <p className="text-xs text-gray-400">{formatKES(loan.principal || loan.amount || 0)}</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-sm font-semibold text-slate">{loan.borrower_name || loan.borrower || 'Unknown'}</p>
-                          <p className="text-xs text-gray-400">{formatKES(loan.principal || loan.amount || 0)}</p>
-                        </div>
-                      </div>
-                      <Badge className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border-0 ${
-                        loan.status === 'APPROVED' ? 'bg-success/10 text-success' :
-                        loan.status === 'PENDING' ? 'bg-alert/10 text-alert' :
-                        loan.status === 'DISBURSED' ? 'bg-blue-500/10 text-blue-600' :
-                        loan.status === 'REJECTED' ? 'bg-danger/10 text-danger' :
-                        loan.status === 'REPAID' ? 'bg-sand text-slate' :
-                        'bg-sand-light text-gray-400'
-                      }`}>
-                        {loan.status}
-                      </Badge>
-                    </CardContent>
-                  </Card>
-                ))
+                        <Badge className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border-0 ${
+                          loan.status === 'APPROVED' ? 'bg-success/10 text-success' :
+                          loan.status === 'PENDING' ? 'bg-alert/10 text-alert' :
+                          loan.status === 'DISBURSED' ? 'bg-blue-500/10 text-blue-600' :
+                          loan.status === 'REJECTED' ? 'bg-danger/10 text-danger' :
+                          loan.status === 'REPAID' ? 'bg-sand text-slate' :
+                          'bg-sand-light text-gray-400'
+                        }`}>
+                          {loan.status}
+                        </Badge>
+                      </CardContent>
+                    </Card>
+                  ))
+                )}
+              </div>
+
+              {/* Pagination */}
+              {loansRes?.totalPages > 1 && (
+                <div className="flex items-center justify-center gap-2 pt-2">
+                  {Array.from({ length: loansRes.totalPages }, (_, i) => i + 1).map((p) => (
+                    <button
+                      key={p}
+                      onClick={() => setLoanPage(p)}
+                      className={`h-8 w-8 rounded-lg text-xs font-semibold ${
+                        p === loanPage ? 'bg-terracotta text-white' : 'bg-sand-light text-slate hover:bg-sand'
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  ))}
+                </div>
               )}
-            </div>
+            </>
           )}
         </>
       )}
