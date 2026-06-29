@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import {
   TrendingUp, AlertTriangle, PieChart, Shield,
-  Layers, DollarSign,
+  Layers, DollarSign, BarChart3,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { ErrorState } from '@/components/feedback';
+import { ErrorState, EmptyState } from '@/components/feedback';
 import { investmentsApi } from '../api/investmentsApi';
 import { formatKES } from '../../../utils/format';
 
@@ -51,7 +51,15 @@ export default function PortfolioSummary() {
     return <ErrorState message="Failed to load portfolio" onRetry={refetch} />;
   }
 
-  if (!concentration) return null;
+  if (!concentration) {
+    return (
+      <EmptyState
+        icon={BarChart3}
+        title="No portfolio data yet"
+        description="Start investing in SACCOs to see your portfolio summary here."
+      />
+    );
+  }
 
   const score = concentration.diversification_score ?? 0;
   const colorClass = getConcentrationColor(score);
