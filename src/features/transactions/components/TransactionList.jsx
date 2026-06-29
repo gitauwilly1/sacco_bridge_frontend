@@ -1,14 +1,15 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
-  Search, ArrowRightLeft, SlidersHorizontal,
+  ArrowRightLeft, SlidersHorizontal,
   RefreshCw,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent } from '@/components/ui/card';
 import { ErrorState, EmptyState } from '@/components/feedback';
+import SearchInput from '@/components/ui/SearchInput';
+import DateRangeFilter from '@/components/ui/DateRangeFilter';
 import { transactionApi } from '../api/transactionApi';
 import SettlementSummary from './SettlementSummary';
 import TransactionCard from './TransactionCard';
@@ -51,6 +52,7 @@ export default function TransactionList() {
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('all');
   const [sort, setSort] = useState('-created_at');
+  const [days, setDays] = useState('all');
   const [page, setPage] = useState(1);
 
   const {
@@ -59,7 +61,7 @@ export default function TransactionList() {
     error,
     refetch,
   } = useQuery({
-    queryKey: ['my-settlements', page, status, sort, search],
+    queryKey: ['my-settlements', page, status, sort, search, days],
     queryFn: () =>
       transactionApi
         .getMySettlements({
@@ -68,6 +70,7 @@ export default function TransactionList() {
           ...(status !== 'all' && { state: status }),
           ordering: sort,
           ...(search && { search }),
+          ...(days !== 'all' && { days }),
         })
         .then((r) => r.data),
   });
@@ -81,42 +84,34 @@ export default function TransactionList() {
       {/* Summary */}
       <SettlementSummary />
 
-      {/* Search & Sort */}
-      <div className="flex items-center gap-2">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 font-semibold" />
-          <Input
-            placeholder="Search transactions..."
-            className="pl-9 border-input rounded-xl bg-white text-sm focus:border-terracotta focus:ring-1 focus:ring-terracotta"
-            value={search}
+      {/* Search & Filters */}
+      <div className="flex flex-col sm:flex-row gap-2">
+        <SearchInput value={search} onChange={(v) => { setSearch(v); setPage(1); }} placeholder="Search transactions..." className="flex-1" />
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <DateRangeFilter value={days} onChange={(v) => { setDays(v); setPage(1); }} />
+          <select
+            value={sort}
             onChange={(e) => {
-              setSearch(e.target.value);
+              setSort(e.target.value);
               setPage(1);
             }}
-          />
+            className="text-xs border border-input rounded-xl px-2.5 py-2 bg-white text-slate focus:border-terracotta focus:ring-1 focus:ring-terracotta cursor-pointer transition-colors"
+          >
+            {sortOptions.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => refetch()}
+            className="border-sand hover:bg-sand-light text-slate cursor-pointer h-9 w-9 p-0 flex items-center justify-center rounded-xl"
+          >
+            <RefreshCw className="h-4 w-4" />
+          </Button>
         </div>
-        <select
-          value={sort}
-          onChange={(e) => {
-            setSort(e.target.value);
-            setPage(1);
-          }}
-          className="text-xs border border-input rounded-xl px-2.5 py-2.5 bg-white text-slate focus:border-terracotta focus:ring-1 focus:ring-terracotta cursor-pointer transition-colors"
-        >
-          {sortOptions.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => refetch()}
-          className="border-sand hover:bg-sand-light text-slate cursor-pointer h-10 w-10 p-0 flex items-center justify-center rounded-xl"
-        >
-          <RefreshCw className="h-4 w-4" />
-        </Button>
       </div>
 
       {/* Status Tabs */}
