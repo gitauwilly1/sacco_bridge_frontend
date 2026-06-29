@@ -9,6 +9,7 @@ import { CardContent, CardHeader } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { authApi } from '../api/authApi';
 import { toast } from 'sonner';
+import { getRecaptchaToken } from '@/lib/recaptcha';
 
 const schema = z.object({
   email: z.string().email('Enter a valid email'),
@@ -23,7 +24,11 @@ export default function ForgotPasswordForm({ onBack }) {
   const onSubmit = async (values) => {
     setIsLoading(true);
     try {
-      await authApi.requestPasswordReset(values);
+      const recaptchaToken = await getRecaptchaToken('password_reset');
+      await authApi.requestPasswordReset({
+        ...values,
+        recaptcha: recaptchaToken,
+      });
       setSent(true);
       toast.success('If an account exists, a reset link has been sent.');
     } catch (error) {
