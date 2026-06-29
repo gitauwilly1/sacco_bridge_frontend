@@ -12,6 +12,8 @@ export const adminApi = {
   getSACCOsAdmin: (params) => apiClient.get('/investments/admin/saccos/', { params }),
   verifySACCO: (id) => apiClient.post(`/investments/admin/saccos/${id}/verify/`),
   suspendSACCO: (id, data) => apiClient.post(`/investments/admin/saccos/${id}/suspend/`, data),
+  reactivateSACCO: (id) => apiClient.post(`/investments/admin/saccos/${id}/reactivate/`),
+  softDeleteSACCO: (id) => apiClient.delete(`/investments/admin/saccos/${id}/`),
   uploadSACCOLogo: (id, formData) =>
     apiClient.post(`/investments/admin/saccos/${id}/upload_logo/`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
