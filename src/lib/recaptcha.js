@@ -37,7 +37,7 @@ const loadRecaptchaScript = () =>
 
 export async function getRecaptchaToken(action = 'submit') {
   if (!RECAPTCHA_SITE_KEY) {
-    throw new Error('Missing VITE_RECAPTCHA_SITE_KEY. Add the reCAPTCHA site key to your environment.');
+    return null;
   }
 
   const grecaptcha = window.grecaptcha || (await loadRecaptchaScript());
