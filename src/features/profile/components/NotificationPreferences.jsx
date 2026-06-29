@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Bell, Mail, Smartphone, MessageSquare, Save } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -94,10 +94,13 @@ export default function NotificationPreferences() {
       profileApi
         .getNotificationPreferences()
         .then((r) => r.data.data || r.data || {}),
-    onSuccess: (data) => {
-      setPreferences(data.preferences || data || {});
-    },
   });
+
+  useEffect(() => {
+    if (prefsData) {
+      setPreferences(prefsData.preferences || prefsData || {});
+    }
+  }, [prefsData]);
 
   const saveMutation = useMutation({
     mutationFn: (data) => profileApi.updateNotificationPreferences(data),
@@ -181,6 +184,7 @@ export default function NotificationPreferences() {
       })}
 
       <Button
+        id="notification-save-btn"
         className="w-full bg-terracotta hover:bg-terracotta-dark text-white border-0 shadow-subtle cursor-pointer h-10 rounded-xl text-xs font-semibold mt-2"
         onClick={handleSave}
         disabled={saveMutation.isPending}

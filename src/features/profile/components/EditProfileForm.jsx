@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -44,21 +44,43 @@ export default function EditProfileForm({ profile }) {
   const [isUploading, setIsUploading] = useState(false);
   const queryClient = useQueryClient();
 
+  const defaultValues = {
+    first_name: profile?.first_name || '',
+    last_name: profile?.last_name || '',
+    date_of_birth: profile?.date_of_birth || '',
+    preferred_language: profile?.preferred_language || 'en',
+    occupation: profile?.occupation || '',
+    employer: profile?.employer || '',
+    county: profile?.county || '',
+    city: profile?.city || '',
+    risk_tolerance: profile?.risk_tolerance || 'MODERATE',
+    investment_experience: profile?.investment_experience || 'BEGINNER',
+  };
+
   const form = useForm({
     resolver: zodResolver(profileSchema),
-    defaultValues: {
-      first_name: profile?.first_name || '',
-      last_name: profile?.last_name || '',
-      date_of_birth: profile?.date_of_birth || '',
-      preferred_language: profile?.preferred_language || 'en',
-      occupation: profile?.occupation || '',
-      employer: profile?.employer || '',
-      county: profile?.county || '',
-      city: profile?.city || '',
-      risk_tolerance: profile?.risk_tolerance || 'MODERATE',
-      investment_experience: profile?.investment_experience || 'BEGINNER',
-    },
+    defaultValues,
   });
+
+  useEffect(() => {
+    const handleReset = () => {
+      form.reset({
+        first_name: profile?.first_name || '',
+        last_name: profile?.last_name || '',
+        date_of_birth: profile?.date_of_birth || '',
+        preferred_language: profile?.preferred_language || 'en',
+        occupation: profile?.occupation || '',
+        employer: profile?.employer || '',
+        county: profile?.county || '',
+        city: profile?.city || '',
+        risk_tolerance: profile?.risk_tolerance || 'MODERATE',
+        investment_experience: profile?.investment_experience || 'BEGINNER',
+      });
+      toast.message('Form reset to last saved values');
+    };
+    window.addEventListener('profile-form-reset', handleReset);
+    return () => window.removeEventListener('profile-form-reset', handleReset);
+  }, [form, profile]);
 
   const onSubmit = async (values) => {
     setIsSaving(true);
@@ -180,7 +202,7 @@ export default function EditProfileForm({ profile }) {
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form id="profile-edit-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={form.control}

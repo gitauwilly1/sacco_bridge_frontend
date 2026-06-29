@@ -46,6 +46,7 @@ export default function DataExport() {
       </CardHeader>
       <CardContent>
         <Button
+          id="data-export-btn"
           onClick={handleExport}
           disabled={exporting}
           className="w-full bg-terracotta hover:bg-terracotta-dark text-white border-0 shadow-subtle cursor-pointer h-10 rounded-xl text-xs font-semibold"

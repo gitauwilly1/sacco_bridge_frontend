@@ -96,7 +96,7 @@ export default function App() {
   // Unauthenticated → show AuthLayout (with correct view based on route)
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-surface">
+      <div className="min-h-screen bg-surface dark:bg-surface">
         <AuthLayout initialView={authView || 'login'} />
         <Toaster position="top-center" richColors />
       </div>
@@ -106,7 +106,7 @@ export default function App() {
   // Authenticated admin → AdminLayout wrapping Outlet
   if (isAdmin) {
     return (
-      <div className="min-h-screen bg-surface">
+      <div className="min-h-screen bg-surface dark:bg-surface">
         <AdminLayout>
           <Outlet />
         </AdminLayout>
@@ -117,7 +117,7 @@ export default function App() {
 
   // Authenticated regular user → AppShell wrapping Outlet
   return (
-    <div className="min-h-screen bg-surface">
+    <div className="min-h-screen bg-surface dark:bg-surface">
       <AppShell>
         <Outlet />
       </AppShell>

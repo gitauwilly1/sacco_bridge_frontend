@@ -1,10 +1,31 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" suppressHydrationWarning>
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
     <title>sacco_bridge_frontend</title>
+    <script>
+      (function () {
+        try {
+          var theme = localStorage.getItem('theme') || 'system';
+          var resolved = theme;
+          if (theme === 'system') {
+            resolved = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          }
+          document.documentElement.classList.add(resolved);
+          var fontSize = localStorage.getItem('font-size') || 'medium';
+          document.documentElement.classList.add('font-size-' + fontSize);
+          if (localStorage.getItem('reduce-motion') === 'true') {
+            document.documentElement.classList.add('reduce-motion');
+          }
+          if (localStorage.getItem('high-contrast') === 'true') {
+            document.body.classList.add('high-contrast');
+          }
+        } catch (e) {}
+      })();
+    </script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
   </head>
   <body>

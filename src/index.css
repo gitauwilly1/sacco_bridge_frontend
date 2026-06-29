@@ -4,6 +4,8 @@
 
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* ─── Design Tokens ────────────────────────────────────────────────── */
 @theme {
   --color-terracotta: #C67B5C;
@@ -62,6 +64,30 @@
     font-feature-settings: 'kern' 1, 'liga' 1;
   }
 
+  .dark {
+    color-scheme: dark;
+    --color-surface: #12121a;
+    --color-background: #12121a;
+    --color-foreground: #f0f1f5;
+    --color-slate: #c4c7d7;
+    --color-slate-dark: #f0f1f5;
+    --color-sand: #353852;
+    --color-sand-light: #1f2037;
+    --color-border: #353852;
+    --color-input: #454868;
+    --color-ring: #e0c09a;
+    --color-muted: #262840;
+    --color-muted-foreground: #898faf;
+    --color-popover: #1f2037;
+    --color-popover-foreground: #f0f1f5;
+    --color-accent: #262840;
+    --color-accent-foreground: #e0c09a;
+  }
+
+  .dark body {
+    @apply bg-surface text-foreground;
+  }
+
   h1, h2, h3, h4, h5, h6 {
     @apply font-heading;
   }
@@ -118,6 +144,11 @@
     border: 1px solid rgba(245, 230, 211, 0.6);
   }
 
+  .dark .glass-card {
+    background: rgba(31, 32, 55, 0.92);
+    border-color: rgba(53, 56, 82, 0.7);
+  }
+
   /* Terracotta primary button pattern */
   .btn-primary {
     @apply bg-terracotta text-white font-medium rounded-lg px-4 py-2.5
@@ -165,15 +196,9 @@
 }
 
 /* ─── Appearance Custom Settings ──────────────────────────────────── */
-.font-size-small {
-  font-size: 14px !important;
-}
-.font-size-medium {
-  font-size: 16px !important;
-}
-.font-size-large {
-  font-size: 18px !important;
-}
+html.font-size-small { font-size: 14px; }
+html.font-size-medium { font-size: 16px; }
+html.font-size-large { font-size: 18px; }
 
 .reduce-motion *,
 .reduce-motion *::before,
@@ -184,4 +209,40 @@
 
 .high-contrast {
   filter: contrast(1.2) saturate(1.1);
+}
+
+/* ─── Dark mode utility overrides ─────────────────────────────────── */
+.dark .bg-white { background-color: #1f2037; }
+.dark .bg-white\/80 { background-color: rgb(31 32 55 / 0.8); }
+.dark .bg-white\/90 { background-color: rgb(31 32 55 / 0.9); }
+.dark .bg-white\/95 { background-color: rgb(31 32 55 / 0.95); }
+.dark .bg-gray-50 { background-color: #262840; }
+.dark .bg-gray-100 { background-color: #2e3049; }
+.dark .bg-sand-light { background-color: #262840; }
+.dark .bg-sand-light\/10 { background-color: rgb(38 40 64 / 0.35); }
+.dark .bg-sand-light\/30 { background-color: rgb(38 40 64 / 0.55); }
+.dark .bg-sand-light\/50 { background-color: rgb(38 40 64 / 0.65); }
+.dark .bg-sand-light\/60 { background-color: rgb(38 40 64 / 0.7); }
+.dark .bg-sand-light\/70 { background-color: rgb(38 40 64 / 0.75); }
+.dark .bg-sand-light\/80 { background-color: rgb(38 40 64 / 0.85); }
+.dark .bg-sand { background-color: #353852; }
+.dark .bg-sand\/70 { background-color: rgb(53 56 82 / 0.7); }
+.dark .hover\:bg-sand-light:hover { background-color: #2e3049; }
+.dark .hover\:bg-gray-100:hover { background-color: #353852; }
+.dark .text-slate { color: #e1e3eb; }
+.dark .text-slate-dark { color: #f0f1f5; }
+.dark .text-gray-400 { color: #898faf; }
+.dark .text-gray-500 { color: #a6abc3; }
+.dark .text-gray-700 { color: #c4c7d7; }
+.dark .border-sand { border-color: #353852; }
+.dark .border-sand\/20 { border-color: rgb(53 56 82 / 0.35); }
+.dark .border-sand\/30 { border-color: rgb(53 56 82 / 0.45); }
+.dark .border-sand\/40 { border-color: rgb(53 56 82 / 0.55); }
+.dark .border-sand\/45 { border-color: rgb(53 56 82 / 0.6); }
+.dark .border-gray-200\/60 { border-color: rgb(53 56 82 / 0.6); }
+.dark .divide-sand\/20 > :not([hidden]) ~ :not([hidden]) { border-color: rgb(53 56 82 / 0.35); }
+.dark .shadow-subtle { box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25), 0 1px 2px rgba(0, 0, 0, 0.2); }
+.dark .skeleton-shimmer {
+  background: linear-gradient(90deg, #262840 25%, #2e3049 50%, #262840 75%);
+  background-size: 200% 100%;
 }

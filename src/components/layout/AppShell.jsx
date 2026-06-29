@@ -103,7 +103,7 @@ export default function AppShell({ children }) {
       ];
 
   return (
-    <div className="flex min-h-screen flex-col bg-surface">
+    <div className="flex min-h-screen flex-col bg-surface dark:bg-surface">
       {/* ── Offline Banner ── */}
       {!isOnline && (
         <div className="flex items-center justify-center gap-2 bg-alert text-white text-center text-xs py-2 font-medium">
@@ -113,7 +113,7 @@ export default function AppShell({ children }) {
       )}
 
       {/* ── Header ── */}
-      <header className="sticky top-0 z-50 border-b border-sand bg-white/80 backdrop-blur-lg">
+      <header className="sticky top-0 z-50 border-b border-sand bg-white/80 backdrop-blur-lg dark:border-slate-700 dark:bg-slate-900/85">
         <div className="flex h-14 items-center justify-between px-4">
 
           {/* Left: hamburger + wordmark */}
@@ -251,7 +251,7 @@ export default function AppShell({ children }) {
       </div>
 
       {/* ── Mobile Bottom Navigation ── */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-sand bg-white/90 backdrop-blur-lg lg:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-sand bg-white/90 backdrop-blur-lg lg:hidden dark:border-slate-700 dark:bg-slate-900/90">
         <div className="flex h-16 items-center justify-around px-2">
           {navItems.map((item, i) => {
             if (item === null) {
@@ -346,7 +346,7 @@ export default function AppShell({ children }) {
           />
 
           {/* Drawer */}
-          <div className="absolute left-0 top-0 bottom-0 w-72 bg-white shadow-elevated flex flex-col animate-slide-right">
+          <div className="absolute left-0 top-0 bottom-0 w-72 bg-white shadow-elevated flex flex-col animate-slide-right dark:bg-slate-900">
             {/* Drawer header */}
             <div
               className="flex items-center justify-between p-4 pt-5"
