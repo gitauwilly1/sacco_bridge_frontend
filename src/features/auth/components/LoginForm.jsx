@@ -10,6 +10,7 @@ import { CardContent, CardHeader } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import useAuthStore from '../../../stores/authStore';
 import { toast } from 'sonner';
+import { getRecaptchaToken } from '@/lib/recaptcha';
 import BridgeLogo from '../../../components/brand/BridgeLogo';
 
 const loginSchema = z.object({
@@ -32,7 +33,8 @@ export default function LoginForm({ onSuccess, onSwitchToRegister, onForgotPassw
   const onSubmit = async (values) => {
     setIsLoading(true);
     try {
-      const result = await login(values.email, values.password);
+      const recaptchaToken = await getRecaptchaToken('login');
+      const result = await login(values.email, values.password, recaptchaToken);
 
       if (result.requires2FA) {
         navigate({
