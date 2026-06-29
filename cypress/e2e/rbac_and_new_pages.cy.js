@@ -333,4 +333,182 @@ describe('RBAC and New Pages E2E Flows', () => {
       cy.contains('Dashboard Home').should('exist');
     });
   });
+
+  describe('4. Member Dashboard Analytics and Navigation', () => {
+    const memberUser = {
+      id: 1,
+      email: 'jane.doe@example.com',
+      first_name: 'Jane',
+      last_name: 'Doe',
+      role: 'member',
+      roles: ['MEMBER'],
+    };
+
+    beforeEach(() => {
+      cy.intercept('POST', '**/auth/token/refresh/', {
+        statusCode: 200,
+        body: {
+          data: {
+            access_token: 'mock-member-token',
+            user: memberUser,
+          },
+        },
+      });
+
+      cy.window().then((win) => {
+        win.localStorage.setItem('sacco-auth', JSON.stringify({
+          state: {
+            user: memberUser,
+            isAuthenticated: true,
+          },
+          version: 0,
+        }));
+      });
+
+      cy.intercept('GET', '**/analytics/dashboard/user/', {
+        statusCode: 200,
+        body: {
+          data: {
+            summary: {
+              total_savings: '420000',
+              total_chamas: 2,
+              total_settlement_volume: '95000',
+            },
+            chamas: [
+              { id: 101, name: 'Mavuno Welfare Group', role: 'President', balance: '250000', standing: 'Active' },
+              { id: 102, name: 'Upendo Women Circle', role: 'Member', balance: '170000', standing: 'Active' },
+            ],
+            holdings: [
+              { id: '501', sacco: 'Stima SACCO', shares: '1200', available: '1200', estimated_value: '180000' },
+              { id: '502', sacco: 'Safaricom SACCO', shares: '800', available: '800', estimated_value: '240000' },
+            ],
+            recent_settlements: [
+              { id: '701', state: 'Completed', amount: '35000', date: new Date().toISOString() },
+            ],
+          },
+        },
+      }).as('getMemberDashboard');
+
+      cy.intercept('GET', '**/activity/**', { statusCode: 200, body: [] });
+      cy.intercept('GET', '**/notifications/unread_count/', { statusCode: 200, body: { unread_count: 1 } });
+      cy.intercept('GET', '**/investments/holdings/concentration_check/', {
+        statusCode: 200,
+        body: {
+          data: {
+            diversification_score: 85,
+            total_value: '420000',
+            percentage_change: 3.5,
+            total_saccos: 2,
+            total_holdings: 2,
+            warnings: [],
+          },
+        },
+      }).as('getConcentrationCheck');
+    });
+
+    it('Displays member dashboard analytics for Chama and Investment modes', () => {
+      cy.visit('/');
+      cy.wait('@getMemberDashboard');
+      cy.contains('Good').should('exist');
+      cy.contains('Jane').should('exist');
+      cy.contains('Active view: My Chama').should('exist');
+      cy.contains('Chama dashboard').should('exist');
+      cy.contains('Refreshed:').should('exist');
+      cy.contains('Total Chama Savings').should('exist');
+      cy.contains('Chamas').should('exist');
+      cy.contains('2').should('exist');
+      cy.contains('Savings').should('exist');
+      cy.contains('KSh 420,000.00').should('exist');
+      cy.contains('Settled').should('exist');
+      cy.contains('KSh 95,000.00').should('exist');
+
+      cy.get('#mode-investments-btn').click();
+      cy.contains('Portfolio Value').should('exist');
+      cy.contains('SACCOs').should('exist');
+      cy.contains('2').should('exist');
+      cy.contains('Portfolio').should('exist');
+      cy.contains('KSh 420,000.000').should('not.exist');
+      cy.contains('KSh 420,000.00').should('exist');
+      cy.wait('@getConcentrationCheck');
+    });
+
+    it('Displays dashboard fallback summary when summary data is absent', () => {
+      cy.intercept('GET', '**/analytics/dashboard/user/', {
+        statusCode: 200,
+        body: {
+          data: {
+            chamas: [
+              { id: 301, name: 'Ustawi Group', role: 'Member', balance: '150000', standing: 'Active' },
+            ],
+            holdings: [
+              { id: '801', sacco: 'Jitegemee SACCO', shares: '100', available: '100', estimated_value: '150000' },
+            ],
+            recent_settlements: [
+              { id: '901', state: 'Completed', amount: '15000', date: new Date().toISOString() },
+            ],
+          },
+        },
+      }).as('getMemberDashboardFallback');
+
+      cy.visit('/');
+      cy.wait('@getMemberDashboardFallback');
+      cy.contains('Total Chama Savings').should('exist');
+      cy.contains('Chamas').should('exist');
+      cy.contains('1').should('exist');
+      cy.contains('KSh 150,000.00').should('exist');
+      cy.contains('KSh 15,000.00').should('exist');
+    });
+
+    it('Disables contribution and loan actions when no Chama exists and shows Chama onboarding CTA', () => {
+      cy.intercept('GET', '**/analytics/dashboard/user/', {
+        statusCode: 200,
+        body: {
+          data: {
+            chamas: [],
+            holdings: [],
+            recent_settlements: [],
+          },
+        },
+      }).as('getMemberDashboardNoChamas');
+
+      cy.visit('/');
+      cy.wait('@getMemberDashboardNoChamas');
+
+      cy.get('#quick-action-contribute').should('be.disabled');
+      cy.get('#quick-action-loan').should('be.disabled');
+      cy.get('#quick-action-invest').should('not.be.disabled');
+      cy.contains('Browse Chamas').should('exist');
+      cy.contains('Create Chama').should('exist');
+      cy.contains('Join or create a Chama to unlock contribution and loan actions.').should('exist');
+    });
+
+    it('Navigates through shell links and clickables to the correct route', () => {
+      cy.visit('/');
+      cy.wait('@getMemberDashboard');
+
+      cy.get('#mode-investments-btn').click();
+      cy.contains('Holdings').click();
+      cy.url().should('include', '/investments/holdings');
+
+      cy.get('button[role="tab"]').contains('Home').click();
+      cy.url().should('eq', Cypress.config().baseUrl + '/');
+
+      cy.get('#quick-action-invest').click();
+      cy.url().should('include', '/investments');
+
+      cy.get('#header-help-btn').click();
+      cy.url().should('include', '/help');
+    });
+
+    it('Routes from NotFound quick buttons back to home and help', () => {
+      cy.visit('/not-a-real-page');
+      cy.contains('Page Not Found').should('exist');
+      cy.contains('Dashboard Home').click();
+      cy.url().should('eq', Cypress.config().baseUrl + '/');
+
+      cy.visit('/not-a-real-page');
+      cy.contains('Help Center').click();
+      cy.url().should('include', '/help');
+    });
+  });
 });

@@ -106,19 +106,14 @@ export default function ConnectedAccounts({ profile }) {
                 <Badge className="bg-success/10 text-success border border-success/20 rounded-full font-semibold px-2.5" variant="outline">
                   Connected
                 </Badge>
-                <div className="group relative inline-block">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    disabled
-                    className="border-sand text-gray-300 bg-gray-50/50 cursor-not-allowed text-xs font-semibold h-8 rounded-lg px-3"
-                  >
-                    Disconnect
-                  </Button>
-                  <span className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-slate-dark px-2 py-1 text-[10px] text-white opacity-0 transition-opacity group-hover:opacity-100 font-medium shadow-elevated">
-                    Coming soon
-                  </span>
-                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled
+                  className="border-sand text-gray-300 bg-gray-50/50 cursor-not-allowed text-xs font-semibold h-8 rounded-lg px-3"
+                >
+                  Disconnect
+                </Button>
               </div>
             ) : (
               <div className="relative">

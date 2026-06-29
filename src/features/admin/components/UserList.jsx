@@ -66,7 +66,7 @@ export default function UserList() {
   });
 
   const users = usersData?.results || usersData?.data || [];
-  const total = usersData?.count || users.length;
+  const total = usersData?.pagination?.count ?? usersData?.count ?? users.length;
 
   const columns = [
     {

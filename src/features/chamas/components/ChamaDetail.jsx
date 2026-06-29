@@ -28,10 +28,11 @@ const gradeColors = {
   'F': 'bg-danger text-white',
 };
 
-export default function ChamaDetail() {
-  const { chamaId } = useParams();
+export default function ChamaDetail({ defaultTab = 'overview' }) {
+  const { chamaId } = useParams({ strict: false });
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState(defaultTab);
+
 
   const {
     data: chama,

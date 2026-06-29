@@ -42,7 +42,7 @@ export default function ChamaOversight() {
   });
 
   const chamas = chamasData?.results || chamasData?.data || [];
-  const total = chamasData?.count || chamas.length;
+  const total = chamasData?.pagination?.count ?? chamasData?.count ?? chamas.length;
 
   const columns = [
     {

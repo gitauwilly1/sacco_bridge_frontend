@@ -89,7 +89,7 @@ export default function WebhookManagement() {
   });
 
   const webhooks = webhooksData?.results || webhooksData?.data || [];
-  const total = webhooksData?.count || webhooks.length;
+  const total = webhooksData?.pagination?.count ?? webhooksData?.count ?? webhooks.length;
 
   const columns = [
     {

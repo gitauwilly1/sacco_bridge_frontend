@@ -59,7 +59,7 @@ export default function SACCOManagement() {
   });
 
   const saccos = saccosData?.results || saccosData?.data || [];
-  const total = saccosData?.count || saccos.length;
+  const total = saccosData?.pagination?.count ?? saccosData?.count ?? saccos.length;
 
   const columns = [
     {

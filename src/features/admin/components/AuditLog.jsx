@@ -60,7 +60,7 @@ export default function AuditLog() {
   };
 
   const entries = auditData?.results || auditData?.data || [];
-  const total = auditData?.count || entries.length;
+  const total = auditData?.pagination?.count ?? auditData?.count ?? entries.length;
 
   const columns = [
     {

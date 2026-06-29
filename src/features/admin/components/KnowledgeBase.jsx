@@ -43,7 +43,7 @@ export default function KnowledgeBase() {
   });
 
   const articles = articlesData?.results || articlesData?.data || [];
-  const total = articlesData?.count || articles.length;
+  const total = articlesData?.pagination?.count ?? articlesData?.count ?? articles.length;
 
   const columns = [
     {

@@ -228,7 +228,7 @@ export default function SACCODetail() {
               <Card
                 key={sc.id}
                 className="cursor-pointer border-sand shadow-subtle card-lift hover:border-terracotta/30 transition-all duration-200"
-                onClick={() => navigate({ to: `/investments/share-classes/${sc.id}` })}
+                onClick={() => navigate({ to: `/investments/saccos/${saccoId}/buy`, search: { shareClassId: sc.id } })}
               >
                 <CardContent className="p-4 flex items-center justify-between">
                   <div className="min-w-0 pr-2">

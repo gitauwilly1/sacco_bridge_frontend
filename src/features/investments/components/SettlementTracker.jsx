@@ -1,6 +1,7 @@
 // src/features/investments/components/SettlementTracker.jsx
 
 import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import {
   ArrowLeft, CheckCircle2, Circle, Clock, AlertCircle,
@@ -11,9 +12,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { PageSpinner } from '@/components/feedback/LoadingState';
-import { ErrorState } from '@/components/feedback/ErrorState';
+import { ErrorState, EmptyState } from '@/components/feedback';
 import { investmentsApi } from '../api/investmentsApi';
-import { formatKES, formatDate, formatDateTime } from '../../../utils/format';
+import { formatKES, formatDate, formatDateTime, formatTimeAgo } from '../../../utils/format';
+import { ChevronRight } from 'lucide-react';
 
 const stateStepOrder = [
   'MATCH_PROPOSED',
@@ -300,17 +302,8 @@ export default function SettlementTracker({ settlementId }) {
 }
 
 // SettlementList component for the settlements list page
-import { useState } from 'react';
-import { useNavigate } from '@tanstack/react-router';
-import {
-  ArrowRightLeft, CheckCircle2, Clock, AlertCircle,
-  ChevronRight, RefreshCw,
-} from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { EmptyState } from '@/components/feedback';
-import { formatKES, formatTimeAgo } from '../../../utils/format';
+
+
 
 const settlementStatusBadge = {
   LEDGER_FINALIZED: { label: 'Completed', color: 'bg-success/10 text-success border border-success/20', icon: CheckCircle2 },

@@ -44,7 +44,7 @@ export default function EscrowManagement() {
   });
 
   const escrows = escrowData?.results || escrowData?.data || [];
-  const total = escrowData?.count || escrows.length;
+  const total = escrowData?.pagination?.count ?? escrowData?.count ?? escrows.length;
 
   const columns = [
     {

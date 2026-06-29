@@ -43,6 +43,7 @@ export default function LoginForm({ onSuccess, onSwitchToRegister, onForgotPassw
       }
 
       toast.success('Welcome back!');
+      navigate({ to: '/' });
       onSuccess?.();
     } catch (error) {
       const msg = error.response?.data?.error?.message || 'Login failed. Please try again.';
@@ -52,11 +53,13 @@ export default function LoginForm({ onSuccess, onSwitchToRegister, onForgotPassw
     }
   };
 
+
   const handleGoogleCredentialResponse = async (response) => {
     setIsLoading(true);
     try {
       await googleLogin(response.credential);
       toast.success('Welcome back!');
+      navigate({ to: '/' });
       onSuccess?.();
     } catch (error) {
       const msg = error.response?.data?.error?.message || 'Google Login failed. Please try again.';

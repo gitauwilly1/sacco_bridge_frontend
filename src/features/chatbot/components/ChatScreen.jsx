@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from '@tanstack/react-router';
 import {
   Send, Plus, MessageSquare, Menu, X, Bot,
   User, ChevronDown, ChevronUp, Trash2,
@@ -12,6 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { chatbotApi } from '../api/chatbotApi';
+import { dashboardApi } from '../../dashboard/api/dashboardApi';
 import { formatTimeAgo } from '../../../utils/format';
 
 const quickTopics = [
@@ -26,8 +28,8 @@ const quickTopics = [
 const actionChips = {
   'create-chama': { label: 'Create a Chama', to: '/chamas/new' },
   'browse-saccos': { label: 'Browse SACCOs', to: '/investments' },
-  'view-loans': { label: 'View My Loans', to: '/loans' },
-  'make-contribution': { label: 'Make Contribution', to: '/contributions' },
+  'view-loans': { label: 'View My Chamas', to: '/chamas' },
+  'make-contribution': { label: 'Make Contribution', to: '/chamas' },
 };
 
 function TypingIndicator() {
@@ -49,6 +51,7 @@ function TypingIndicator() {
 
 export default function ChatScreen() {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [activeSessionId, setActiveSessionId] = useState(null);
   const [message, setMessage] = useState('');
   const [showSidebar, setShowSidebar] = useState(false);
@@ -56,6 +59,15 @@ export default function ChatScreen() {
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+
+  // Live chama context for the context bar
+  const { data: chamasData } = useQuery({
+    queryKey: ['chatbot-chama-context'],
+    queryFn: () => dashboardApi.getMyChamas().then((r) => {
+      const list = r.data;
+      return Array.isArray(list) ? list : (list?.data || []);
+    }),
+  });
 
   const { data: sessionsData, isLoading: sessionsLoading } = useQuery({
     queryKey: ['chatbot-sessions'],
@@ -149,8 +161,10 @@ export default function ChatScreen() {
   };
 
   const handleActionChip = (action) => {
-    if (action.to) {
-      window.location.href = action.to;
+    const chip = actionChips[action];
+    const path = chip?.to || (typeof action === 'object' ? action.to : null);
+    if (path) {
+      navigate({ to: path });
     }
   };
 
@@ -271,14 +285,26 @@ export default function ChatScreen() {
 
         {/* Context Bar */}
         {showContext && (
-          <div className="bg-sand-light/60 border-b border-sand/35 px-4 py-2 flex items-center gap-2 text-xs">
+          <div className="bg-sand-light/60 border-b border-sand/35 px-4 py-2 flex items-center gap-2 text-xs flex-wrap">
             <span className="text-gray-400 font-medium">Context:</span>
-            <Badge className="bg-terracotta/10 text-terracotta border border-terracotta/20 rounded-full font-bold shadow-none text-[10px]" variant="outline">
-              Active Chama: Upendo Group
-            </Badge>
-            <Badge className="bg-blue-500/10 text-blue-500 border border-blue-500/20 rounded-full font-bold shadow-none text-[10px]" variant="outline">
-              Role: Treasurer
-            </Badge>
+            {chamasData && chamasData.length > 0 ? (
+              chamasData.slice(0, 2).map((chama) => (
+                <Badge
+                  key={chama.id}
+                  className="bg-terracotta/10 text-terracotta border border-terracotta/20 rounded-full font-bold shadow-none text-[10px]"
+                  variant="outline"
+                >
+                  {chama.name} · {chama.role || 'Member'}
+                </Badge>
+              ))
+            ) : (
+              <Badge
+                className="bg-sand text-slate border border-sand-dark/20 rounded-full font-bold shadow-none text-[10px]"
+                variant="outline"
+              >
+                No active chamas
+              </Badge>
+            )}
           </div>
         )}
 

@@ -55,7 +55,7 @@ export default function FraudReview() {
   });
 
   const assessments = assessmentsData?.results || assessmentsData?.data || [];
-  const total = assessmentsData?.count || assessments.length;
+  const total = assessmentsData?.pagination?.count ?? assessmentsData?.count ?? assessments.length;
 
   const columns = [
     {

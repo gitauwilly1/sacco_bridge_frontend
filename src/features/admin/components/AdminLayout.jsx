@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from '@tanstack/react-router';
 import {
   LayoutDashboard, Users, Building2, HandCoins, AlertCircle,
   Shield, Lock, FileText, Webhook, BookOpen, BarChart3,
-  ChevronLeft, ChevronRight, Menu, X, Search, ShieldCheck,
+  ChevronLeft, ChevronRight, Menu, X, Search, ShieldCheck, Trash2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,6 +21,8 @@ const navItems = [
   { to: '/admin/audit', label: 'Audit', icon: FileText },
   { to: '/admin/webhooks', label: 'Webhooks', icon: Webhook },
   { to: '/admin/legal', label: 'Legal', icon: BookOpen },
+  { to: '/admin/knowledge', label: 'Knowledge Base', icon: BookOpen },
+  { to: '/admin/deletion-requests', label: 'Deletions', icon: Trash2 },
   { to: '/admin/reports', label: 'Reports', icon: BarChart3 },
 ];
 

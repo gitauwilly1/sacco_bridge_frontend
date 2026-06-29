@@ -40,7 +40,7 @@ export default function AdminDisputeList() {
   });
 
   const disputes = disputesData?.results || disputesData?.data || [];
-  const total = disputesData?.count || disputes.length;
+  const total = disputesData?.pagination?.count ?? disputesData?.count ?? disputes.length;
 
   const columns = [
     {

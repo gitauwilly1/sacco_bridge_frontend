@@ -121,7 +121,7 @@ export default function BulkContribution() {
         period_end: periodEnd,
         payment_method: paymentMethod,
         contributions: entries.map((entry) => ({
-          member_id: parseInt(entry.member_id, 10),
+          member_id: entry.member_id,
           amount: parseFloat(entry.amount),
           payment_reference: entry.payment_reference || undefined,
           notes: entry.notes || undefined,

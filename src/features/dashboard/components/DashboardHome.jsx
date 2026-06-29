@@ -27,6 +27,7 @@ const quickActions = [
     icon: Plus,
     path: '/chamas/contribute',
     color: 'bg-terracotta',
+    requiresChama: true,
   },
   {
     id: 'loan',
@@ -35,6 +36,7 @@ const quickActions = [
     icon: HandCoins,
     path: '/chamas/loans',
     color: 'bg-success',
+    requiresChama: true,
   },
   {
     id: 'invest',
@@ -54,6 +56,14 @@ function getGreeting() {
   return 'Good evening';
 }
 
+function sumNumeric(items = [], key) {
+  return items.reduce((total, item) => total + (parseFloat(item?.[key]) || 0), 0);
+}
+
+function uniqueCount(items = [], key) {
+  return new Set(items.filter(Boolean).map((item) => item?.[key])).size;
+}
+
 export default function DashboardHome() {
   const navigate = useNavigate();
   const { activeMode } = useUIStore();
@@ -63,10 +73,14 @@ export default function DashboardHome() {
     data: dashboardData,
     isLoading: dashboardLoading,
     error: dashboardError,
+    dataUpdatedAt: dashboardUpdatedAt,
   } = useQuery({
     queryKey: ['dashboard'],
     queryFn: () => dashboardApi.getUserDashboard().then((r) => r.data.data),
   });
+
+  const refreshedAt = dashboardUpdatedAt ? new Date(dashboardUpdatedAt).toISOString() : null;
+  const activeModeLabel = activeMode === 'chama' ? 'Chama dashboard' : 'Investments dashboard';
 
   const {
     data: activityData,
@@ -108,19 +122,46 @@ export default function DashboardHome() {
   if (dashboardError) return <ErrorState message="Failed to load dashboard" />;
 
   const firstName = user?.first_name || user?.full_name?.split(' ')[0] || 'there';
+  const chamas = dashboardData?.chamas || [];
+  const holdings = dashboardData?.holdings || [];
+  const recentSettlements = dashboardData?.recent_settlements || [];
+  const hasChamas = chamas.length > 0;
+  const portfolioValue = sumNumeric(holdings, 'estimated_value');
+  const totalSACCOs = uniqueCount(holdings, 'sacco');
+  const summary = {
+    total_chamas: dashboardData?.summary?.total_chamas ?? chamas.length,
+    total_savings: dashboardData?.summary?.total_savings ?? sumNumeric(chamas, 'balance'),
+    total_settlement_volume:
+      dashboardData?.summary?.total_settlement_volume ?? sumNumeric(recentSettlements, 'amount'),
+    total_saccos: totalSACCOs,
+    portfolio_value: portfolioValue,
+  };
 
   return (
     <div className="p-4 space-y-6 max-w-2xl mx-auto">
 
       {/* ── Greeting ──────────────────────────────────────────────── */}
       <div className="animate-fade-up">
-        <p className="text-xs text-gray-400 font-medium uppercase tracking-widest mb-0.5">
-          {getGreeting()}
-        </p>
-        <h1 className="text-2xl font-bold font-heading text-slate">
-          {firstName}<span className="text-terracotta"> .</span>
-        </h1>
-        <p className="text-sm text-gray-400 mt-1">
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
+          <div>
+            <p className="text-xs text-gray-400 font-medium uppercase tracking-widest mb-0.5">
+              {getGreeting()}
+            </p>
+            <h1 className="text-2xl font-bold font-heading text-slate">
+              {firstName}<span className="text-terracotta"> .</span>
+            </h1>
+            <p className="text-xs text-slate/70 mt-1">
+              {activeModeLabel}
+            </p>
+          </div>
+          {refreshedAt && (
+            <p className="text-[11px] text-gray-400 uppercase tracking-widest pl-2 border-l border-sand/30 sm:border-l-0 sm:pl-0">
+              Refreshed: {new Date(refreshedAt).toLocaleTimeString('en-KE', { hour: '2-digit', minute: '2-digit' })}
+            </p>
+          )}
+        </div>
+
+        <p className="text-sm text-gray-400 mt-3">
           {unreadCount?.unread_count > 0
             ? (
               <span className="flex items-center gap-1.5">
@@ -149,13 +190,18 @@ export default function DashboardHome() {
             }}
           />
           <div className="relative p-5">
+            <div className="mb-4">
+              <span className="inline-flex items-center rounded-full bg-white/10 px-3 py-1 text-[11px] uppercase tracking-[0.24em] text-white/80">
+                {activeMode === 'chama' ? 'Chama insights' : 'Investment insights'}
+              </span>
+            </div>
             <div className="flex items-start justify-between mb-4">
               <div>
                 <p className="text-xs text-white/60 font-medium uppercase tracking-widest mb-1">
                   {activeMode === 'chama' ? 'Total Chama Savings' : 'Portfolio Value'}
                 </p>
                 <h2 className="text-3xl font-bold text-white" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-                  {formatKES(dashboardData?.summary?.total_savings || 0)}
+                  {formatKES(activeMode === 'chama' ? summary.total_savings : summary.portfolio_value)}
                 </h2>
               </div>
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/15">
@@ -169,9 +215,9 @@ export default function DashboardHome() {
             {/* 3-metric row */}
             <div className="grid grid-cols-3 gap-2">
               {[
-                { label: 'Chamas', value: dashboardData?.summary?.total_chamas || 0, icon: Users },
-                { label: 'Savings', value: formatKES(dashboardData?.summary?.total_savings || 0), icon: Wallet },
-                { label: 'Settled', value: formatKES(dashboardData?.summary?.total_settlement_volume || 0), icon: ArrowUpRight },
+                { label: 'Chamas', value: summary.total_chamas, icon: Users },
+                { label: activeMode === 'chama' ? 'Savings' : 'SACCOs', value: activeMode === 'chama' ? formatKES(summary.total_savings) : summary.total_saccos, icon: activeMode === 'chama' ? Wallet : Building2 },
+                { label: activeMode === 'chama' ? 'Settled' : 'Portfolio', value: activeMode === 'chama' ? formatKES(summary.total_settlement_volume) : formatKES(summary.portfolio_value), icon: activeMode === 'chama' ? ArrowUpRight : ArrowDownLeft },
               ].map(({ label, value, icon: Icon }) => (
                 <div key={label} className="text-center">
                   <div className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-white/15 mb-1.5">
@@ -187,23 +233,63 @@ export default function DashboardHome() {
       </Card>
 
       {/* ── Quick Actions ──────────────────────────────────────────── */}
-      <div className="grid grid-cols-3 gap-3">
-        {quickActions.map((action) => (
-          <button
-            key={action.id}
-            id={`quick-action-${action.id}`}
-            onClick={() => handleQuickAction(action)}
-            className="flex flex-col items-center gap-2 p-4 rounded-xl border border-sand bg-white hover:border-terracotta/40 hover:bg-sand-light hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 active:scale-[0.97]"
-          >
-            <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${action.color} shadow-sm`}>
-              <action.icon className="h-5 w-5 text-white" />
+      <div>
+        <p className="text-xs uppercase tracking-[0.24em] text-gray-400 mb-3">
+          {hasChamas
+            ? 'Pick an action to move your money forward.'
+            : 'Join or create a Chama to unlock contribution and loan actions.'}
+        </p>
+        <div className="grid grid-cols-3 gap-3">
+          {quickActions.map((action) => {
+            const disabled = action.requiresChama && !hasChamas;
+            return (
+              <button
+                key={action.id}
+                id={`quick-action-${action.id}`}
+                onClick={() => handleQuickAction(action)}
+                disabled={disabled}
+                className={`flex flex-col items-center gap-2 p-4 rounded-xl border border-sand bg-white transition-all duration-200 active:scale-[0.97] ${
+                  disabled
+                    ? 'cursor-not-allowed opacity-60'
+                    : 'hover:border-terracotta/40 hover:bg-sand-light hover:-translate-y-0.5 hover:shadow-md'
+                }`}
+                title={disabled ? 'Requires a Chama to use this action' : action.sublabel}
+              >
+                <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${action.color} shadow-sm ${disabled ? 'bg-slate/30 text-slate/40' : ''}`}>
+                  <action.icon className="h-5 w-5 text-white" />
+                </div>
+                <div className="text-center">
+                  <p className="text-xs font-semibold text-slate leading-tight">{action.label}</p>
+                  <p className="text-[10px] text-gray-400 leading-tight">{action.sublabel}</p>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        {!hasChamas && (
+          <div className="mt-4 rounded-2xl border border-sand bg-sand-light p-4 text-sm text-slate">
+            <p className="font-medium text-slate mb-2">Need a place to start?</p>
+            <p className="text-xs text-gray-500 mb-3">
+              Create or browse Chamas to begin tracking contributions, loans, and group savings.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Button
+                variant="secondary"
+                className="w-full sm:w-auto"
+                onClick={() => navigate({ to: '/chamas' })}
+              >
+                Browse Chamas
+              </Button>
+              <Button
+                className="w-full sm:w-auto bg-terracotta text-white hover:bg-clay"
+                onClick={() => navigate({ to: '/chamas/new' })}
+              >
+                Create Chama
+              </Button>
             </div>
-            <div className="text-center">
-              <p className="text-xs font-semibold text-slate leading-tight">{action.label}</p>
-              <p className="text-[10px] text-gray-400 leading-tight">{action.sublabel}</p>
-            </div>
-          </button>
-        ))}
+          </div>
+        )}
       </div>
 
       {/* ── My Chamas ─────────────────────────────────────────────── */}

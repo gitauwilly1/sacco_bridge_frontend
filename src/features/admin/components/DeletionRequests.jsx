@@ -50,7 +50,7 @@ export default function DeletionRequests() {
   });
 
   const requests = requestsData?.results || requestsData?.data || [];
-  const total = requestsData?.count || requests.length;
+  const total = requestsData?.pagination?.count ?? requestsData?.count ?? requests.length;
 
   const columns = [
     {

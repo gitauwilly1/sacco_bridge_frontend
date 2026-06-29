@@ -35,24 +35,21 @@ export default function NotFound() {
         </Button>
         <Button
           variant="outline"
-          onClick={() => window.history.back()}
+          onClick={() => navigate({ to: '/help' })}
           className="w-full sm:w-auto border-sand-dark text-slate hover:bg-sand-light font-semibold py-2.5 px-5 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-2"
         >
-          <ArrowLeft className="h-4 w-4" />
-          Go Back
+          <LifeBuoy className="h-4 w-4" />
+          Help Center
         </Button>
       </div>
 
-      {/* Quick links to Help */}
-      <div className="mt-12 pt-8 border-t border-sand/40 w-full max-w-sm flex items-center justify-center gap-2 text-xs text-gray-400 font-medium">
-        <LifeBuoy className="h-4 w-4 text-terracotta/70" />
-        <span>Still lost? Visit our</span>
-        <button
-          onClick={() => navigate({ to: '/help' })}
-          className="text-terracotta hover:underline cursor-pointer font-semibold"
-        >
-          Help Center
-        </button>
+      <div className="mt-8 text-sm text-gray-500 max-w-md mx-auto leading-relaxed">
+        <p className="mb-3">
+          The dashboard is still available — return home or visit the Help Center for guidance, FAQs, and quick support.
+        </p>
+        <p className="text-xs uppercase tracking-[0.2em] text-gray-400">
+          Tip: your data is safe and the page can be restored from the navigation menu.
+        </p>
       </div>
     </div>
   );

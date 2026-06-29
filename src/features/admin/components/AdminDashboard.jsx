@@ -47,7 +47,19 @@ export default function AdminDashboard() {
   } = useQuery({
     queryKey: ['admin-analytics'],
     queryFn: () =>
-      adminApi.getPlatformAnalytics().then((r) => r.data.data || r.data),
+      adminApi.getPlatformAnalytics().then((r) => {
+        const d = r.data.data || r.data;
+        // Normalize the nested backend shape into a flat object the component uses
+        return {
+          total_users: d.users?.total ?? d.summary?.total_users ?? d.total_users,
+          active_chamas: d.chamas?.total_active ?? d.summary?.active_chamas ?? d.active_chamas,
+          total_volume: d.settlements?.total_volume ?? d.summary?.total_volume ?? d.total_volume ?? '0',
+          open_disputes: d.disputes?.open ?? d.summary?.open_disputes ?? d.open_disputes ?? 0,
+          recent_activity: d.recent_activity || [],
+          // preserve raw for debugging
+          _raw: d,
+        };
+      }),
   });
 
   if (isLoading) return <DashboardSkeleton />;

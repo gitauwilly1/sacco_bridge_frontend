@@ -155,7 +155,7 @@ export default function SACCOList() {
   });
 
   const saccos = saccosData?.results || saccosData?.data || [];
-  const total = saccosData?.count || saccos.length;
+  const total = saccosData?.pagination?.count ?? saccosData?.count ?? saccos.length;
   const totalPages = Math.ceil(total / 10);
 
   return (
