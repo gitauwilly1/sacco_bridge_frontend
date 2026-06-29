@@ -13,6 +13,7 @@ export const investmentsApi = {
 
   // Liquidity Requests
   getMyRequests: (params) => apiClient.get('/investments/requests/', { params }),
+  getRequestDetail: (id) => apiClient.get(`/investments/requests/${id}/`),
   createRequest: (data) => apiClient.post('/investments/requests/', data),
   updateRequest: (id, data) => apiClient.patch(`/investments/requests/${id}/`, data),
   cancelRequest: (id) => apiClient.post(`/investments/requests/${id}/cancel/`),
