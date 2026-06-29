@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import {
   Users, Shield, CheckCircle2, XCircle, Ban,
-  UserPlus, RefreshCw,
+  UserPlus, RefreshCw, User,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -76,9 +76,7 @@ export default function UserList() {
       render: (_, row) => (
         <div className="flex items-center gap-2">
           <div className="h-8 w-8 rounded-full bg-sand-light border border-sand/30 flex items-center justify-center flex-shrink-0 shadow-subtle">
-            <span className="text-xs font-bold text-terracotta font-heading">
-              {row.first_name?.[0]}{row.last_name?.[0]}
-            </span>
+            <User className="h-4 w-4 text-terracotta/60" />
           </div>
           <div>
             <p className="font-bold text-slate text-xs">
