@@ -3,11 +3,10 @@ import { useNavigate, useLocation } from '@tanstack/react-router';
 import {
   LayoutDashboard, Users, Building2, HandCoins, AlertCircle,
   Shield, Lock, FileText, Webhook, BookOpen, BarChart3,
-  ChevronLeft, ChevronRight, Menu, X, Search, ShieldCheck, Trash2, User,
+  ChevronLeft, ChevronRight, Menu, X, ShieldCheck, Trash2, User,
   LogOut, Settings, TrendingUp, Scale,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import {
   DropdownMenu,
@@ -158,16 +157,7 @@ export default function AdminLayout({ children }) {
             <Menu className="h-5 w-5 text-slate" />
           </button>
 
-          {/* Search */}
-          <div className="hidden sm:flex items-center flex-1 max-w-xs">
-            <div className="relative w-full">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
-              <Input
-                placeholder="Search..."
-                className="pl-8 h-8 text-xs rounded-lg border-sand/40 bg-sand-light/30"
-              />
-            </div>
-          </div>
+          {/* Search removed — each page has its own search via DataTable */}
 
           <div className="flex-1 sm:flex-none" />
 
