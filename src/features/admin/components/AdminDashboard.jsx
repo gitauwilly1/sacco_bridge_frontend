@@ -14,94 +14,40 @@ import { ErrorState } from '@/components/feedback';
 import { adminApi } from '../api/adminApi';
 import { formatKES, formatTimeAgo } from '../../../utils/format';
 import { toast } from 'sonner';
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
+import ChartWrapper from '../../../components/charts/ChartWrapper';
 
-/* ── Simple SVG Line Chart ────────────────────────────────────────── */
-function SimpleLineChart({ data, width = 380, height = 128 }) {
+/* ── Recharts Line Chart ──────────────────────────────────────────── */
+function SimpleLineChart({ data }) {
   if (!data?.length) return null;
-  const values = data.map((d) => Number(d.value ?? d.count ?? d));
-  const labels = data.map((d) => d.date || d.period || d.label || '');
-  const max = Math.max(...values, 1);
-  const min = Math.min(...values, 0);
-  const range = max - min || 1;
-  const padL = 40, padB = 20;
-  const cw = width - padL, ch = height - padB;
-  const stepX = cw / (values.length - 1 || 1);
-
-  const toY = (v) => (ch - ((v - min) / range) * (ch - 12) - 4).toFixed(1);
-  const points = values.map((v, i) => `${(padL + i * stepX).toFixed(1)},${toY(v)}`).join(' ');
-  const yTicks = [min, (min + max) / 2, max];
-  const xIndices = values.length > 2 ? [0, Math.floor(values.length / 2), values.length - 1] : [0];
-
+  const chartData = data.map((d) => ({ label: d.date || d.period || d.label || '', value: Number(d.value ?? d.count ?? d) }));
   return (
-    <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-32">
-      {yTicks.map((tick, i) => (
-        <g key={i}>
-          <line x1={padL} y1={toY(tick)} x2={width} y2={toY(tick)} stroke="#E8DCCC" strokeWidth="0.5" />
-          <text x={padL - 4} y={Number(toY(tick)) + 3} fill="#A18E7B" fontSize="8" textAnchor="end">
-            {tick >= 1000 ? `${(tick / 1000).toFixed(0)}k` : tick}
-          </text>
-        </g>
-      ))}
-      <polyline fill="none" stroke="#C67B5C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-        points={points} className="animate-draw-path" />
-      {values.map((v, i) => (
-        <circle key={i} cx={(padL + i * stepX).toFixed(1)} cy={toY(v)}
-          r="2.5" fill="#C67B5C" className="animate-fade-up" style={{ animationDelay: `${i * 0.05}s` }} />
-      ))}
-      {xIndices.map((i) => (
-        <text key={i} x={(padL + i * stepX).toFixed(1)} y={height - 3}
-          fill="#A18E7B" fontSize="8" textAnchor="middle">
-          {labels[i] ? (labels[i].length > 6 ? labels[i].slice(0, 6) : labels[i]) : ''}
-        </text>
-      ))}
-    </svg>
+    <ChartWrapper>
+      <LineChart data={chartData}>
+        <CartesianGrid strokeDasharray="3 3" stroke="#E8DCCC" />
+        <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#A18E7B' }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
+        <YAxis tick={{ fontSize: 10, fill: '#A18E7B' }} tickLine={false} axisLine={false} tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v} />
+        <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #E8DCCC' }} />
+        <Line type="monotone" dataKey="value" stroke="#C67B5C" strokeWidth={2} dot={{ r: 2.5, fill: '#C67B5C' }} activeDot={{ r: 4 }} />
+      </LineChart>
+    </ChartWrapper>
   );
 }
 
-/* ── Simple SVG Bar Chart ─────────────────────────────────────────── */
-function SimpleBarChart({ data, width = 380, height = 128 }) {
+/* ── Recharts Bar Chart ───────────────────────────────────────────── */
+function SimpleBarChart({ data }) {
   if (!data?.length) return null;
-  const values = data.map((d) => Number(d.value ?? d.amount ?? d));
-  const labels = data.map((d) => d.date || d.period || d.label || '');
-  const max = Math.max(...values, 1);
-  const padL = 40, padB = 20;
-  const cw = width - padL, ch = height - padB;
-  const barWidth = Math.max(4, (cw / values.length) * 0.6);
-  const gap = (cw / values.length) * 0.4;
-
-  const yTicks = [0, max / 2, max];
-  const xIndices = values.length > 2 ? [0, Math.floor(values.length / 2), values.length - 1] : [0];
-
+  const chartData = data.map((d) => ({ label: d.date || d.period || d.label || '', value: Number(d.value ?? d.amount ?? d) }));
   return (
-    <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-32">
-      {yTicks.map((tick, i) => {
-        const y = (ch - (tick / max) * (ch - 12) - 4).toFixed(1);
-        return (
-          <g key={i}>
-            <line x1={padL} y1={y} x2={width} y2={y} stroke="#E8DCCC" strokeWidth="0.5" />
-            <text x={padL - 4} y={Number(y) + 3} fill="#A18E7B" fontSize="8" textAnchor="end">
-              {tick >= 1000 ? `${(tick / 1000).toFixed(0)}k` : tick}
-            </text>
-          </g>
-        );
-      })}
-      {values.map((v, i) => {
-        const barH = ((v / max) * (ch - 12));
-        const x = padL + i * (barWidth + gap) + gap / 2;
-        const y = ch - barH - 4;
-        return (
-          <rect key={i} x={x.toFixed(1)} y={y.toFixed(1)} width={barWidth.toFixed(1)}
-            height={barH.toFixed(1)} rx="3" fill="#2D8B4E" className="animate-fade-up"
-            style={{ animationDelay: `${i * 0.05}s` }} />
-        );
-      })}
-      {xIndices.map((i) => (
-        <text key={i} x={(padL + i * (barWidth + gap) + gap / 2 + barWidth / 2).toFixed(1)} y={height - 3}
-          fill="#A18E7B" fontSize="8" textAnchor="middle">
-          {labels[i] ? (labels[i].length > 6 ? labels[i].slice(0, 6) : labels[i]) : ''}
-        </text>
-      ))}
-    </svg>
+    <ChartWrapper>
+      <BarChart data={chartData}>
+        <CartesianGrid strokeDasharray="3 3" stroke="#E8DCCC" />
+        <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#A18E7B' }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
+        <YAxis tick={{ fontSize: 10, fill: '#A18E7B' }} tickLine={false} axisLine={false} tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v} />
+        <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #E8DCCC' }} />
+        <Bar dataKey="value" fill="#2D8B4E" radius={[3, 3, 0, 0]} />
+      </BarChart>
+    </ChartWrapper>
   );
 }
 

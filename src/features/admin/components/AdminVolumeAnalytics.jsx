@@ -7,52 +7,24 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorState } from '@/components/feedback';
 import { adminApi } from '../api/adminApi';
 import { formatKES } from '../../../utils/format';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
+import ChartWrapper from '../../../components/charts/ChartWrapper';
 
-function VolumeBarChart({ data, width = 380, height = 180 }) {
+function VolumeBarChart({ data }) {
   if (!data?.length) return null;
-  const values = data.map((d) => Number(d.volume));
-  const labels = data.map((d) => d.date || '');
-  const max = Math.max(...values, 1);
-  const padL = 44, padB = 22;
-  const cw = width - padL, ch = height - padB;
-  const barWidth = Math.max(6, (cw / values.length) * 0.65);
-  const gap = (cw / values.length) * 0.35;
-
-  const yTicks = [0, max / 2, max];
-  const xIndices = values.length > 2 ? [0, Math.floor(values.length / 2), values.length - 1] : [0];
-
+  const chartData = data.map((d) => ({ ...d, volume: Number(d.volume) }));
   return (
-    <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-44">
-      {yTicks.map((tick, i) => {
-        const y = (ch - (tick / max) * (ch - 16)).toFixed(1);
-        return (
-          <g key={i}>
-            <line x1={padL} y1={y} x2={width} y2={y} stroke="#E8DCCC" strokeWidth="0.5" />
-            <text x={padL - 4} y={Number(y) + 3} fill="#A18E7B" fontSize="8" textAnchor="end">
-              {tick >= 1000000 ? `${(tick / 1000000).toFixed(1)}M` : tick >= 1000 ? `${(tick / 1000).toFixed(0)}k` : tick}
-            </text>
-          </g>
-        );
-      })}
-      {values.map((v, i) => {
-        const barH = ((v / max) * (ch - 16));
-        const x = padL + i * (barWidth + gap) + gap / 2;
-        const y = ch - barH;
-        return (
-          <rect key={i} x={x.toFixed(1)} y={y.toFixed(1)} width={barWidth.toFixed(1)}
-            height={barH.toFixed(1)} rx="3" fill="#C67B5C" className="animate-fade-up"
-            style={{ animationDelay: `${i * 0.03}s` }}>
-            <title>{`${data[i].date}: KES ${formatKES(v)}`}</title>
-          </rect>
-        );
-      })}
-      {xIndices.map((i) => (
-        <text key={i} x={(padL + i * (barWidth + gap) + gap / 2 + barWidth / 2).toFixed(1)} y={height - 4}
-          fill="#A18E7B" fontSize="8" textAnchor="middle">
-          {labels[i] ? (labels[i].length > 7 ? labels[i].slice(0, 7) : labels[i]) : ''}
-        </text>
-      ))}
-    </svg>
+    <ChartWrapper height={180}>
+      <BarChart data={chartData}>
+        <CartesianGrid strokeDasharray="3 3" stroke="#E8DCCC" />
+        <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#A18E7B' }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
+        <YAxis tick={{ fontSize: 10, fill: '#A18E7B' }} tickLine={false} axisLine={false}
+          tickFormatter={(v) => v >= 1000000 ? `${(v / 1000000).toFixed(1)}M` : v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v} />
+        <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #E8DCCC' }}
+          formatter={(value) => [`KES ${formatKES(value)}`, 'Volume']} />
+        <Bar dataKey="volume" fill="#C67B5C" radius={[3, 3, 0, 0]} />
+      </BarChart>
+    </ChartWrapper>
   );
 }
 

@@ -1,12 +1,14 @@
 import { useQuery } from '@tanstack/react-query';
-import { TrendingUp, Activity, BadgePercent, AlertCircle } from 'lucide-react';
+import { TrendingUp, Activity } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { investmentsApi } from '../api/investmentsApi';
 import { formatKES } from '../../../utils/format';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
+import ChartWrapper from '../../../components/charts/ChartWrapper';
 
 export default function SACCOMarketChart({ saccoId }) {
-  const { data: analyticsResponse, isLoading, error } = useQuery({
+  const { data: analyticsResponse, isLoading } = useQuery({
     queryKey: ['sacco-analytics', saccoId],
     queryFn: () => investmentsApi.getSACCOAnalytics(saccoId).then((r) => r.data.data || r.data),
     enabled: !!saccoId,
@@ -21,7 +23,6 @@ export default function SACCOMarketChart({ saccoId }) {
     );
   }
 
-  // Fallback to high-quality mockup data if backend is empty (ensures "Wow" factor)
   const hasBackendData = Array.isArray(analyticsResponse) && analyticsResponse.length >= 2;
   const rawData = hasBackendData 
     ? analyticsResponse 
@@ -34,41 +35,16 @@ export default function SACCOMarketChart({ saccoId }) {
         { metric_date: '2026-06-25', average_price_per_share: 124.5, total_volume_shares: 11000 },
       ];
 
-  const prices = rawData.map(d => parseFloat(d.average_price_per_share || 0));
-  const minPrice = Math.min(...prices) * 0.95; // 5% padding below min
-  const maxPrice = Math.max(...prices) * 1.05; // 5% padding above max
-  const priceRange = maxPrice - minPrice;
+  const chartData = rawData.map((d) => ({
+    date: new Date(d.metric_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
+    price: parseFloat(d.average_price_per_share || 0),
+    volume: parseInt(d.total_volume_shares || 0, 10),
+  }));
 
-  // SVG parameters
-  const svgWidth = 500;
-  const svgHeight = 200;
-  const paddingLeft = 45;
-  const paddingRight = 15;
-  const paddingTop = 15;
-  const paddingBottom = 25;
-
-  const chartWidth = svgWidth - paddingLeft - paddingRight;
-  const chartHeight = svgHeight - paddingTop - paddingBottom;
-
-  // Calculate coordinates for points
-  const points = rawData.map((d, index) => {
-    const x = paddingLeft + (index / (rawData.length - 1)) * chartWidth;
-    const y = paddingTop + chartHeight - ((parseFloat(d.average_price_per_share) - minPrice) / priceRange) * chartHeight;
-    return { x, y, price: d.average_price_per_share, date: d.metric_date };
-  });
-
-  // Construct SVG Path strings
-  const pathD = points.reduce((acc, p, index) => {
-    return acc + `${index === 0 ? 'M' : 'L'} ${p.x} ${p.y} `;
-  }, '');
-
-  const areaD = pathD + `L ${points[points.length - 1].x} ${paddingTop + chartHeight} L ${points[0].x} ${paddingTop + chartHeight} Z`;
-
-  // Total volume and performance calculations
-  const firstPrice = prices[0];
-  const lastPrice = prices[prices.length - 1];
-  const percentageChange = ((lastPrice - firstPrice) / firstPrice) * 100;
-  const totalVolume = rawData.reduce((acc, curr) => acc + parseInt(curr.total_volume_shares || 0, 10), 0);
+  const firstPrice = chartData[0]?.price || 0;
+  const lastPrice = chartData[chartData.length - 1]?.price || 0;
+  const percentageChange = firstPrice ? ((lastPrice - firstPrice) / firstPrice) * 100 : 0;
+  const totalVolume = chartData.reduce((acc, curr) => acc + curr.volume, 0);
 
   return (
     <Card className="border-sand bg-white shadow-subtle overflow-hidden">
@@ -89,7 +65,6 @@ export default function SACCOMarketChart({ saccoId }) {
       </CardHeader>
       
       <CardContent className="pt-4 space-y-4">
-        {/* Metric Summary row */}
         <div className="grid grid-cols-2 gap-4 text-xs font-semibold text-slate border-b border-sand-light pb-3">
           <div>
             <span className="text-[10px] text-gray-400 font-medium block">Average Price</span>
@@ -105,90 +80,22 @@ export default function SACCOMarketChart({ saccoId }) {
           </div>
         </div>
 
-        {/* SVG Chart */}
-        <div className="relative w-full">
-          <svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} className="w-full h-auto select-none overflow-visible">
+        <ChartWrapper height={200}>
+          <AreaChart data={chartData}>
             <defs>
-              <linearGradient id="chart-area-grad" x1="0" y1="0" x2="0" y2="1">
+              <linearGradient id="chartAreaGrad" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#C67B5C" stopOpacity="0.25" />
                 <stop offset="100%" stopColor="#C67B5C" stopOpacity="0.00" />
               </linearGradient>
             </defs>
-
-            {/* Horizontal Grid Lines */}
-            {[0, 0.25, 0.5, 0.75, 1].map((r) => {
-              const y = paddingTop + r * chartHeight;
-              const priceVal = maxPrice - r * priceRange;
-              return (
-                <g key={r} className="opacity-40">
-                  <line
-                    x1={paddingLeft}
-                    y1={y}
-                    x2={svgWidth - paddingRight}
-                    y2={y}
-                    stroke="#E2D4C9"
-                    strokeDasharray="2 3"
-                    strokeWidth={1}
-                  />
-                  <text
-                    x={paddingLeft - 8}
-                    y={y + 4}
-                    textAnchor="end"
-                    fill="#94A3B8"
-                    className="text-[9px] font-bold font-numbers"
-                  >
-                    {Math.round(priceVal)}
-                  </text>
-                </g>
-              );
-            })}
-
-            {/* Area under the line */}
-            <path d={areaD} fill="url(#chart-area-grad)" />
-
-            {/* Main Price line */}
-            <path
-              d={pathD}
-              fill="none"
-              stroke="#C67B5C"
-              strokeWidth={2.5}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="animate-draw-path"
-            />
-
-            {/* Point Markers */}
-            {points.map((p, idx) => (
-              <g key={idx} className="group/dot cursor-pointer">
-                <circle
-                  cx={p.x}
-                  cy={p.y}
-                  r={3.5}
-                  fill="#C67B5C"
-                  stroke="#FFFFFF"
-                  strokeWidth={1.5}
-                  className="transition-all duration-200 group-hover/dot:r-5 shadow-sm"
-                />
-                {/* Tooltip on marker hover */}
-                <title>{`Date: ${p.date}\nPrice: KSh ${p.price}`}</title>
-              </g>
-            ))}
-
-            {/* X-Axis labels */}
-            {points.filter((_, idx) => idx === 0 || idx === Math.floor(points.length / 2) || idx === points.length - 1).map((p, idx) => (
-              <text
-                key={idx}
-                x={p.x}
-                y={svgHeight - 6}
-                textAnchor={idx === 0 ? 'start' : idx === 2 ? 'end' : 'middle'}
-                fill="#94A3B8"
-                className="text-[9px] font-bold"
-              >
-                {new Date(p.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-              </text>
-            ))}
-          </svg>
-        </div>
+            <CartesianGrid strokeDasharray="2 3" stroke="#E2D4C9" />
+            <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#94A3B8' }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
+            <YAxis tick={{ fontSize: 10, fill: '#94A3B8' }} tickLine={false} axisLine={false} tickFormatter={(v) => Math.round(v)} domain={['dataMin - 5', 'dataMax + 5']} />
+            <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #E8DCCC' }}
+              formatter={(value, name) => [name === 'price' ? `KES ${formatKES(value)}` : value.toLocaleString(), name === 'price' ? 'Price' : 'Volume']} />
+            <Area type="monotone" dataKey="price" stroke="#C67B5C" strokeWidth={2.5} fill="url(#chartAreaGrad)" dot={{ r: 3.5, fill: '#C67B5C', stroke: '#FFFFFF', strokeWidth: 1.5 }} activeDot={{ r: 5 }} />
+          </AreaChart>
+        </ChartWrapper>
       </CardContent>
     </Card>
   );
