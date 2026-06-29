@@ -74,9 +74,23 @@ export default function DashboardHome() {
     isLoading: dashboardLoading,
     error: dashboardError,
     dataUpdatedAt: dashboardUpdatedAt,
+    refetch: dashboardRefetch,
   } = useQuery({
     queryKey: ['dashboard'],
-    queryFn: () => dashboardApi.getUserDashboard().then((r) => r.data.data),
+    queryFn: () =>
+      dashboardApi.getUserDashboard().then((r) => {
+        const d = r.data.data || r.data;
+        return {
+          chamas: d.chamas || [],
+          holdings: d.holdings || [],
+          recent_settlements: d.recent_settlements || [],
+          summary: {
+            total_chamas: d.summary?.total_chamas ?? d.total_chamas ?? 0,
+            total_savings: d.summary?.total_savings ?? d.total_savings ?? 0,
+            total_settlement_volume: d.summary?.total_settlement_volume ?? d.total_settlement_volume ?? 0,
+          },
+        };
+      }),
   });
 
   const refreshedAt = dashboardUpdatedAt ? new Date(dashboardUpdatedAt).toISOString() : null;
@@ -119,7 +133,7 @@ export default function DashboardHome() {
   };
 
   if (dashboardLoading) return <PageSpinner />;
-  if (dashboardError) return <ErrorState message="Failed to load dashboard" />;
+  if (dashboardError) return <ErrorState message="Failed to load dashboard" onRetry={dashboardRefetch} />;
 
   const firstName = user?.first_name || user?.full_name?.split(' ')[0] || 'there';
   const chamas = dashboardData?.chamas || [];
