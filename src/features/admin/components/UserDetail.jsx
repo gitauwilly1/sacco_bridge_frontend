@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   ArrowLeft, Shield, CheckCircle2, XCircle, Ban,
   UserPlus, ShieldCheck, Mail, Phone, Calendar,
-  MapPin, Briefcase,
+  MapPin, Briefcase, User,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -83,9 +83,7 @@ export default function UserDetail() {
         <CardContent className="p-6">
           <div className="flex items-center gap-4 mb-4">
             <div className="h-16 w-16 rounded-full bg-sand-light flex items-center justify-center border border-sand">
-              <span className="text-2xl font-bold text-terracotta">
-                {user.first_name?.[0]}{user.last_name?.[0]}
-              </span>
+              <User className="h-7 w-7 text-terracotta/60" />
             </div>
             <div>
               <div className="flex items-center gap-2">
