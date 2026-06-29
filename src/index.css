@@ -46,6 +46,30 @@
     20%, 40% { transform: rotate(-10deg); }
     50% { transform: rotate(0); }
   }
+
+  --animate-fade-up: fade-up 0.5s ease-out;
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  --animate-count-up: count-up 0.6s ease-out;
+  @keyframes count-up {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  --animate-draw-path: draw-path 1.5s ease-in-out forwards;
+  @keyframes draw-path {
+    from { stroke-dashoffset: 1000; }
+    to   { stroke-dashoffset: 0; }
+  }
+
+  --animate-pulse-amber: pulse-amber 2s ease-in-out infinite;
+  @keyframes pulse-amber {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+  }
 }
 
 /* ─── Base Styles ──────────────────────────────────────────────────── */
