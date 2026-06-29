@@ -1,8 +1,11 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import useUIStore from '../stores/uiStore';
 
 const ModeContext = createContext(null);
 
 export function ModeProvider({ children }) {
+  const setActiveMode = useUIStore((s) => s.setActiveMode);
+
   const [mode, setMode] = useState(() => {
     return localStorage.getItem('appMode') || 'chama';
   });
@@ -10,6 +13,10 @@ export function ModeProvider({ children }) {
   useEffect(() => {
     localStorage.setItem('appMode', mode);
   }, [mode]);
+
+  useEffect(() => {
+    setActiveMode(mode === 'invest' ? 'investments' : 'chama');
+  }, [mode, setActiveMode]);
 
   const toggleMode = () => {
     setMode((prev) => (prev === 'chama' ? 'invest' : 'chama'));

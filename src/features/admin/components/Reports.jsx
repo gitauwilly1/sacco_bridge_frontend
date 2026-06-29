@@ -24,8 +24,39 @@ export default function Reports() {
 
   const handleDownload = async (reportId) => {
     try {
-      toast.success('Report download started');
+      toast.loading('Preparing report...');
+      const response = await adminApi.getReports();
+      const reports = response.data.data || response.data;
+      // Find report metadata; if download URL available, use it
+      const reportList = Array.isArray(reports) ? reports : [];
+      const report = reportList.find((r) => r.id === reportId);
+      if (report?.download_url || report?.file || report?.url) {
+        const url = report.download_url || report.file || report.url;
+        const link = document.createElement('a');
+        link.href = url;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        toast.dismiss();
+        toast.success('Report download started');
+      } else {
+        // Fallback: export as JSON
+        const blob = new Blob([JSON.stringify(report || response.data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'report-' + reportId + '-' + Date.now() + '.json';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        toast.dismiss();
+        toast.success('Report exported');
+      }
     } catch (err) {
+      toast.dismiss();
       toast.error('Failed to download report');
     }
   };
