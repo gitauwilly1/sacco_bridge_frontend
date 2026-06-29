@@ -105,6 +105,7 @@ The frontend is organized around feature domains:
    VITE_API_URL=https://api.example.com
    VITE_WS_URL=wss://api.example.com/ws
    VITE_APP_NAME=Sacco Bridge
+   VITE_RECAPTCHA_SITE_KEY=your-recaptcha-site-key
    ```
 
 4. Start the development server:
