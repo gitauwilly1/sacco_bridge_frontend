@@ -12,12 +12,27 @@ export const chamaApi = {
   
   // Contributions
   getContributions: (id, params) => apiClient.get(`/chamas/${id}/contributions/`, { params }),
-  recordContribution: (id, data) => apiClient.post(`/chamas/${id}/contributions/`, data),
+  recordContribution: (id, data) => {
+    const payload = {
+      ...data,
+      chama: id,
+      member: data.member_id,
+    };
+    return apiClient.post(`/chamas/${id}/contributions/`, payload);
+  },
   bulkRecordContributions: (id, data) => apiClient.post(`/chamas/${id}/contributions/bulk/`, data),
   
   // Loans
   getLoans: (id, params) => apiClient.get(`/chamas/${id}/loans/`, { params }),
-  applyLoan: (id, data) => apiClient.post(`/chamas/${id}/loans/`, data),
+  applyLoan: (id, data) => {
+    const payload = {
+      principal: data.amount,
+      duration_months: data.term_months,
+      purpose: data.purpose,
+      guarantors: data.guarantor_id ? [data.guarantor_id] : [],
+    };
+    return apiClient.post(`/chamas/${id}/loans/`, payload);
+  },
   
   // Meetings
   getMeetings: (id, params) => apiClient.get(`/chamas/${id}/meetings/`, { params }),

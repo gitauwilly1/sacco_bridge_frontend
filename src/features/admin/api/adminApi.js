@@ -9,11 +9,11 @@ export const adminApi = {
   manageUser: (userId, data) => apiClient.post(`/users/admin/manage/`, { user_id: userId, ...data }),
 
   // SACCOs
-  getSACCOsAdmin: (params) => apiClient.get('/investments/saccos/admin/', { params }),
-  verifySACCO: (id) => apiClient.post(`/investments/saccos/${id}/verify/`),
-  suspendSACCO: (id, data) => apiClient.post(`/investments/saccos/${id}/suspend/`, data),
+  getSACCOsAdmin: (params) => apiClient.get('/investments/admin/saccos/', { params }),
+  verifySACCO: (id) => apiClient.post(`/investments/admin/saccos/${id}/verify/`),
+  suspendSACCO: (id, data) => apiClient.post(`/investments/admin/saccos/${id}/suspend/`, data),
   uploadSACCOLogo: (id, formData) =>
-    apiClient.post(`/investments/saccos/${id}/upload_logo/`, formData, {
+    apiClient.post(`/investments/admin/saccos/${id}/upload_logo/`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     }),
 
