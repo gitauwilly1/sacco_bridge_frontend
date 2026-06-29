@@ -35,6 +35,10 @@ export const profileApi = {
   requestAccountDeletion: (data) => apiClient.post('/users/delete-account/', data),
   cancelAccountDeletion: () => apiClient.delete('/users/delete-account/'),
 
+  // Verification
+  resendVerification: (contact, method) =>
+    apiClient.post('/auth/verify/resend/', { contact, method }),
+
   // Scoring
   getMyScore: () => apiClient.get('/scoring/my-score/'),
 

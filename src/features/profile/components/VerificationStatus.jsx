@@ -1,12 +1,35 @@
-import { ShieldCheck, Mail, Phone, IdCard, CheckCircle2, AlertCircle, Clock, XCircle } from 'lucide-react';
+import { useState } from 'react';
+import { ShieldCheck, Mail, Phone, IdCard, CheckCircle2, AlertCircle, Clock, XCircle, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { profileApi } from '../api/profileApi';
 
 export default function VerificationStatus({ profile }) {
-  const handleVerifyClick = (type) => {
-    toast.info(`${type} verification flow will be available soon.`);
+  const [sending, setSending] = useState(null);
+
+  const handleVerifyClick = async (type) => {
+    if (type === 'ID') {
+      toast.info('ID verification requires document upload — coming soon.');
+      return;
+    }
+    const contact = type === 'email' ? profile?.email : profile?.phone_number;
+    const method = type === 'email' ? 'email' : 'sms';
+    if (!contact) {
+      toast.error(`No ${type} on file. Add one in your profile first.`);
+      return;
+    }
+    setSending(type);
+    try {
+      await profileApi.resendVerification(contact, method);
+      toast.success(`Verification code sent to your ${type}. Check your ${type === 'email' ? 'inbox' : 'messages'}.`);
+    } catch (err) {
+      const msg = err.response?.data?.error?.message || err.response?.data?.message || `Failed to send verification code`;
+      toast.error(msg);
+    } finally {
+      setSending(null);
+    }
   };
 
   const isEmailVerified = !!profile?.email_verified;
@@ -51,9 +74,11 @@ export default function VerificationStatus({ profile }) {
                   size="sm"
                   variant="outline"
                   className="border-sand hover:bg-sand-light text-slate hover:text-terracotta text-xs font-semibold h-8 rounded-lg shadow-subtle px-3 transition-all"
-                  onClick={() => handleVerifyClick('Email')}
+                  onClick={() => handleVerifyClick('email')}
+                  disabled={sending === 'email'}
                 >
-                  Verify
+                  {sending === 'email' ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : null}
+                  {sending === 'email' ? 'Sending...' : 'Verify'}
                 </Button>
               </>
             )}
@@ -86,9 +111,11 @@ export default function VerificationStatus({ profile }) {
                     size="sm"
                     variant="outline"
                     className="border-sand hover:bg-sand-light text-slate hover:text-terracotta text-xs font-semibold h-8 rounded-lg shadow-subtle px-3 transition-all"
-                    onClick={() => handleVerifyClick('Phone')}
+                    onClick={() => handleVerifyClick('phone')}
+                    disabled={sending === 'phone'}
                   >
-                    Verify
+                    {sending === 'phone' ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : null}
+                    {sending === 'phone' ? 'Sending...' : 'Verify'}
                   </Button>
                 )}
               </>
