@@ -36,3 +36,4 @@ coverage/
 .eslintcache
 .env
 .env.production
+dump.rdb
