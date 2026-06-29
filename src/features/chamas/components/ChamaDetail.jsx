@@ -18,6 +18,7 @@ import ContributionsList from './ContributionsList';
 import LoansList from './LoansList';
 import MeetingsList from './MeetingsList';
 import PollsList from './PollsList';
+import ChamaAnalytics from './ChamaAnalytics';
 
 const gradeColors = {
   'A+': 'bg-success text-white',
@@ -207,6 +208,12 @@ export default function ChamaDetail({ defaultTab = 'overview' }) {
             Meetings
           </TabsTrigger>
           <TabsTrigger
+            value="analytics"
+            className="rounded-full text-xs font-semibold px-3 py-1.5 transition-all data-[state=active]:bg-terracotta data-[state=active]:text-white data-[state=active]:shadow-sm cursor-pointer"
+          >
+            <TrendingUp className="h-3.5 w-3.5 mr-1" /> Analytics
+          </TabsTrigger>
+          <TabsTrigger
             value="polls"
             className="rounded-full text-xs font-semibold px-3 py-1.5 transition-all data-[state=active]:bg-terracotta data-[state=active]:text-white data-[state=active]:shadow-sm cursor-pointer"
           >
@@ -277,6 +284,9 @@ export default function ChamaDetail({ defaultTab = 'overview' }) {
           <MeetingsList chamaId={chamaId} />
         </TabsContent>
 
+        <TabsContent value="analytics" className="mt-4 outline-none">
+          <ChamaAnalytics chamaId={chamaId} />
+        </TabsContent>
         <TabsContent value="polls" className="mt-4 outline-none">
           <PollsList chamaId={chamaId} />
         </TabsContent>

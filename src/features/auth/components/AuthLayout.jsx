@@ -5,6 +5,7 @@ import RegisterForm from './RegisterForm';
 import ForgotPasswordForm from './ForgotPasswordForm';
 import VerifyCodeForm from './VerifyCodeForm';
 import TwoFactorForm from './TwoFactorForm';
+import { ShieldCheck } from 'lucide-react';
 import BridgeLogo from '../../../components/brand/BridgeLogo';
 
 export default function AuthLayout({ initialView = 'login' }) {
@@ -85,9 +86,14 @@ export default function AuthLayout({ initialView = 'login' }) {
           )}
         </div>
 
-        <p className="text-center text-xs text-gray-400 pb-2">
-          Secured by end-to-end encryption &middot; Kenya Co-operative Law compliant
-        </p>
+        <div className="flex flex-col items-center gap-2 pb-2">
+          <span className="security-badge">
+            <ShieldCheck className="h-3 w-3" /> AES-256 Encrypted
+          </span>
+          <p className="text-center text-xs text-gray-400">
+            End-to-end encryption &middot; Kenya Co-operative Law compliant
+          </p>
+        </div>
       </div>
     </div>
   );

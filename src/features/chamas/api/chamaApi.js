@@ -43,4 +43,7 @@ export const chamaApi = {
   
   // Invites
   getInviteLink: (id) => apiClient.get(`/chamas/${id}/invite_link/`),
+
+  // Analytics
+  getChamaAnalytics: (id, params) => apiClient.get(`/analytics/chama/${id}/`, { params }),
 };
