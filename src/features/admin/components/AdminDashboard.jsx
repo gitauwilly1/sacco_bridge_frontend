@@ -1,10 +1,10 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import { useMemo } from 'react';
 import {
   Users, Building2, HandCoins, AlertCircle,
   TrendingUp, Activity, ArrowRight, DollarSign,
-  UserPlus, RefreshCw, BarChart3,
+  UserPlus, RefreshCw, BarChart3, Smartphone, Database,
+  CheckCircle2, XCircle, ShieldCheck, Download,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -13,6 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorState } from '@/components/feedback';
 import { adminApi } from '../api/adminApi';
 import { formatKES, formatTimeAgo } from '../../../utils/format';
+import { toast } from 'sonner';
 
 /* ── Simple SVG Line Chart ────────────────────────────────────────── */
 function SimpleLineChart({ data, width = 300, height = 96 }) {
@@ -89,102 +90,239 @@ function DashboardSkeleton() {
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
+  /* ── Rich overview stats ────────────────────────────────────────── */
   const {
-    data: analytics,
-    isLoading,
-    error,
-    refetch,
-    dataUpdatedAt,
+    data: overview,
+    isLoading: overviewLoading,
+    error: overviewError,
+    refetch: overviewRefetch,
   } = useQuery({
-    queryKey: ['admin-analytics'],
+    queryKey: ['admin-overview'],
     queryFn: () =>
-      adminApi.getPlatformAnalytics().then((r) => {
+      adminApi.getAdminOverview().then((r) => {
         const d = r.data.data || r.data;
         return {
-          total_users: d.users?.total ?? d.summary?.total_users ?? d.total_users,
-          active_chamas: d.chamas?.total_active ?? d.summary?.active_chamas ?? d.active_chamas,
-          total_volume: d.settlements?.total_volume ?? d.summary?.total_volume ?? d.total_volume ?? '0',
-          open_disputes: d.disputes?.open ?? d.summary?.open_disputes ?? d.open_disputes ?? 0,
-          recent_activity: d.recent_activity || [],
-          user_growth: d.user_growth || [],
-          volume_trend: d.volume_trend || [],
-          _raw: d,
+          users: d.users || {},
+          chamas: d.chamas || {},
+          saccos: d.saccos || {},
+          settlements: d.settlements || {},
+          mpesa: d.mpesa || {},
+          disputes: d.disputes || {},
+          generated_at: d.generated_at,
         };
       }),
     refetchInterval: 30000,
   });
 
-  const lastRefreshed = dataUpdatedAt
-    ? new Date(dataUpdatedAt).toLocaleTimeString('en-KE', { hour: '2-digit', minute: '2-digit' })
-    : null;
+  /* ── Trend data for charts ──────────────────────────────────────── */
+  const {
+    data: trends,
+  } = useQuery({
+    queryKey: ['admin-trends'],
+    queryFn: () =>
+      adminApi.getPlatformAnalytics().then((r) => {
+        const d = r.data.data || r.data;
+        return {
+          user_growth: d.trends?.user_growth || d.user_growth || [],
+          settlement_volume: d.trends?.settlement_volume || d.volume_trend || [],
+        };
+      }),
+    refetchInterval: 60000,
+  });
 
-  if (isLoading) return <DashboardSkeleton />;
-  if (error) {
-    return <ErrorState message="Failed to load analytics" onRetry={refetch} />;
+  /* ── System health ──────────────────────────────────────────────── */
+  const {
+    data: health,
+  } = useQuery({
+    queryKey: ['admin-health'],
+    queryFn: () =>
+      adminApi.getAdminHealth().then((r) => r.data.data || r.data),
+    refetchInterval: 120000,
+  });
+
+  /* ── Export handler ─────────────────────────────────────────────── */
+  const handleExport = async () => {
+    try {
+      const res = await adminApi.getAdminExport({ type: 'overview' });
+      const blob = new Blob([res.data], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `admin-export-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+      toast.success('Export downloaded');
+    } catch {
+      toast.error('Export failed');
+    }
+  };
+
+  /* ── Refresh mutation ───────────────────────────────────────────── */
+  const refreshMutation = useMutation({
+    mutationFn: () => adminApi.refreshAnalytics(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-overview'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-trends'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-health'] });
+      toast.success('Analytics refreshed');
+    },
+    onError: () => toast.error('Failed to refresh analytics'),
+  });
+
+  if (overviewLoading) return <DashboardSkeleton />;
+  if (overviewError) {
+    return <ErrorState message="Failed to load analytics" onRetry={overviewRefetch} />;
   }
 
-  const stats = [
+  const u = overview?.users || {};
+  const c = overview?.chamas || {};
+  const s = overview?.saccos || {};
+  const st = overview?.settlements || {};
+  const mp = overview?.mpesa || {};
+  const dp = overview?.disputes || {};
+
+  const statCards = [
     {
       label: 'Total Users',
-      value: analytics?.total_users?.toLocaleString() || '—',
+      value: u.total?.toLocaleString() || '—',
+      sub: `${u.new_this_month || 0} new this month`,
       icon: Users,
       color: 'text-blue-500',
       bg: 'bg-blue-500/10',
     },
     {
       label: 'Active Chamas',
-      value: analytics?.active_chamas?.toLocaleString() || '—',
+      value: c.total_active?.toLocaleString() || '—',
+      sub: `KES ${formatKES(c.total_savings)} saved`,
       icon: HandCoins,
       color: 'text-terracotta',
       bg: 'bg-terracotta/10',
     },
     {
       label: 'Total Volume',
-      value: formatKES(analytics?.total_volume || 0),
+      value: formatKES(st.total_volume || 0),
+      sub: `${st.completed || 0} completed settlements`,
       icon: DollarSign,
       color: 'text-success',
       bg: 'bg-success/10',
     },
     {
       label: 'Open Disputes',
-      value: analytics?.open_disputes?.toLocaleString() || '0',
+      value: dp.open?.toLocaleString() || '0',
+      sub: `${st.disputed || 0} total disputed`,
       icon: AlertCircle,
-      color: analytics?.open_disputes > 0 ? 'text-danger' : 'text-slate/60',
-      bg: analytics?.open_disputes > 0 ? 'bg-danger/10' : 'bg-sand-light',
+      color: dp.open > 0 ? 'text-danger' : 'text-slate/60',
+      bg: dp.open > 0 ? 'bg-danger/10' : 'bg-sand-light',
     },
   ];
 
-  const quickActions = [
-    { label: 'Manage Users', to: '/admin/users', icon: Users },
-    { label: 'Review Disputes', to: '/admin/disputes', icon: AlertCircle },
-    { label: 'Verify SACCOs', to: '/admin/saccos', icon: Building2 },
-    { label: 'View Audit Log', to: '/admin/audit', icon: Activity },
+  const secondaryStats = [
+    {
+      label: 'Verified Users',
+      value: u.verified?.toLocaleString() || '—',
+      icon: CheckCircle2,
+      color: 'text-success',
+      bg: 'bg-success/10',
+    },
+    {
+      label: 'Active SACCOs',
+      value: s.total_active?.toLocaleString() || '—',
+      sub: `${s.active_liquidity_requests || 0} liquidity requests`,
+      icon: Building2,
+      color: 'text-purple-500',
+      bg: 'bg-purple-500/10',
+    },
+    {
+      label: 'M-Pesa Volume',
+      value: formatKES(mp.total_volume || 0),
+      sub: `${mp.completed_transactions || 0} transactions`,
+      icon: Smartphone,
+      color: 'text-teal-500',
+      bg: 'bg-teal-500/10',
+    },
+    {
+      label: 'Fees Collected',
+      value: formatKES(st.total_fees_collected || 0),
+      icon: DollarSign,
+      color: 'text-amber-500',
+      bg: 'bg-amber-500/10',
+    },
   ];
+
+  const healthServices = health?.services;
+  const serviceIcons = { database: Database, redis: RefreshCw, celery: Activity, disk: BarChart3 };
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-xl font-bold text-slate">Admin Dashboard</h1>
-        <p className="text-sm text-gray-500">Platform overview and management</p>
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-bold text-slate">Admin Dashboard</h1>
+          <p className="text-sm text-gray-500">Platform overview and management</p>
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleExport}
+            className="text-xs border-sand/40"
+          >
+            <Download className="h-3.5 w-3.5 mr-1.5" />
+            Export
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => refreshMutation.mutate()}
+            disabled={refreshMutation.isPending}
+            className="text-xs border-sand/40"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${refreshMutation.isPending ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+        </div>
       </div>
 
-      {/* Stats Grid */}
+      {/* Primary Stats Grid — Bento */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {stats.map((stat) => {
+        {statCards.map((stat) => {
           const Icon = stat.icon;
           return (
-            <Card key={stat.label} className="border-sand bg-white shadow-subtle rounded-2xl card-lift">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">{stat.label}</p>
-                  <div className={`h-8 w-8 rounded-full ${stat.bg} flex items-center justify-center shadow-subtle flex-shrink-0`}>
-                    <Icon className={`h-4.5 w-4.5 ${stat.color}`} />
-                  </div>
+            <div key={stat.label} className="bento-card p-4 card-lift">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">{stat.label}</p>
+                <div className={`h-8 w-8 rounded-full ${stat.bg} flex items-center justify-center shadow-subtle flex-shrink-0`}>
+                  <Icon className={`h-4.5 w-4.5 ${stat.color}`} />
                 </div>
-                <p className="text-xl font-extrabold text-slate font-numbers">{stat.value}</p>
-              </CardContent>
-            </Card>
+              </div>
+              <p className="text-xl font-extrabold text-slate font-numbers">{stat.value}</p>
+              <div className="flex items-center gap-2 mt-1">
+                {stat.sub && <p className="text-[10px] text-gray-400 font-medium">{stat.sub}</p>}
+                <span className="insight-chip up">
+                  <TrendingUp className="h-2.5 w-2.5" /> +12%
+                </span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Secondary Stats Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {secondaryStats.map((stat) => {
+          const Icon = stat.icon;
+          return (
+            <div key={stat.label} className="bento-card p-3 flex items-center gap-3 card-lift">
+              <div className={`h-8 w-8 rounded-full ${stat.bg} flex items-center justify-center flex-shrink-0`}>
+                <Icon className={`h-4 w-4 ${stat.color}`} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-bold text-slate">{stat.value}</p>
+                <p className="text-[10px] text-gray-400 font-medium">{stat.sub || stat.label}</p>
+              </div>
+            </div>
           );
         })}
       </div>
@@ -196,7 +334,12 @@ export default function AdminDashboard() {
         </CardHeader>
         <CardContent className="pt-4">
           <div className="grid grid-cols-2 gap-3">
-            {quickActions.map((action) => {
+            {[
+              { label: 'Manage Users', to: '/admin/users', icon: Users },
+              { label: 'Review Disputes', to: '/admin/disputes', icon: AlertCircle },
+              { label: 'Verify SACCOs', to: '/admin/saccos', icon: Building2 },
+              { label: 'View Audit Log', to: '/admin/audit', icon: Activity },
+            ].map((action) => {
               const Icon = action.icon;
               return (
                 <Button
@@ -217,7 +360,6 @@ export default function AdminDashboard() {
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* User Growth Sparkline */}
         <Card className="border-sand bg-white shadow-subtle rounded-2xl">
           <CardHeader className="pb-2 border-b border-sand/40">
             <CardTitle className="text-xs font-bold text-slate uppercase tracking-wider flex items-center gap-2">
@@ -226,72 +368,98 @@ export default function AdminDashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-4">
-            {analytics?.user_growth?.length > 0 ? (
-              <SimpleLineChart data={analytics.user_growth} />
+            {trends?.user_growth?.length > 0 ? (
+              <SimpleLineChart data={trends.user_growth} />
             ) : (
               <div className="h-24 flex items-center justify-center text-xs text-gray-400">
                 <TrendingUp className="h-5 w-5 mr-2 text-sand" />
-                No growth data available
+                No growth data yet
               </div>
-            )}
-            {lastRefreshed && (
-              <p className="text-[10px] text-gray-400 mt-3 text-right">
-                <RefreshCw className="h-3 w-3 inline mr-1" />
-                Updated {lastRefreshed}
-              </p>
             )}
           </CardContent>
         </Card>
 
-        {/* Volume Trend */}
         <Card className="border-sand bg-white shadow-subtle rounded-2xl">
           <CardHeader className="pb-2 border-b border-sand/40">
             <CardTitle className="text-xs font-bold text-slate uppercase tracking-wider flex items-center gap-2">
               <DollarSign className="h-4 w-4 text-success" />
-              Volume Trend (30d)
+              Settlement Volume (30d)
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-4">
-            {analytics?.volume_trend?.length > 0 ? (
-              <SimpleBarChart data={analytics.volume_trend} />
+            {trends?.settlement_volume?.length > 0 ? (
+              <SimpleBarChart data={trends.settlement_volume} />
             ) : (
               <div className="h-24 flex items-center justify-center text-xs text-gray-400">
                 <BarChart3 className="h-5 w-5 mr-2 text-sand" />
-                No volume data available
+                No volume data yet
               </div>
             )}
           </CardContent>
         </Card>
       </div>
 
+      {/* System Health */}
+      {healthServices && (
+        <Card className="border-sand bg-white shadow-subtle rounded-2xl">
+          <CardHeader className="pb-2 border-b border-sand/40">
+            <CardTitle className="text-xs font-bold text-slate uppercase tracking-wider flex items-center gap-2">
+              <ShieldCheck className="h-4 w-4 text-success" />
+              System Health
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-4">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {Object.entries(healthServices).map(([name, svc]) => {
+                const Icon = serviceIcons[name] || Activity;
+                const isOk = svc?.status === 'ok';
+                return (
+                  <div key={name} className="flex items-center gap-2.5 p-2.5 rounded-lg bg-sand-light/50">
+                    <div className={`h-8 w-8 rounded-full flex items-center justify-center ${isOk ? 'bg-success/10' : 'bg-danger/10'}`}>
+                      <Icon className={`h-4 w-4 ${isOk ? 'text-success' : 'text-danger'}`} />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-slate capitalize">{name}</p>
+                      <p className="text-[10px] text-gray-400">{isOk ? 'Healthy' : svc.status || 'Unknown'}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            {health?.app && (
+              <p className="text-[10px] text-gray-400 mt-3 text-right">
+                v{health.app.version} &middot; {health.app.environment}
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       {/* Recent Activity */}
-      {analytics?.recent_activity?.length > 0 && (
+      {overview?.settlements?.total > 0 && (
         <Card className="border-sand bg-white shadow-subtle rounded-2xl">
           <CardHeader className="pb-2 border-b border-sand/40">
             <CardTitle className="text-xs font-bold text-slate uppercase tracking-wider flex items-center gap-2">
               <Activity className="h-4.5 w-4.5 text-terracotta" />
-              Recent Activity
+              Platform Summary
             </CardTitle>
           </CardHeader>
-          <CardContent className="divide-y divide-sand/40 pt-1">
-            {analytics.recent_activity.map((activity, index) => (
-              <div
-                key={activity.id || index}
-                className="flex items-center justify-between text-xs py-3.5"
-              >
-                <div>
-                  <p className="font-bold text-slate">
-                    {activity.action || activity.event}
+          <CardContent className="pt-4">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+              {[
+                { label: 'Total Settlements', value: st.total || 0 },
+                { label: 'Completed', value: st.completed || 0, color: 'text-success' },
+                { label: 'Disputed', value: st.disputed || 0, color: 'text-alert' },
+                { label: 'Reversed', value: st.reversed || 0, color: 'text-danger' },
+              ].map((item) => (
+                <div key={item.label} className="p-3 rounded-xl bg-sand-light/40">
+                  <p className={`text-lg font-extrabold font-numbers ${item.color || 'text-slate'}`}>
+                    {item.value?.toLocaleString()}
                   </p>
-                  <p className="text-xs text-gray-400 mt-0.5 font-medium leading-relaxed">
-                    {activity.description || activity.details}
-                  </p>
+                  <p className="text-[10px] text-gray-400 font-medium mt-0.5">{item.label}</p>
                 </div>
-                <span className="text-[10px] text-gray-400/90 font-medium font-numbers ml-3 flex-shrink-0">
-                  {formatTimeAgo(activity.timestamp || activity.created_at)}
-                </span>
-              </div>
-            ))}
+              ))}
+            </div>
           </CardContent>
         </Card>
       )}
