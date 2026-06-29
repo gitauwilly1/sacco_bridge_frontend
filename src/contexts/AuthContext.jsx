@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import api from '@/lib/api';
+import apiClient from '@/lib/apiClient';
 
 const AuthContext = createContext(null);
 
@@ -16,7 +16,7 @@ export function AuthProvider({ children }) {
     }
 
     try {
-      const { data } = await api.get('/users/profile/');
+      const { data } = await apiClient.get('/users/profile/');
       setUser(data.data);
       setIsAuthenticated(true);
     } catch (error) {
@@ -34,7 +34,7 @@ export function AuthProvider({ children }) {
   }, [fetchUser]);
 
   const login = async (email, password) => {
-    const { data } = await api.post('/auth/login/', {
+    const { data } = await apiClient.post('/auth/login/', {
       email,
       password,
       device_info: 'Web',
@@ -52,7 +52,7 @@ export function AuthProvider({ children }) {
   };
 
   const verify2FA = async (totpCode, sessionToken) => {
-    const { data } = await api.post('/auth/2fa/verify/', {
+    const { data } = await apiClient.post('/auth/2fa/verify/', {
       totp_code: totpCode,
       session_token: sessionToken,
     });
@@ -64,7 +64,7 @@ export function AuthProvider({ children }) {
   };
 
   const register = async (userData) => {
-    const { data } = await api.post('/auth/register/', userData);
+    const { data } = await apiClient.post('/auth/register/', userData);
     return data;
   };
 
@@ -72,7 +72,7 @@ export function AuthProvider({ children }) {
     try {
       const refreshToken = localStorage.getItem('refresh_token');
       if (refreshToken) {
-        await api.post('/auth/logout/', { refresh_token: refreshToken });
+        await apiClient.post('/auth/logout/', { refresh_token: refreshToken });
       }
     } catch (error) {
       // Proceed with local logout even if API call fails
