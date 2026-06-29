@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useQueryClient } from '@tanstack/react-query';
-import { Camera, Save, Trash2 } from 'lucide-react';
+import { Camera, Save, Trash2, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -24,7 +24,6 @@ import {
 } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { profileApi } from '../api/profileApi';
-import { getInitials } from '../../../utils/format';
 
 const profileSchema = z.object({
   first_name: z.string().min(1, 'First name is required'),
@@ -161,9 +160,7 @@ export default function EditProfileForm({ profile }) {
               />
             ) : (
               <div className="w-20 h-20 rounded-full bg-sand-light flex items-center justify-center ring-4 ring-sand/30 shadow-subtle">
-                <span className="text-2xl font-extrabold text-terracotta font-heading">
-                  {getInitials(profile?.first_name, profile?.last_name) || '?'}
-                </span>
+                <User className="h-8 w-8 text-terracotta/60" />
               </div>
             )}
             <label className="absolute bottom-0 right-0 bg-terracotta text-white p-2 rounded-full cursor-pointer hover:bg-terracotta-dark shadow-subtle transition-colors">
