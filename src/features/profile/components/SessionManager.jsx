@@ -114,7 +114,14 @@ export default function SessionManager() {
     },
   });
 
-  const sessions = sessionsData?.sessions || sessionsData?.results || [];
+  const rawSessions = sessionsData?.sessions || sessionsData?.results || [];
+  const seen = new Set();
+  const sessions = rawSessions.filter((s) => {
+    const key = s.device_id || s.session_id || s.id;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
   const activeCount = sessions.filter((s) => !s.is_current).length;
 
   if (isLoading) return <SessionListSkeleton />;

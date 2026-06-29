@@ -101,7 +101,7 @@ export default function AppearanceSettings() {
           </select>
         </div>
 
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center justify-between gap-4 transition-all duration-300 ease-in-out">
           <div className="flex items-start gap-3">
             <div className="mt-0.5 text-slate/75 dark:text-slate-300">
               <Accessibility className="h-4.5 w-4.5" />
@@ -116,11 +116,11 @@ export default function AppearanceSettings() {
           <Switch
             checked={reduceMotion}
             onCheckedChange={setReduceMotion}
-            className="bg-sand data-[state=checked]:bg-terracotta border-0"
+            className="bg-sand data-[state=checked]:bg-terracotta border-0 transition-transform duration-200 data-[state=checked]:translate-x-0.5"
           />
         </div>
 
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center justify-between gap-4 transition-all duration-300 ease-in-out">
           <div className="flex items-start gap-3">
             <div className="mt-0.5 text-slate/75 dark:text-slate-300">
               <Contrast className="h-4.5 w-4.5" />
@@ -135,7 +135,7 @@ export default function AppearanceSettings() {
           <Switch
             checked={highContrast}
             onCheckedChange={setHighContrast}
-            className="bg-sand data-[state=checked]:bg-terracotta border-0"
+            className="bg-sand data-[state=checked]:bg-terracotta border-0 transition-transform duration-200 data-[state=checked]:translate-x-0.5"
           />
         </div>
       </CardContent>

@@ -21,6 +21,7 @@ import {
 import { toast } from 'sonner';
 import { PageSpinner } from '@/components/feedback/LoadingState';
 import { ErrorState } from '@/components/feedback/ErrorState';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -40,7 +41,6 @@ import TransactionLimits from './TransactionLimits';
 import AppearanceSettings from './AppearanceSettings';
 import VerificationStatus from './VerificationStatus';
 import ConnectedAccounts from './ConnectedAccounts';
-import UserProfileScore from './UserProfileScore';
 import LoginHistory from './LoginHistory';
 import DeviceManagement from '../../notifications/components/DeviceManagement';
 
@@ -449,6 +449,11 @@ export default function ProfilePage({ defaultTab = 'profile' }) {
         </div>
         <h1 className="text-xl font-bold text-slate">
           {profile?.full_name || `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim()}
+          {profile?.roles?.includes('PLATFORM_ADMIN') && (
+            <Badge className="ml-2 bg-terracotta/10 text-terracotta border border-terracotta/20 text-[10px] font-extrabold rounded-full px-2.5 py-0.5 align-middle">
+              <ShieldCheck className="h-3 w-3 mr-0.5 inline" /> Admin
+            </Badge>
+          )}
         </h1>
         <p className="mt-0.5 text-xs font-medium text-gray-400">{profile?.email}</p>
         <div className="flex items-center justify-center gap-2 mt-3">
@@ -548,7 +553,6 @@ export default function ProfilePage({ defaultTab = 'profile' }) {
             <div className="space-y-6 px-6 py-6">
               {activeSection.value === 'profile' && (
                 <>
-                  <UserProfileScore />
                   <VerificationStatus profile={profile} />
                   <EditProfileForm profile={profile} />
                 </>
