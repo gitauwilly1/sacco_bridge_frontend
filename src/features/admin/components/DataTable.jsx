@@ -17,6 +17,7 @@ export default function DataTable({
   searchValue = '',
   onSearch,
   emptyMessage = 'No results found',
+  onRowClick,
   rowActions,
   searchable = true,
 }) {
@@ -155,7 +156,8 @@ export default function DataTable({
                 processedData.map((row, rIndex) => (
                   <tr
                     key={row.id || rIndex}
-                    className="hover:bg-sand-light/20 transition-all border-b border-sand/30 last:border-0"
+                    className={`hover:bg-sand-light/20 transition-all border-b border-sand/30 last:border-0 ${onRowClick ? 'cursor-pointer' : ''}`}
+                    onClick={() => onRowClick?.(row)}
                   >
                     {columns.map((col) => (
                       <td
