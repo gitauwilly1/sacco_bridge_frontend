@@ -26,6 +26,7 @@ export default function FraudReview() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [riskLevel, setRiskLevel] = useState('all');
+  const [fraudStatus, setFraudStatus] = useState('pending');
 
   const {
     data: assessmentsData,
@@ -33,7 +34,7 @@ export default function FraudReview() {
     error,
     refetch,
   } = useQuery({
-    queryKey: ['admin-fraud', page, search, riskLevel],
+    queryKey: ['admin-fraud', page, search, riskLevel, fraudStatus],
     queryFn: () =>
       adminApi
         .getFraudAssessments({
@@ -41,6 +42,7 @@ export default function FraudReview() {
           page_size: 15,
           ...(search && { search }),
           ...(riskLevel !== 'all' && { risk_level: riskLevel }),
+          ...(fraudStatus !== 'all' && { status: fraudStatus }),
         })
         .then((r) => r.data),
   });
@@ -108,7 +110,7 @@ export default function FraudReview() {
 
   const rowActions = (row) => (
     <div className="flex items-center gap-2 justify-end">
-      {row.status === 'pending' && (
+      {(row.status?.toLowerCase() === 'pending') && (
         <>
           <Button
             size="sm"
@@ -143,6 +145,16 @@ export default function FraudReview() {
           <p className="text-sm text-gray-500">{total} assessments</p>
         </div>
         <div className="flex items-center gap-2">
+          <select
+            value={fraudStatus}
+            onChange={(e) => { setFraudStatus(e.target.value); setPage(1); }}
+            className="text-xs border border-sand bg-white/90 hover:border-terracotta focus:outline-none focus:ring-1 focus:ring-terracotta rounded-lg px-2.5 py-1.5 text-slate font-medium shadow-subtle transition-all cursor-pointer"
+          >
+            <option value="pending">Pending</option>
+            <option value="all">All Statuses</option>
+            <option value="approved">Approved</option>
+            <option value="blocked">Blocked</option>
+          </select>
           <select
             value={riskLevel}
             onChange={(e) => { setRiskLevel(e.target.value); setPage(1); }}
