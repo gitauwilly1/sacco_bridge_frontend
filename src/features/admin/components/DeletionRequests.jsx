@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from '@tanstack/react-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Trash2, CheckCircle2, XCircle, Clock, RefreshCw } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -15,6 +16,7 @@ const statusColors = {
 };
 
 export default function DeletionRequests() {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
@@ -195,6 +197,7 @@ export default function DeletionRequests() {
         }}
         emptyMessage="No deletion requests"
         rowActions={rowActions}
+        onRowClick={(row) => navigate({ to: `/admin/deletion-requests/${row.id}` })}
       />
     </div>
   );
