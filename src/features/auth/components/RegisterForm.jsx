@@ -10,6 +10,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Checkbox } from '@/components/ui/checkbox';
 import { authApi } from '../api/authApi';
 import { toast } from 'sonner';
+import { getRecaptchaToken } from '@/lib/recaptcha';
 import BridgeLogo from '../../../components/brand/BridgeLogo';
 
 const registerSchema = z.object({
@@ -66,7 +67,11 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }) {
   const onSubmit = async (values) => {
     setIsLoading(true);
     try {
-      await authApi.register(values);
+      const recaptchaToken = await getRecaptchaToken('register');
+      await authApi.register({
+        ...values,
+        recaptcha: recaptchaToken,
+      });
       toast.success('Account created! Please verify your email and phone.');
       onSuccess?.(values.email);
     } catch (error) {
