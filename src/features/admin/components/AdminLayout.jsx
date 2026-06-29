@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from '@tanstack/react-router';
 import {
   LayoutDashboard, Users, Building2, HandCoins, AlertCircle,
   Shield, Lock, FileText, Webhook, BookOpen, BarChart3,
-  ChevronLeft, ChevronRight, Menu, X, Search, ShieldCheck, Trash2,
+  ChevronLeft, ChevronRight, Menu, X, Search, ShieldCheck, Trash2, User,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -85,9 +85,7 @@ export default function AdminLayout({ children }) {
         <div className="p-3.5 border-t border-sand/40">
           <div className="flex items-center gap-2.5">
             <div className="h-8 w-8 rounded-full bg-sand-light border border-sand/30 flex items-center justify-center flex-shrink-0 shadow-subtle">
-              <span className="text-xs font-bold text-terracotta font-heading">
-                {user?.first_name?.[0]}{user?.last_name?.[0]}
-              </span>
+              <User className="h-4 w-4 text-terracotta/60" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-bold text-slate truncate">
