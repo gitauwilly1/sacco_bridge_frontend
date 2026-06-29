@@ -40,7 +40,11 @@ export async function getRecaptchaToken(action = 'submit') {
     return null;
   }
 
-  const grecaptcha = window.grecaptcha || (await loadRecaptchaScript());
-  await new Promise((resolve) => grecaptcha.ready(resolve));
-  return grecaptcha.execute(RECAPTCHA_SITE_KEY, { action });
+  try {
+    const grecaptcha = window.grecaptcha || (await loadRecaptchaScript());
+    await new Promise((resolve) => grecaptcha.ready(resolve));
+    return await grecaptcha.execute(RECAPTCHA_SITE_KEY, { action });
+  } catch {
+    return null;
+  }
 }
