@@ -11,12 +11,7 @@ import { toast } from 'sonner';
 import { adminApi } from '../api/adminApi';
 import { formatDate, formatTimeAgo } from '../../../utils/format';
 import DataTable from './DataTable';
-
-const roleColors = {
-  PLATFORM_ADMIN: 'bg-danger/10 text-danger border-danger/20',
-  SUPPORT_AGENT: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
-  MEMBER: 'bg-gray-100 text-gray-600 border-gray-200',
-};
+import { ROLE_COLORS } from '../../../utils/permissions';
 
 const statusColors = {
   active: 'bg-success/10 text-success border border-success/20',
@@ -94,7 +89,7 @@ export default function UserList() {
       render: (value, row) => {
         const displayRole = row.roles?.[0] || value;
         return (
-          <Badge className={`${roleColors[displayRole] || 'bg-gray-100 text-gray-600 border-gray-200'} text-[10px] font-extrabold rounded-full px-2 py-0.5 shadow-none`} variant="outline">
+          <Badge className={`${ROLE_COLORS[displayRole] || 'bg-gray-100 text-gray-600 border-gray-200'} text-[10px] font-extrabold rounded-full px-2 py-0.5 shadow-none`} variant="outline">
             {displayRole?.replace('_', ' ') || 'Member'}
           </Badge>
         );

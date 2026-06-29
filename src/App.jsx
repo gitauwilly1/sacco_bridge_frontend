@@ -4,6 +4,7 @@ import { useLocation } from '@tanstack/react-router';
 import useAuthStore from './stores/authStore';
 import useUIStore from './stores/uiStore';
 import useSocketStore from './stores/socketStore';
+import { isAdmin } from './utils/permissions';
 import { AuthProvider } from './contexts/AuthContext';
 import { ModeProvider } from './contexts/ModeContext';
 import { Loader2 } from 'lucide-react';
@@ -29,11 +30,7 @@ export default function App() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const isAdmin =
-    user?.roles?.includes('PLATFORM_ADMIN') ||
-    user?.roles?.includes('SUPPORT_AGENT') ||
-    user?.role === 'PLATFORM_ADMIN' ||
-    user?.role === 'SUPPORT_AGENT';
+  const userIsAdmin = isAdmin(user);
 
   const authView = AUTH_ROUTE_VIEWS[location.pathname];
   const isAuthRoute = !!authView;
@@ -66,7 +63,7 @@ export default function App() {
 
     if (isAuthenticated && isAuthRoute) {
       // Already logged in, redirect to proper destination
-      if (isAdmin) {
+      if (userIsAdmin) {
         navigate({ to: '/admin' });
       } else {
         navigate({ to: '/' });
@@ -75,13 +72,13 @@ export default function App() {
     }
 
     // Redirect admin to admin dashboard on landing
-    if (isAuthenticated && isAdmin && location.pathname === '/') {
+    if (isAuthenticated && userIsAdmin && location.pathname === '/') {
       navigate({ to: '/admin' });
       return;
     }
 
     // Redirect non-admin away from admin routes
-    if (isAuthenticated && !isAdmin && location.pathname.startsWith('/admin')) {
+    if (isAuthenticated && !userIsAdmin && location.pathname.startsWith('/admin')) {
       navigate({ to: '/' });
       return;
     }
@@ -90,7 +87,7 @@ export default function App() {
     if (!isAuthenticated && !isAuthRoute) {
       navigate({ to: '/login' });
     }
-  }, [isAuthenticated, isInitialized, isAdmin, location.pathname]);
+  }, [isAuthenticated, isInitialized, userIsAdmin, location.pathname]);
 
   if (!isInitialized || isLoading) {
     return <FullPageLoader />;
@@ -107,7 +104,7 @@ export default function App() {
         </div>
       );
     }
-    if (isAdmin) {
+    if (userIsAdmin) {
       return (
         <div className="min-h-screen bg-surface dark:bg-surface">
           <AdminLayout>

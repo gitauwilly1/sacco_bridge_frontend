@@ -43,6 +43,7 @@ import VerificationStatus from './VerificationStatus';
 import ConnectedAccounts from './ConnectedAccounts';
 import LoginHistory from './LoginHistory';
 import DeviceManagement from '../../notifications/components/DeviceManagement';
+import { isPlatformAdmin, isSupportAgent } from '../../../utils/permissions';
 
 const SECTIONS = [
   {
@@ -449,9 +450,14 @@ export default function ProfilePage({ defaultTab = 'profile' }) {
         </div>
         <h1 className="text-xl font-bold text-slate">
           {profile?.full_name || `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim()}
-          {profile?.roles?.includes('PLATFORM_ADMIN') && (
-            <Badge className="ml-2 bg-terracotta/10 text-terracotta border border-terracotta/20 text-[10px] font-extrabold rounded-full px-2.5 py-0.5 align-middle">
-              <ShieldCheck className="h-3 w-3 mr-0.5 inline" /> Admin
+          {isPlatformAdmin(profile) && (
+            <Badge className="ml-2 bg-danger/10 text-danger border-danger/20 text-[10px] font-extrabold rounded-full px-2.5 py-0.5 align-middle">
+              <ShieldCheck className="h-3 w-3 mr-0.5 inline" /> Platform Admin
+            </Badge>
+          )}
+          {isSupportAgent(profile) && (
+            <Badge className="ml-2 bg-blue-500/10 text-blue-500 border-blue-500/20 text-[10px] font-extrabold rounded-full px-2.5 py-0.5 align-middle">
+              <ShieldCheck className="h-3 w-3 mr-0.5 inline" /> Support Agent
             </Badge>
           )}
         </h1>

@@ -1,5 +1,6 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import apiClient from '@/lib/apiClient';
+import { isAdmin as checkIsAdmin, isPlatformAdmin as checkIsPlatformAdmin, isSupportAgent as checkIsSupportAgent } from '@/utils/permissions';
 
 const AuthContext = createContext(null);
 
@@ -88,10 +89,17 @@ export function AuthProvider({ children }) {
     setUser((prev) => ({ ...prev, ...userData }));
   };
 
+  const isAdmin = useMemo(() => checkIsAdmin(user), [user]);
+  const isPlatformAdmin = useMemo(() => checkIsPlatformAdmin(user), [user]);
+  const isSupportAgent = useMemo(() => checkIsSupportAgent(user), [user]);
+
   const value = {
     user,
     isAuthenticated,
     isLoading,
+    isAdmin,
+    isPlatformAdmin,
+    isSupportAgent,
     login,
     verify2FA,
     register,

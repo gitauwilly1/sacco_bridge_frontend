@@ -15,6 +15,7 @@ import {
   DropdownMenuItem,
 } from '@/components/ui/dropdown-menu';
 import useAuthStore from '../../../stores/authStore';
+import { isSupportAgent, isPlatformAdmin, RESTRICTED_ADMIN_ROUTES } from '../../../utils/permissions';
 
 const navItems = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard },
@@ -41,14 +42,11 @@ export default function AdminLayout({ children }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuthStore();
-  const userRoles = user?.roles || (user?.role ? [user.role] : []);
-  const isSupportAgent = userRoles.includes('SUPPORT_AGENT');
-  const isPlatformAdmin = userRoles.includes('PLATFORM_ADMIN');
+  const isSupportAgentRole = isSupportAgent(user);
+  const isPlatformAdminRole = isPlatformAdmin(user);
 
-  // Sensitive pages restricted to PLATFORM_ADMIN only
-  const restrictedItems = ['/admin/audit', '/admin/webhooks', '/admin/legal', '/admin/deletion-requests', '/admin/deletions'];
   const visibleNavItems = navItems.filter(
-    (item) => !isSupportAgent || !restrictedItems.includes(item.to)
+    (item) => !isSupportAgentRole || !RESTRICTED_ADMIN_ROUTES.includes(item.to)
   );
 
   const sidebarContent = (

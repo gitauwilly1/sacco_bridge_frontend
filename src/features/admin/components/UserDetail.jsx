@@ -14,12 +14,7 @@ import { ErrorState } from '@/components/feedback/ErrorState';
 import { toast } from 'sonner';
 import { adminApi } from '../api/adminApi';
 import { formatDate } from '../../../utils/format';
-
-const roleColors = {
-  PLATFORM_ADMIN: 'bg-danger/10 text-danger border-danger/20',
-  SUPPORT_AGENT: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
-  MEMBER: 'bg-sand text-slate border-sand-dark/20',
-};
+import { ROLE_COLORS } from '../../../utils/permissions';
 
 export default function UserDetail() {
   const { userId } = useParams();
@@ -87,7 +82,7 @@ export default function UserDetail() {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <Badge className={`${roleColors[primaryRole] || 'bg-sand text-slate border-sand-dark/20'} border`} variant="outline">
+                <Badge className={`${ROLE_COLORS[primaryRole] || 'bg-sand text-slate border-sand-dark/20'} border`} variant="outline">
                   {primaryRole?.replace('_', ' ') || 'Member'}
                 </Badge>
                 <Badge

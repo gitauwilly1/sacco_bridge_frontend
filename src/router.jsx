@@ -1,5 +1,5 @@
 import { createRouter, createRoute, createRootRoute, useNavigate, useParams } from '@tanstack/react-router';
-import React, { Suspense } from 'react';
+import React, { Suspense, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Plus, ChevronRight, Loader2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -68,6 +68,9 @@ const AdminSettlementList = React.lazy(() => import('./features/admin/components
 
 import { dashboardApi } from './features/dashboard/api/dashboardApi';
 import { getInitials, formatKES } from './utils/format';
+import useAuthStore from './stores/authStore';
+import { isAdmin, canAccessRoute } from './utils/permissions';
+import { FullPageLoader } from './components/feedback/LoadingState';
 
 // ── Padding wrapper for full-page list views ─────────────────────────────────
 function Padded({ children }) {
@@ -607,132 +610,151 @@ function LazyLoad({ children }) {
   return <Suspense fallback={<div className="flex items-center justify-center h-64"><Loader2 className="animate-spin size-8 text-primary" /></div>}>{children}</Suspense>;
 }
 
+function AdminGuard({ children, restricted }) {
+  const { user, isInitialized } = useAuthStore();
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (!isInitialized) return;
+    if (!isAdmin(user)) {
+      navigate({ to: '/' });
+      return;
+    }
+    if (restricted && !canAccessRoute(user, window.location.pathname)) {
+      navigate({ to: '/admin' });
+    }
+  }, [isInitialized, user, restricted]);
+  if (!isInitialized) return <FullPageLoader />;
+  if (!isAdmin(user)) return null;
+  if (restricted && !canAccessRoute(user, window.location.pathname)) return null;
+  return children;
+}
+
 // ── Admin Routes ──────────────────────────────────────────────────────────────
 const adminDashboardRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin',
-  component: () => <LazyLoad><AdminDashboard /></LazyLoad>,
+  component: () => <AdminGuard><LazyLoad><AdminDashboard /></LazyLoad></AdminGuard>,
 });
 
 const adminUsersRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/users',
-  component: () => <LazyLoad><UserList /></LazyLoad>,
+  component: () => <AdminGuard><LazyLoad><UserList /></LazyLoad></AdminGuard>,
 });
 
 const adminUserDetailRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/users/$userId',
-  component: () => <LazyLoad><UserDetail /></LazyLoad>,
+  component: () => <AdminGuard><LazyLoad><UserDetail /></LazyLoad></AdminGuard>,
 });
 
 const adminSaccosRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/saccos',
-  component: () => <LazyLoad><SACCOManagement /></LazyLoad>,
+  component: () => <AdminGuard><LazyLoad><SACCOManagement /></LazyLoad></AdminGuard>,
 });
 
 const adminSACCODetailRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/saccos/$saccoId',
-  component: () => <LazyLoad><AdminSACCODetail /></LazyLoad>,
+  component: () => <AdminGuard><LazyLoad><AdminSACCODetail /></LazyLoad></AdminGuard>,
 });
 
 const adminChamasRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/chamas',
-  component: () => <LazyLoad><ChamaOversight /></LazyLoad>,
+  component: () => <AdminGuard><LazyLoad><ChamaOversight /></LazyLoad></AdminGuard>,
 });
 
 const adminDisputesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/disputes',
-  component: () => <LazyLoad><AdminDisputeList /></LazyLoad>,
+  component: () => <AdminGuard><LazyLoad><AdminDisputeList /></LazyLoad></AdminGuard>,
 });
 
 const adminDisputeDetailRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/disputes/$disputeId',
-  component: () => <LazyLoad><AdminDisputeDetail /></LazyLoad>,
+  component: () => <AdminGuard><LazyLoad><AdminDisputeDetail /></LazyLoad></AdminGuard>,
 });
 
 const adminFraudRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/fraud',
-  component: () => <LazyLoad><FraudReview /></LazyLoad>,
+  component: () => <AdminGuard><LazyLoad><FraudReview /></LazyLoad></AdminGuard>,
 });
 
 const adminEscrowRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/escrow',
-  component: () => <LazyLoad><EscrowManagement /></LazyLoad>,
+  component: () => <AdminGuard><LazyLoad><EscrowManagement /></LazyLoad></AdminGuard>,
 });
 
 const adminAuditRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/audit',
-  component: () => <LazyLoad><AuditLog /></LazyLoad>,
+  component: () => <AdminGuard restricted><LazyLoad><AuditLog /></LazyLoad></AdminGuard>,
 });
 
 const adminWebhooksRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/webhooks',
-  component: () => <LazyLoad><WebhookManagement /></LazyLoad>,
+  component: () => <AdminGuard restricted><LazyLoad><WebhookManagement /></LazyLoad></AdminGuard>,
 });
 
 const adminLegalRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/legal',
-  component: () => <LazyLoad><LegalDocuments /></LazyLoad>,
+  component: () => <AdminGuard restricted><LazyLoad><LegalDocuments /></LazyLoad></AdminGuard>,
 });
 
 const adminReportsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/reports',
-  component: () => <LazyLoad><Reports /></LazyLoad>,
+  component: () => <AdminGuard><LazyLoad><Reports /></LazyLoad></AdminGuard>,
 });
 
 const adminDeletionRequestsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/deletion-requests',
-  component: () => <LazyLoad><DeletionRequests /></LazyLoad>,
+  component: () => <AdminGuard restricted><LazyLoad><DeletionRequests /></LazyLoad></AdminGuard>,
 });
 
 const adminDeletionRequestDetailRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/deletion-requests/$id',
-  component: () => <LazyLoad><DeletionRequestDetail /></LazyLoad>,
+  component: () => <AdminGuard restricted><LazyLoad><DeletionRequestDetail /></LazyLoad></AdminGuard>,
 });
 
 // Spec alias
 const adminDeletionsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/deletions',
-  component: () => <LazyLoad><DeletionRequests /></LazyLoad>,
+  component: () => <AdminGuard restricted><LazyLoad><DeletionRequests /></LazyLoad></AdminGuard>,
 });
 
 const adminKnowledgeRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/knowledge',
-  component: () => <LazyLoad><KnowledgeBase /></LazyLoad>,
+  component: () => <AdminGuard><LazyLoad><KnowledgeBase /></LazyLoad></AdminGuard>,
 });
 
 const adminVolumeRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/volume',
-  component: () => <LazyLoad><AdminVolumeAnalytics /></LazyLoad>,
+  component: () => <AdminGuard><LazyLoad><AdminVolumeAnalytics /></LazyLoad></AdminGuard>,
 });
 
 const adminUnderwritingRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/underwriting',
-  component: () => <LazyLoad><AdminUnderwriting /></LazyLoad>,
+  component: () => <AdminGuard><LazyLoad><AdminUnderwriting /></LazyLoad></AdminGuard>,
 });
 
 const adminSettlementsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/settlements',
-  component: () => <LazyLoad><AdminSettlementList /></LazyLoad>,
+  component: () => <AdminGuard><LazyLoad><AdminSettlementList /></LazyLoad></AdminGuard>,
 });
 
 // ── Catch-all 404 ─────────────────────────────────────────────────────────────
