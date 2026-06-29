@@ -4,10 +4,17 @@ import {
   LayoutDashboard, Users, Building2, HandCoins, AlertCircle,
   Shield, Lock, FileText, Webhook, BookOpen, BarChart3,
   ChevronLeft, ChevronRight, Menu, X, Search, ShieldCheck, Trash2, User,
+  LogOut, Settings,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from '@/components/ui/dropdown-menu';
 import useAuthStore from '../../../stores/authStore';
 
 const navItems = [
@@ -83,11 +90,14 @@ export default function AdminLayout({ children }) {
       {/* User */}
       {!collapsed && (
         <div className="p-3.5 border-t border-sand/40">
-          <div className="flex items-center gap-2.5">
+          <button
+            onClick={() => navigate({ to: '/profile' })}
+            className="flex items-center gap-2.5 w-full cursor-pointer hover:bg-sand-light/50 rounded-lg p-1.5 transition-colors"
+          >
             <div className="h-8 w-8 rounded-full bg-sand-light border border-sand/30 flex items-center justify-center flex-shrink-0 shadow-subtle">
               <User className="h-4 w-4 text-terracotta/60" />
             </div>
-            <div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-0 text-left">
               <p className="text-xs font-bold text-slate truncate">
                 {user?.first_name} {user?.last_name}
               </p>
@@ -95,7 +105,7 @@ export default function AdminLayout({ children }) {
                 Admin
               </Badge>
             </div>
-          </div>
+          </button>
         </div>
       )}
     </div>
@@ -135,11 +145,60 @@ export default function AdminLayout({ children }) {
           >
             <Menu className="h-5 w-5 text-slate" />
           </button>
-          <div className="flex-1" />
+
+          {/* Search */}
+          <div className="hidden sm:flex items-center flex-1 max-w-xs">
+            <div className="relative w-full">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+              <Input
+                placeholder="Search..."
+                className="pl-8 h-8 text-xs rounded-lg border-sand/40 bg-sand-light/30"
+              />
+            </div>
+          </div>
+
+          <div className="flex-1 sm:flex-none" />
+
+          {/* Admin badge */}
           <Badge className="bg-terracotta/10 text-terracotta border border-terracotta/20 text-[10px] font-extrabold rounded-full px-2.5 py-0.5 shadow-none">
             <ShieldCheck className="h-3.5 w-3.5 mr-1" />
             Admin Mode
           </Badge>
+
+          {/* User dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="flex items-center gap-2 p-1.5 hover:bg-sand-light rounded-lg transition-colors cursor-pointer">
+                <div className="h-7 w-7 rounded-full bg-sand-light border border-sand/30 flex items-center justify-center shadow-subtle">
+                  <User className="h-3.5 w-3.5 text-terracotta/60" />
+                </div>
+                <span className="hidden sm:block text-xs font-bold text-slate max-w-24 truncate">
+                  {user?.first_name}
+                </span>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-44">
+              <DropdownMenuItem onClick={() => navigate({ to: '/profile' })} className="cursor-pointer">
+                <User className="h-4 w-4 mr-2" />
+                Profile
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate({ to: '/profile/appearance' })} className="cursor-pointer">
+                <Settings className="h-4 w-4 mr-2" />
+                Settings
+              </DropdownMenuItem>
+              <div className="border-t border-sand/40 my-1" />
+              <DropdownMenuItem
+                onClick={async () => {
+                  await useAuthStore.getState().logout();
+                  navigate({ to: '/login' });
+                }}
+                className="cursor-pointer text-danger hover:text-danger"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Logout
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </header>
 
         {/* Content */}
