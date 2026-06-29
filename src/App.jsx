@@ -3,6 +3,8 @@ import { useLocation } from '@tanstack/react-router';
 import useAuthStore from './stores/authStore';
 import useUIStore from './stores/uiStore';
 import useSocketStore from './stores/socketStore';
+import { AuthProvider } from './contexts/AuthContext';
+import { ModeProvider } from './contexts/ModeContext';
 import { FullPageLoader } from './components/feedback/LoadingState';
 import { Toaster } from '@/components/ui/sonner';
 import AppShell from './components/layout/AppShell';
@@ -93,35 +95,40 @@ export default function App() {
     return <FullPageLoader />;
   }
 
-  // Unauthenticated → show AuthLayout (with correct view based on route)
-  if (!isAuthenticated) {
+  const renderApp = () => {
+    if (!isAuthenticated) {
+      return (
+        <div className="min-h-screen bg-surface dark:bg-surface">
+          <AuthLayout initialView={authView || 'login'} />
+          <Toaster position="top-center" richColors />
+        </div>
+      );
+    }
+    if (isAdmin) {
+      return (
+        <div className="min-h-screen bg-surface dark:bg-surface">
+          <AdminLayout>
+            <Outlet />
+          </AdminLayout>
+          <Toaster position="top-center" richColors />
+        </div>
+      );
+    }
     return (
       <div className="min-h-screen bg-surface dark:bg-surface">
-        <AuthLayout initialView={authView || 'login'} />
-        <Toaster position="top-center" richColors />
-      </div>
-    );
-  }
-
-  // Authenticated admin → AdminLayout wrapping Outlet
-  if (isAdmin) {
-    return (
-      <div className="min-h-screen bg-surface dark:bg-surface">
-        <AdminLayout>
+        <AppShell>
           <Outlet />
-        </AdminLayout>
+        </AppShell>
         <Toaster position="top-center" richColors />
       </div>
     );
-  }
+  };
 
-  // Authenticated regular user → AppShell wrapping Outlet
   return (
-    <div className="min-h-screen bg-surface dark:bg-surface">
-      <AppShell>
-        <Outlet />
-      </AppShell>
-      <Toaster position="top-center" richColors />
-    </div>
+    <AuthProvider>
+      <ModeProvider>
+        {renderApp()}
+      </ModeProvider>
+    </AuthProvider>
   );
 }
