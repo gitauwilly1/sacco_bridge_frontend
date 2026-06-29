@@ -1,8 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
+import { useMemo } from 'react';
 import {
   Users, Building2, HandCoins, AlertCircle,
   TrendingUp, Activity, ArrowRight, DollarSign,
+  UserPlus, RefreshCw, BarChart3,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -11,6 +13,55 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorState } from '@/components/feedback';
 import { adminApi } from '../api/adminApi';
 import { formatKES, formatTimeAgo } from '../../../utils/format';
+
+/* ── Simple SVG Line Chart ────────────────────────────────────────── */
+function SimpleLineChart({ data, width = 300, height = 96 }) {
+  if (!data?.length) return null;
+  const values = data.map((d) => Number(d.value ?? d.count ?? d));
+  const max = Math.max(...values, 1);
+  const min = Math.min(...values, 0);
+  const range = max - min || 1;
+  const stepX = width / (values.length - 1 || 1);
+
+  const points = values.map((v, i) =>
+    `${(i * stepX).toFixed(1)},${(height - ((v - min) / range) * (height - 8) - 4).toFixed(1)}`
+  ).join(' ');
+
+  return (
+    <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-24">
+      <polyline fill="none" stroke="#C67B5C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+        points={points} className="animate-draw-path" />
+      {values.map((v, i) => (
+        <circle key={i} cx={(i * stepX).toFixed(1)} cy={(height - ((v - min) / range) * (height - 8) - 4).toFixed(1)}
+          r="2.5" fill="#C67B5C" className="animate-fade-up" style={{ animationDelay: `${i * 0.05}s` }} />
+      ))}
+    </svg>
+  );
+}
+
+/* ── Simple SVG Bar Chart ─────────────────────────────────────────── */
+function SimpleBarChart({ data, width = 300, height = 96 }) {
+  if (!data?.length) return null;
+  const values = data.map((d) => Number(d.value ?? d.amount ?? d));
+  const max = Math.max(...values, 1);
+  const barWidth = Math.max(4, (width / values.length) * 0.6);
+  const gap = (width / values.length) * 0.4;
+
+  return (
+    <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-24">
+      {values.map((v, i) => {
+        const barH = ((v / max) * (height - 12));
+        const x = i * (barWidth + gap) + gap / 2;
+        const y = height - barH - 4;
+        return (
+          <rect key={i} x={x.toFixed(1)} y={y.toFixed(1)} width={barWidth.toFixed(1)}
+            height={barH.toFixed(1)} rx="3" fill="#2D8B4E" className="animate-fade-up"
+            style={{ animationDelay: `${i * 0.05}s` }} />
+        );
+      })}
+    </svg>
+  );
+}
 
 function DashboardSkeleton() {
   return (
@@ -44,23 +95,29 @@ export default function AdminDashboard() {
     isLoading,
     error,
     refetch,
+    dataUpdatedAt,
   } = useQuery({
     queryKey: ['admin-analytics'],
     queryFn: () =>
       adminApi.getPlatformAnalytics().then((r) => {
         const d = r.data.data || r.data;
-        // Normalize the nested backend shape into a flat object the component uses
         return {
           total_users: d.users?.total ?? d.summary?.total_users ?? d.total_users,
           active_chamas: d.chamas?.total_active ?? d.summary?.active_chamas ?? d.active_chamas,
           total_volume: d.settlements?.total_volume ?? d.summary?.total_volume ?? d.total_volume ?? '0',
           open_disputes: d.disputes?.open ?? d.summary?.open_disputes ?? d.open_disputes ?? 0,
           recent_activity: d.recent_activity || [],
-          // preserve raw for debugging
+          user_growth: d.user_growth || [],
+          volume_trend: d.volume_trend || [],
           _raw: d,
         };
       }),
+    refetchInterval: 30000,
   });
+
+  const lastRefreshed = dataUpdatedAt
+    ? new Date(dataUpdatedAt).toLocaleTimeString('en-KE', { hour: '2-digit', minute: '2-digit' })
+    : null;
 
   if (isLoading) return <DashboardSkeleton />;
   if (error) {
@@ -157,6 +214,55 @@ export default function AdminDashboard() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Charts Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* User Growth Sparkline */}
+        <Card className="border-sand bg-white shadow-subtle rounded-2xl">
+          <CardHeader className="pb-2 border-b border-sand/40">
+            <CardTitle className="text-xs font-bold text-slate uppercase tracking-wider flex items-center gap-2">
+              <UserPlus className="h-4 w-4 text-blue-500" />
+              User Growth
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-4">
+            {analytics?.user_growth?.length > 0 ? (
+              <SimpleLineChart data={analytics.user_growth} />
+            ) : (
+              <div className="h-24 flex items-center justify-center text-xs text-gray-400">
+                <TrendingUp className="h-5 w-5 mr-2 text-sand" />
+                No growth data available
+              </div>
+            )}
+            {lastRefreshed && (
+              <p className="text-[10px] text-gray-400 mt-3 text-right">
+                <RefreshCw className="h-3 w-3 inline mr-1" />
+                Updated {lastRefreshed}
+              </p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Volume Trend */}
+        <Card className="border-sand bg-white shadow-subtle rounded-2xl">
+          <CardHeader className="pb-2 border-b border-sand/40">
+            <CardTitle className="text-xs font-bold text-slate uppercase tracking-wider flex items-center gap-2">
+              <DollarSign className="h-4 w-4 text-success" />
+              Volume Trend (30d)
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-4">
+            {analytics?.volume_trend?.length > 0 ? (
+              <SimpleBarChart data={analytics.volume_trend} />
+            ) : (
+              <div className="h-24 flex items-center justify-center text-xs text-gray-400">
+                <BarChart3 className="h-5 w-5 mr-2 text-sand" />
+                No volume data available
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Recent Activity */}
       {analytics?.recent_activity?.length > 0 && (
