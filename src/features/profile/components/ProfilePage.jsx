@@ -29,7 +29,6 @@ import {
   SheetDescription,
 } from '@/components/ui/sheet';
 import { profileApi } from '../api/profileApi';
-import { getInitials } from '../../../utils/format';
 import EditProfileForm from './EditProfileForm';
 import SecuritySettings from './SecuritySettings';
 import NotificationPreferences from './NotificationPreferences';
@@ -442,9 +441,7 @@ export default function ProfilePage({ defaultTab = 'profile' }) {
               className="h-24 w-24 rounded-full object-cover"
             />
           ) : (
-            <span className="font-heading text-3xl font-extrabold text-terracotta">
-              {getInitials(profile?.first_name, profile?.last_name) || '?'}
-            </span>
+            <User className="h-10 w-10 text-terracotta/60" />
           )}
         </div>
         <h1 className="text-xl font-bold text-slate">
