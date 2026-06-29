@@ -15,12 +15,15 @@ import AuthLayout from './features/auth/components/AuthLayout';
 
 // Profile
 import ProfilePage from './features/profile/components/ProfilePage';
+import LoginHistory from './features/profile/components/LoginHistory';
+import DeviceManagement from './features/notifications/components/DeviceManagement';
 
 // Investments
 import SACCOList from './features/investments/components/SACCOList';
 import SACCODetail from './features/investments/components/SACCODetail';
 import HoldingsList from './features/investments/components/HoldingsList';
 import MyRequestsList from './features/investments/components/MyRequestsList';
+import RequestDetail from './features/investments/components/RequestDetail';
 import LiquidityRequestForm from './features/investments/components/LiquidityRequestForm';
 import OpportunityList from './features/investments/components/OpportunityList';
 import ConnectionList from './features/investments/components/ConnectionList';
@@ -56,6 +59,10 @@ import ShareReceipt from './features/receipts/components/ShareReceipt';
 // Help
 import HelpPage from './features/help/components/HelpPage';
 
+// Legal
+import SignatureVerify from './features/legal/components/SignatureVerify';
+import LegalAcceptance from './features/legal/components/LegalAcceptance';
+
 // Feedback
 import NotFound from './components/feedback/NotFound';
 
@@ -75,7 +82,11 @@ import WebhookManagement from './features/admin/components/WebhookManagement';
 import LegalDocuments from './features/admin/components/LegalDocuments';
 import Reports from './features/admin/components/Reports';
 import DeletionRequests from './features/admin/components/DeletionRequests';
+import DeletionRequestDetail from './features/admin/components/DeletionRequestDetail';
 import KnowledgeBase from './features/admin/components/KnowledgeBase';
+import AdminVolumeAnalytics from './features/admin/components/AdminVolumeAnalytics';
+import AdminUnderwriting from './features/admin/components/AdminUnderwriting';
+import AdminSettlementList from './features/admin/components/AdminSettlementList';
 
 import { dashboardApi } from './features/dashboard/api/dashboardApi';
 import { getInitials, formatKES } from './utils/format';
@@ -329,6 +340,18 @@ const profileConnectionDetailRoute = createRoute({
   component: ConnectionDetail,
 });
 
+const profileLoginHistoryRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/profile/login-history',
+  component: () => <Padded><LoginHistory /></Padded>,
+});
+
+const profileDevicesRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/profile/devices',
+  component: () => <Padded><DeviceManagement /></Padded>,
+});
+
 // Legacy settings/security aliases
 const settingsRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -459,6 +482,12 @@ const holdingsLegacyRoute = createRoute({
   component: () => <Padded><HoldingsList /></Padded>,
 });
 
+const investmentsRequestDetailRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/investments/requests/$requestId',
+  component: RequestDetail,
+});
+
 const investmentsRequestsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/investments/requests',
@@ -584,6 +613,18 @@ const helpRoute = createRoute({
   component: HelpPage,
 });
 
+const legalVerifyRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/legal/verify/$hash',
+  component: SignatureVerify,
+});
+
+const legalDocumentsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/legal/documents',
+  component: () => <Padded><LegalAcceptance /></Padded>,
+});
+
 // ── Admin Routes ──────────────────────────────────────────────────────────────
 const adminDashboardRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -675,6 +716,12 @@ const adminDeletionRequestsRoute = createRoute({
   component: DeletionRequests,
 });
 
+const adminDeletionRequestDetailRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/admin/deletion-requests/$id',
+  component: DeletionRequestDetail,
+});
+
 // Spec alias
 const adminDeletionsRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -686,6 +733,24 @@ const adminKnowledgeRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/knowledge',
   component: KnowledgeBase,
+});
+
+const adminVolumeRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/admin/volume',
+  component: AdminVolumeAnalytics,
+});
+
+const adminUnderwritingRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/admin/underwriting',
+  component: AdminUnderwriting,
+});
+
+const adminSettlementsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/admin/settlements',
+  component: AdminSettlementList,
 });
 
 // ── Catch-all 404 ─────────────────────────────────────────────────────────────
@@ -719,6 +784,7 @@ const routeTree = rootRoute.addChildren([
   profileVerificationRoute,
   profileConnectionsRoute,
   profileConnectionDetailRoute,
+  profileLoginHistoryRoute,
   settingsRoute,
   securityRoute,
 
@@ -743,6 +809,7 @@ const routeTree = rootRoute.addChildren([
   investmentsSaccoSellRoute,
   holdingsRoute,
   holdingsLegacyRoute,
+  investmentsRequestDetailRoute,
   investmentsRequestsRoute,
   investmentsSellRoute,
   opportunitiesRoute,
@@ -772,6 +839,9 @@ const routeTree = rootRoute.addChildren([
   // Help
   helpRoute,
 
+  // Legal
+  legalVerifyRoute,
+
   // Admin
   adminDashboardRoute,
   adminUsersRoute,
@@ -788,8 +858,18 @@ const routeTree = rootRoute.addChildren([
   adminLegalRoute,
   adminReportsRoute,
   adminDeletionRequestsRoute,
+  adminDeletionRequestDetailRoute,
   adminDeletionsRoute,
   adminKnowledgeRoute,
+  adminVolumeRoute,
+  adminUnderwritingRoute,
+  adminSettlementsRoute,
+
+  // Legal
+  legalDocumentsRoute,
+
+  // Profile sub pages
+  profileDevicesRoute,
 
   // 404
   catchAllRoute,
