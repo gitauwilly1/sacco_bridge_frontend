@@ -18,6 +18,7 @@ import { getInitials } from '../../utils/format';
 import NotificationBell from '../../features/notifications/components/NotificationBell';
 import BridgeLogo from '../brand/BridgeLogo';
 import Footer from './Footer';
+import LanguageSwitcher from './LanguageSwitcher';
 
 // ── Primary action FAB config (context-aware) ─────────────────────────────
 function usePrimaryAction(activeMode, navigate) {
@@ -113,7 +114,7 @@ export default function AppShell({ children }) {
       )}
 
       {/* ── Header ── */}
-      <header className="sticky top-0 z-50 border-b border-sand bg-white/80 backdrop-blur-lg dark:border-slate-700 dark:bg-slate-900/85">
+      <header className="sticky top-0 z-50 glass-header">
         <div className="flex h-14 items-center justify-between px-4">
 
           {/* Left: hamburger + wordmark */}
@@ -172,6 +173,7 @@ export default function AppShell({ children }) {
 
           {/* Right: notifications + avatar */}
           <div className="flex items-center gap-1.5">
+            <LanguageSwitcher />
             <button
               id="header-help-btn"
               onClick={() => navigate({ to: '/help' })}
@@ -223,6 +225,9 @@ export default function AppShell({ children }) {
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate({ to: '/profile/security' })} className="gap-2.5 cursor-pointer">
                   <Shield className="h-4 w-4 text-gray-400" /> Security
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate({ to: '/legal/documents' })} className="gap-2.5 cursor-pointer">
+                  <Shield className="h-4 w-4 text-gray-400" /> Legal
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate({ to: '/help' })} className="gap-2.5 cursor-pointer">
                   <HelpCircle className="h-4 w-4 text-gray-400" /> Help
@@ -430,6 +435,9 @@ export default function AppShell({ children }) {
                 <HelpCircle className="h-5 w-5 text-gray-400" />
                 Help & Support
               </button>
+              <div className="flex items-center justify-center py-2 border-t border-sand/40 mt-2 pt-2">
+                <LanguageSwitcher />
+              </div>
               <button
                 id="sidebar-logout-btn"
                 onClick={handleLogout}
