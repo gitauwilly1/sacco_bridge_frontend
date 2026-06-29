@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useNavigate } from '@tanstack/react-router';
+import { useNavigate, useParams } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, Save, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -52,6 +52,7 @@ const liquiditySchema = z.object({
 
 export default function LiquidityRequestForm() {
   const navigate = useNavigate();
+  const { saccoId } = useParams({ strict: false });
   const [isLoading, setIsLoading] = useState(false);
 
   const {
@@ -78,6 +79,18 @@ export default function LiquidityRequestForm() {
       notes: '',
     },
   });
+
+  // Pre-select SACCO when navigating from SACCO detail page
+  useEffect(() => {
+    if (saccoId && holdings.length > 0) {
+      const matchingHolding = holdings.find(
+        (h) => h.sacco_id?.toString() === saccoId
+      );
+      if (matchingHolding) {
+        form.setValue('sacco_id', saccoId);
+      }
+    }
+  }, [saccoId, holdings, form]);
 
   const watchedSaccoId = form.watch('sacco_id');
   const watchedShareClassId = form.watch('share_class_id');
