@@ -14,7 +14,7 @@ export const transactionApi = {
 
   // Disputes
   raiseDispute: (id, data) => apiClient.post(`/transactions/settlements/${id}/dispute/`, data),
-  getMyDisputes: () => apiClient.get('/transactions/disputes/mine/'),
+  getMyDisputes: (params) => apiClient.get('/transactions/disputes/mine/', { params }),
   getDisputeDetail: (id) => apiClient.get(`/transactions/disputes/${id}/`),
 
   // Validation
