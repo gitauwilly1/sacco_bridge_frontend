@@ -40,7 +40,7 @@ export const profileApi = {
     apiClient.post('/auth/verify/resend/', { contact, method }),
 
   // Scoring
-  getMyScore: () => apiClient.get('/scoring/my-score/'),
+  getMyScore: (params) => apiClient.get('/scoring/my-score/', { params }),
 
   // Digital Signatures
   requestSignature: (data) => apiClient.post('/legal/sign/request/', data),

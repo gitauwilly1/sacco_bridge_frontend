@@ -74,6 +74,20 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules/react-dom') || id.includes('node_modules/react/')) return 'vendor-react';
+          if (id.includes('node_modules/@tanstack/react-router') || id.includes('node_modules/@tanstack/react-query')) return 'vendor-tanstack';
+          if (id.includes('node_modules/lucide-react')) return 'vendor-icons';
+          if (id.includes('node_modules/radix-ui')) return 'vendor-radix';
+          if (id.includes('node_modules/recharts') || id.includes('node_modules/date-fns')) return 'vendor-charts';
+          if (id.includes('node_modules/axios') || id.includes('node_modules/zustand') || id.includes('node_modules/zod') || id.includes('node_modules/react-hook-form')) return 'vendor-utils';
+        },
+      },
+    },
+  },
   server: {
     port: 3000,
     proxy: {

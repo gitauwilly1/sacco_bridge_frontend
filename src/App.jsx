@@ -1,15 +1,16 @@
-import { useEffect } from 'react';
+import { useEffect, lazy, Suspense } from 'react';
+const AuthLayout = lazy(() => import('./features/auth/components/AuthLayout'));
 import { useLocation } from '@tanstack/react-router';
 import useAuthStore from './stores/authStore';
 import useUIStore from './stores/uiStore';
 import useSocketStore from './stores/socketStore';
 import { AuthProvider } from './contexts/AuthContext';
 import { ModeProvider } from './contexts/ModeContext';
+import { Loader2 } from 'lucide-react';
 import { FullPageLoader } from './components/feedback/LoadingState';
 import { Toaster } from '@/components/ui/sonner';
 import AppShell from './components/layout/AppShell';
 import AdminLayout from './features/admin/components/AdminLayout';
-import AuthLayout from './features/auth/components/AuthLayout';
 import { Outlet, useNavigate } from '@tanstack/react-router';
 
 // Auth routes and the view they map to in AuthLayout
@@ -99,7 +100,9 @@ export default function App() {
     if (!isAuthenticated) {
       return (
         <div className="min-h-screen bg-surface dark:bg-surface">
-          <AuthLayout initialView={authView || 'login'} />
+          <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><Loader2 className="animate-spin size-8 text-primary" /></div>}>
+            <AuthLayout initialView={authView || 'login'} />
+          </Suspense>
           <Toaster position="top-center" richColors />
         </div>
       );

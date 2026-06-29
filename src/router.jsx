@@ -1,92 +1,70 @@
 import { createRouter, createRoute, createRootRoute, useNavigate, useParams } from '@tanstack/react-router';
-import React from 'react';
+import React, { Suspense } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Plus, ChevronRight } from 'lucide-react';
+import { Plus, ChevronRight, Loader2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import App from './App';
 
-// ── Feature imports ─────────────────────────────────────────────────────────
-import DashboardHome from './features/dashboard/components/DashboardHome';
+// ── Feature imports (lazy loaded for code splitting) ────────────────────────
+const DashboardHome = React.lazy(() => import('./features/dashboard/components/DashboardHome'));
+const AuthLayout = React.lazy(() => import('./features/auth/components/AuthLayout'));
+const ProfilePage = React.lazy(() => import('./features/profile/components/ProfilePage'));
+const LoginHistory = React.lazy(() => import('./features/profile/components/LoginHistory'));
+const DeviceManagement = React.lazy(() => import('./features/notifications/components/DeviceManagement'));
+const SACCOList = React.lazy(() => import('./features/investments/components/SACCOList'));
+const SACCODetail = React.lazy(() => import('./features/investments/components/SACCODetail'));
+const HoldingsList = React.lazy(() => import('./features/investments/components/HoldingsList'));
+const MyRequestsList = React.lazy(() => import('./features/investments/components/MyRequestsList'));
+const RequestDetail = React.lazy(() => import('./features/investments/components/RequestDetail'));
+const LiquidityRequestForm = React.lazy(() => import('./features/investments/components/LiquidityRequestForm'));
+const OpportunityList = React.lazy(() => import('./features/investments/components/OpportunityList'));
+const ConnectionList = React.lazy(() => import('./features/investments/components/ConnectionList'));
+const ConnectionDetail = React.lazy(() => import('./features/investments/components/ConnectionDetail'));
+const BuySharesForm = React.lazy(() => import('./features/investments/components/BuySharesForm'));
+const PortfolioSummary = React.lazy(() => import('./features/investments/components/PortfolioSummary'));
+const SACCOMarketChart = React.lazy(() => import('./features/investments/components/SACCOMarketChart'));
+const ChamaDetail = React.lazy(() => import('./features/chamas/components/ChamaDetail'));
+const ChamaForm = React.lazy(() => import('./features/chamas/components/ChamaForm'));
+const RecordContribution = React.lazy(() => import('./features/chamas/components/RecordContribution'));
+const BulkContribution = React.lazy(() => import('./features/chamas/components/BulkContribution'));
+const LoanApplication = React.lazy(() => import('./features/chamas/components/LoanApplication'));
+const TransactionList = React.lazy(() => import('./features/transactions/components/TransactionList'));
+const TransactionDetail = React.lazy(() => import('./features/transactions/components/TransactionDetail'));
+const LedgerList = React.lazy(() => import('./features/transactions/components/LedgerList'));
+const DisputeList = React.lazy(() => import('./features/transactions/components/DisputeList'));
+const DisputeDetail = React.lazy(() => import('./features/transactions/components/DisputeDetail'));
+const RaiseDisputeForm = React.lazy(() => import('./features/transactions/components/RaiseDisputeForm'));
+const NotificationList = React.lazy(() => import('./features/notifications/components/NotificationList'));
+const ChatScreen = React.lazy(() => import('./features/chatbot/components/ChatScreen'));
+const ShareReceipt = React.lazy(() => import('./features/receipts/components/ShareReceipt'));
+const HelpPage = React.lazy(() => import('./features/help/components/HelpPage'));
+const SignatureVerify = React.lazy(() => import('./features/legal/components/SignatureVerify'));
+const LegalAcceptance = React.lazy(() => import('./features/legal/components/LegalAcceptance'));
+const NotFound = React.lazy(() => import('./components/feedback/NotFound'));
 
-// Auth
-import AuthLayout from './features/auth/components/AuthLayout';
-
-// Profile
-import ProfilePage from './features/profile/components/ProfilePage';
-import LoginHistory from './features/profile/components/LoginHistory';
-import DeviceManagement from './features/notifications/components/DeviceManagement';
-
-// Investments
-import SACCOList from './features/investments/components/SACCOList';
-import SACCODetail from './features/investments/components/SACCODetail';
-import HoldingsList from './features/investments/components/HoldingsList';
-import MyRequestsList from './features/investments/components/MyRequestsList';
-import RequestDetail from './features/investments/components/RequestDetail';
-import LiquidityRequestForm from './features/investments/components/LiquidityRequestForm';
-import OpportunityList from './features/investments/components/OpportunityList';
-import ConnectionList from './features/investments/components/ConnectionList';
-import ConnectionDetail from './features/investments/components/ConnectionDetail';
-import BuySharesForm from './features/investments/components/BuySharesForm';
-import PortfolioSummary from './features/investments/components/PortfolioSummary';
-import SACCOMarketChart from './features/investments/components/SACCOMarketChart';
-
-// Chamas
-import ChamaDetail from './features/chamas/components/ChamaDetail';
-import ChamaForm from './features/chamas/components/ChamaForm';
-import RecordContribution from './features/chamas/components/RecordContribution';
-import BulkContribution from './features/chamas/components/BulkContribution';
-import LoanApplication from './features/chamas/components/LoanApplication';
-
-// Transactions
-import TransactionList from './features/transactions/components/TransactionList';
-import TransactionDetail from './features/transactions/components/TransactionDetail';
-import LedgerList from './features/transactions/components/LedgerList';
-import DisputeList from './features/transactions/components/DisputeList';
-import DisputeDetail from './features/transactions/components/DisputeDetail';
-import RaiseDisputeForm from './features/transactions/components/RaiseDisputeForm';
-
-// Notifications
-import NotificationList from './features/notifications/components/NotificationList';
-
-// Chatbot
-import ChatScreen from './features/chatbot/components/ChatScreen';
-
-// Receipts
-import ShareReceipt from './features/receipts/components/ShareReceipt';
-
-// Help
-import HelpPage from './features/help/components/HelpPage';
-
-// Legal
-import SignatureVerify from './features/legal/components/SignatureVerify';
-import LegalAcceptance from './features/legal/components/LegalAcceptance';
-
-// Feedback
-import NotFound from './components/feedback/NotFound';
-
-// Admin
-import AdminDashboard from './features/admin/components/AdminDashboard';
-import UserList from './features/admin/components/UserList';
-import UserDetail from './features/admin/components/UserDetail';
-import SACCOManagement from './features/admin/components/SACCOManagement';
-import AdminSACCODetail from './features/admin/components/AdminSACCODetail';
-import ChamaOversight from './features/admin/components/ChamaOversight';
-import AdminDisputeList from './features/admin/components/AdminDisputeList';
-import AdminDisputeDetail from './features/admin/components/AdminDisputeDetail';
-import FraudReview from './features/admin/components/FraudReview';
-import EscrowManagement from './features/admin/components/EscrowManagement';
-import AuditLog from './features/admin/components/AuditLog';
-import WebhookManagement from './features/admin/components/WebhookManagement';
-import LegalDocuments from './features/admin/components/LegalDocuments';
-import Reports from './features/admin/components/Reports';
-import DeletionRequests from './features/admin/components/DeletionRequests';
-import DeletionRequestDetail from './features/admin/components/DeletionRequestDetail';
-import KnowledgeBase from './features/admin/components/KnowledgeBase';
-import AdminVolumeAnalytics from './features/admin/components/AdminVolumeAnalytics';
-import AdminUnderwriting from './features/admin/components/AdminUnderwriting';
-import AdminSettlementList from './features/admin/components/AdminSettlementList';
+// Admin (lazy loaded for code splitting)
+const AdminDashboard = React.lazy(() => import('./features/admin/components/AdminDashboard'));
+const UserList = React.lazy(() => import('./features/admin/components/UserList'));
+const UserDetail = React.lazy(() => import('./features/admin/components/UserDetail'));
+const SACCOManagement = React.lazy(() => import('./features/admin/components/SACCOManagement'));
+const AdminSACCODetail = React.lazy(() => import('./features/admin/components/AdminSACCODetail'));
+const ChamaOversight = React.lazy(() => import('./features/admin/components/ChamaOversight'));
+const AdminDisputeList = React.lazy(() => import('./features/admin/components/AdminDisputeList'));
+const AdminDisputeDetail = React.lazy(() => import('./features/admin/components/AdminDisputeDetail'));
+const FraudReview = React.lazy(() => import('./features/admin/components/FraudReview'));
+const EscrowManagement = React.lazy(() => import('./features/admin/components/EscrowManagement'));
+const AuditLog = React.lazy(() => import('./features/admin/components/AuditLog'));
+const WebhookManagement = React.lazy(() => import('./features/admin/components/WebhookManagement'));
+const LegalDocuments = React.lazy(() => import('./features/admin/components/LegalDocuments'));
+const Reports = React.lazy(() => import('./features/admin/components/Reports'));
+const DeletionRequests = React.lazy(() => import('./features/admin/components/DeletionRequests'));
+const DeletionRequestDetail = React.lazy(() => import('./features/admin/components/DeletionRequestDetail'));
+const KnowledgeBase = React.lazy(() => import('./features/admin/components/KnowledgeBase'));
+const AdminVolumeAnalytics = React.lazy(() => import('./features/admin/components/AdminVolumeAnalytics'));
+const AdminUnderwriting = React.lazy(() => import('./features/admin/components/AdminUnderwriting'));
+const AdminSettlementList = React.lazy(() => import('./features/admin/components/AdminSettlementList'));
 
 import { dashboardApi } from './features/dashboard/api/dashboardApi';
 import { getInitials, formatKES } from './utils/format';
@@ -239,149 +217,149 @@ const rootRoute = createRootRoute({
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
-  component: DashboardHome,
+  component: () => <LazyLoad><DashboardHome /></LazyLoad>,
 });
 
 // ── Auth Routes ──────────────────────────────────────────────────────────────
 const loginRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/login',
-  component: () => <AuthLayout initialView="login" />,
+  component: () => <LazyLoad><AuthLayout initialView="login" /></LazyLoad>,
 });
 
 const registerRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/register',
-  component: () => <AuthLayout initialView="register" />,
+  component: () => <LazyLoad><AuthLayout initialView="register" /></LazyLoad>,
 });
 
 const forgotPasswordRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/forgot-password',
-  component: () => <AuthLayout initialView="forgot" />,
+  component: () => <LazyLoad><AuthLayout initialView="forgot" /></LazyLoad>,
 });
 
 const verifyEmailRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/verify-email',
-  component: () => <AuthLayout initialView="verify" />,
+  component: () => <LazyLoad><AuthLayout initialView="verify" /></LazyLoad>,
 });
 
 const verify2FARoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/verify-2fa',
-  component: () => <AuthLayout initialView="verify-2fa" />,
+  component: () => <LazyLoad><AuthLayout initialView="verify-2fa" /></LazyLoad>,
 });
 
 // ── Profile Routes ───────────────────────────────────────────────────────────
 const profileRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/profile',
-  component: ProfilePage,
+  component: () => <LazyLoad><ProfilePage /></LazyLoad>,
 });
 
 const profileEditRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/profile/edit',
-  component: () => <ProfilePage defaultTab="profile" />,
+  component: () => <LazyLoad><ProfilePage defaultTab="profile" /></LazyLoad>,
 });
 
 const profileSecurityRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/profile/security',
-  component: () => <ProfilePage defaultTab="security" />,
+  component: () => <LazyLoad><ProfilePage defaultTab="security" /></LazyLoad>,
 });
 
 const profileNotificationsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/profile/notifications',
-  component: () => <ProfilePage defaultTab="notifications" />,
+  component: () => <LazyLoad><ProfilePage defaultTab="notifications" /></LazyLoad>,
 });
 
 const profileSessionsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/profile/sessions',
-  component: () => <ProfilePage defaultTab="sessions" />,
+  component: () => <LazyLoad><ProfilePage defaultTab="sessions" /></LazyLoad>,
 });
 
 const profileAppearanceRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/profile/appearance',
-  component: () => <ProfilePage defaultTab="appearance" />,
+  component: () => <LazyLoad><ProfilePage defaultTab="appearance" /></LazyLoad>,
 });
 
 const profileDataRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/profile/data',
-  component: () => <ProfilePage defaultTab="data" />,
+  component: () => <LazyLoad><ProfilePage defaultTab="data" /></LazyLoad>,
 });
 
 const profileLimitsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/profile/limits',
-  component: () => <ProfilePage defaultTab="limits" />,
+  component: () => <LazyLoad><ProfilePage defaultTab="limits" /></LazyLoad>,
 });
 
 const profileVerificationRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/profile/verification',
-  component: () => <ProfilePage defaultTab="profile" />,
+  component: () => <LazyLoad><ProfilePage defaultTab="profile" /></LazyLoad>,
 });
 
 const profileConnectionsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/profile/connections',
-  component: () => <Padded><ConnectionList /></Padded>,
+  component: () => <LazyLoad><Padded><ConnectionList /></Padded></LazyLoad>,
 });
 
 const profileConnectionDetailRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/profile/connections/$connectionId',
-  component: ConnectionDetail,
+  component: () => <LazyLoad><ConnectionDetail /></LazyLoad>,
 });
 
 const profileLoginHistoryRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/profile/login-history',
-  component: () => <Padded><LoginHistory /></Padded>,
+  component: () => <LazyLoad><Padded><LoginHistory /></Padded></LazyLoad>,
 });
 
 const profileDevicesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/profile/devices',
-  component: () => <Padded><DeviceManagement /></Padded>,
+  component: () => <LazyLoad><Padded><DeviceManagement /></Padded></LazyLoad>,
 });
 
 // Legacy settings/security aliases
 const settingsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/settings',
-  component: () => <ProfilePage defaultTab="appearance" />,
+  component: () => <LazyLoad><ProfilePage defaultTab="appearance" /></LazyLoad>,
 });
 
 const securityRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/security',
-  component: () => <ProfilePage defaultTab="security" />,
+  component: () => <LazyLoad><ProfilePage defaultTab="security" /></LazyLoad>,
 });
 
 // ── Chama Routes ─────────────────────────────────────────────────────────────
 const chamasRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/chamas',
-  component: ChamaListPage,
+  component: () => <LazyLoad><ChamaListPage /></LazyLoad>,
 });
 
 const newChamaRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/chamas/new',
-  component: ChamaForm,
+  component: () => <LazyLoad><ChamaForm /></LazyLoad>,
 });
 
 const chamaDetailRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/chamas/$chamaId',
-  component: ChamaDetail,
+  component: () => <LazyLoad><ChamaDetail /></LazyLoad>,
 });
 
 // Chama sub-routes — these render ChamaDetail with the correct active tab
@@ -393,371 +371,375 @@ function ChamaDetailWithTab({ tab }) {
 const chamaMembersRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/chamas/$chamaId/members',
-  component: () => <ChamaDetailWithTab tab="members" />,
+  component: () => <LazyLoad><ChamaDetailWithTab tab="members" /></LazyLoad>,
 });
 
 const chamaContributionsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/chamas/$chamaId/contributions',
-  component: () => <ChamaDetailWithTab tab="contributions" />,
+  component: () => <LazyLoad><ChamaDetailWithTab tab="contributions" /></LazyLoad>,
 });
 
 const chamaLoansRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/chamas/$chamaId/loans',
-  component: () => <ChamaDetailWithTab tab="loans" />,
+  component: () => <LazyLoad><ChamaDetailWithTab tab="loans" /></LazyLoad>,
 });
 
 const chamaMeetingsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/chamas/$chamaId/meetings',
-  component: () => <ChamaDetailWithTab tab="meetings" />,
+  component: () => <LazyLoad><ChamaDetailWithTab tab="meetings" /></LazyLoad>,
 });
 
 const chamaPollsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/chamas/$chamaId/polls',
-  component: () => <ChamaDetailWithTab tab="polls" />,
+  component: () => <LazyLoad><ChamaDetailWithTab tab="polls" /></LazyLoad>,
 });
 
 const chamaContributeRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/chamas/$chamaId/contribute',
-  component: RecordContribution,
+  component: () => <LazyLoad><RecordContribution /></LazyLoad>,
 });
 
 const chamaBulkContributeRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/chamas/$chamaId/bulk-contribute',
-  component: BulkContribution,
+  component: () => <LazyLoad><BulkContribution /></LazyLoad>,
 });
 
 const chamaLoanRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/chamas/$chamaId/loan',
-  component: LoanApplication,
+  component: () => <LazyLoad><LoanApplication /></LazyLoad>,
 });
 
 // ── Investment Routes ─────────────────────────────────────────────────────────
 const investmentsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/investments',
-  component: InvestmentDashboard,
+  component: () => <LazyLoad><InvestmentDashboard /></LazyLoad>,
 });
 
 const investmentsSaccosRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/investments/saccos',
-  component: () => <Padded><SACCOList /></Padded>,
+  component: () => <LazyLoad><Padded><SACCOList /></Padded></LazyLoad>,
 });
 
 const saccoDetailRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/investments/saccos/$saccoId',
-  component: SACCODetail,
+  component: () => <LazyLoad><SACCODetail /></LazyLoad>,
 });
 
 const buySharesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/investments/saccos/$saccoId/buy',
-  component: BuySharesForm,
+  component: () => <LazyLoad><BuySharesForm /></LazyLoad>,
 });
 
 const investmentsSaccoSellRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/investments/saccos/$saccoId/sell',
-  component: LiquidityRequestForm,
+  component: () => <LazyLoad><LiquidityRequestForm /></LazyLoad>,
 });
 
 const holdingsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/investments/holdings',
-  component: () => <Padded><HoldingsList /></Padded>,
+  component: () => <LazyLoad><Padded><HoldingsList /></Padded></LazyLoad>,
 });
 
 // Legacy alias
 const holdingsLegacyRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/holdings',
-  component: () => <Padded><HoldingsList /></Padded>,
+  component: () => <LazyLoad><Padded><HoldingsList /></Padded></LazyLoad>,
 });
 
 const investmentsRequestDetailRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/investments/requests/$requestId',
-  component: RequestDetail,
+  component: () => <LazyLoad><RequestDetail /></LazyLoad>,
 });
 
 const investmentsRequestsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/investments/requests',
-  component: () => <Padded><MyRequestsList /></Padded>,
+  component: () => <LazyLoad><Padded><MyRequestsList /></Padded></LazyLoad>,
 });
 
 const investmentsSellRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/investments/sell',
-  component: LiquidityRequestForm,
+  component: () => <LazyLoad><LiquidityRequestForm /></LazyLoad>,
 });
 
 const opportunitiesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/investments/opportunities',
-  component: () => <Padded><OpportunityList /></Padded>,
+  component: () => <LazyLoad><Padded><OpportunityList /></Padded></LazyLoad>,
 });
 
 const connectionsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/investments/connections',
-  component: () => <Padded><ConnectionList /></Padded>,
+  component: () => <LazyLoad><Padded><ConnectionList /></Padded></LazyLoad>,
 });
 
 const connectionDetailRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/investments/connections/$connectionId',
-  component: ConnectionDetail,
+  component: () => <LazyLoad><ConnectionDetail /></LazyLoad>,
 });
 
 // ── Transaction Routes ────────────────────────────────────────────────────────
 const activityRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/activity',
-  component: () => <Padded><TransactionList /></Padded>,
+  component: () => <LazyLoad><Padded><TransactionList /></Padded></LazyLoad>,
 });
 
 const transactionsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/transactions',
-  component: () => <Padded><TransactionList /></Padded>,
+  component: () => <LazyLoad><Padded><TransactionList /></Padded></LazyLoad>,
 });
 
 const transactionDetailRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/transactions/$settlementId',
-  component: TransactionDetail,
+  component: () => <LazyLoad><TransactionDetail /></LazyLoad>,
 });
 
 const transactionRaiseDisputeRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/transactions/$settlementId/dispute',
-  component: RaiseDisputeForm,
+  component: () => <LazyLoad><RaiseDisputeForm /></LazyLoad>,
 });
 
 const disputeListRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/transactions/disputes',
-  component: () => <Padded><DisputeList /></Padded>,
+  component: () => <LazyLoad><Padded><DisputeList /></Padded></LazyLoad>,
 });
 
 // Legacy alias
 const disputeListLegacyRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/disputes',
-  component: () => <Padded><DisputeList /></Padded>,
+  component: () => <LazyLoad><Padded><DisputeList /></Padded></LazyLoad>,
 });
 
 const disputeDetailRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/disputes/$disputeId',
-  component: DisputeDetail,
+  component: () => <LazyLoad><DisputeDetail /></LazyLoad>,
 });
 
 const ledgerRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/ledger',
-  component: () => <Padded><LedgerList /></Padded>,
+  component: () => <LazyLoad><Padded><LedgerList /></Padded></LazyLoad>,
 });
 
 const shareReceiptRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/receipts/$receiptId',
-  component: ShareReceipt,
+  component: () => <LazyLoad><ShareReceipt /></LazyLoad>,
 });
 
 // ── Notification Routes ───────────────────────────────────────────────────────
 const notificationsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/notifications',
-  component: () => <Padded><NotificationList /></Padded>,
+  component: () => <LazyLoad><Padded><NotificationList /></Padded></LazyLoad>,
 });
 
 const notificationPreferencesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/notifications/preferences',
-  component: () => <ProfilePage defaultTab="notifications" />,
+  component: () => <LazyLoad><ProfilePage defaultTab="notifications" /></LazyLoad>,
 });
 
 // ── Chat / Assistant Routes ───────────────────────────────────────────────────
 const assistantRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/assistant',
-  component: ChatScreen,
+  component: () => <LazyLoad><ChatScreen /></LazyLoad>,
 });
 
 const chatRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/chat',
-  component: ChatScreen,
+  component: () => <LazyLoad><ChatScreen /></LazyLoad>,
 });
 
 const chatSessionRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/chat/$sessionId',
-  component: ChatScreen,
+  component: () => <LazyLoad><ChatScreen /></LazyLoad>,
 });
 
 // ── Help Route ────────────────────────────────────────────────────────────────
 const helpRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/help',
-  component: HelpPage,
+  component: () => <LazyLoad><HelpPage /></LazyLoad>,
 });
 
 const legalVerifyRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/legal/verify/$hash',
-  component: SignatureVerify,
+  component: () => <LazyLoad><SignatureVerify /></LazyLoad>,
 });
 
 const legalDocumentsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/legal/documents',
-  component: () => <Padded><LegalAcceptance /></Padded>,
+  component: () => <LazyLoad><Padded><LegalAcceptance /></Padded></LazyLoad>,
 });
+
+function LazyLoad({ children }) {
+  return <Suspense fallback={<div className="flex items-center justify-center h-64"><Loader2 className="animate-spin size-8 text-primary" /></div>}>{children}</Suspense>;
+}
 
 // ── Admin Routes ──────────────────────────────────────────────────────────────
 const adminDashboardRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin',
-  component: AdminDashboard,
+  component: () => <LazyLoad><AdminDashboard /></LazyLoad>,
 });
 
 const adminUsersRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/users',
-  component: UserList,
+  component: () => <LazyLoad><UserList /></LazyLoad>,
 });
 
 const adminUserDetailRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/users/$userId',
-  component: UserDetail,
+  component: () => <LazyLoad><UserDetail /></LazyLoad>,
 });
 
 const adminSaccosRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/saccos',
-  component: SACCOManagement,
+  component: () => <LazyLoad><SACCOManagement /></LazyLoad>,
 });
 
 const adminSACCODetailRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/saccos/$saccoId',
-  component: AdminSACCODetail,
+  component: () => <LazyLoad><AdminSACCODetail /></LazyLoad>,
 });
 
 const adminChamasRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/chamas',
-  component: ChamaOversight,
+  component: () => <LazyLoad><ChamaOversight /></LazyLoad>,
 });
 
 const adminDisputesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/disputes',
-  component: AdminDisputeList,
+  component: () => <LazyLoad><AdminDisputeList /></LazyLoad>,
 });
 
 const adminDisputeDetailRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/disputes/$disputeId',
-  component: AdminDisputeDetail,
+  component: () => <LazyLoad><AdminDisputeDetail /></LazyLoad>,
 });
 
 const adminFraudRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/fraud',
-  component: FraudReview,
+  component: () => <LazyLoad><FraudReview /></LazyLoad>,
 });
 
 const adminEscrowRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/escrow',
-  component: EscrowManagement,
+  component: () => <LazyLoad><EscrowManagement /></LazyLoad>,
 });
 
 const adminAuditRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/audit',
-  component: AuditLog,
+  component: () => <LazyLoad><AuditLog /></LazyLoad>,
 });
 
 const adminWebhooksRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/webhooks',
-  component: WebhookManagement,
+  component: () => <LazyLoad><WebhookManagement /></LazyLoad>,
 });
 
 const adminLegalRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/legal',
-  component: LegalDocuments,
+  component: () => <LazyLoad><LegalDocuments /></LazyLoad>,
 });
 
 const adminReportsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/reports',
-  component: Reports,
+  component: () => <LazyLoad><Reports /></LazyLoad>,
 });
 
 const adminDeletionRequestsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/deletion-requests',
-  component: DeletionRequests,
+  component: () => <LazyLoad><DeletionRequests /></LazyLoad>,
 });
 
 const adminDeletionRequestDetailRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/deletion-requests/$id',
-  component: DeletionRequestDetail,
+  component: () => <LazyLoad><DeletionRequestDetail /></LazyLoad>,
 });
 
 // Spec alias
 const adminDeletionsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/deletions',
-  component: DeletionRequests,
+  component: () => <LazyLoad><DeletionRequests /></LazyLoad>,
 });
 
 const adminKnowledgeRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/knowledge',
-  component: KnowledgeBase,
+  component: () => <LazyLoad><KnowledgeBase /></LazyLoad>,
 });
 
 const adminVolumeRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/volume',
-  component: AdminVolumeAnalytics,
+  component: () => <LazyLoad><AdminVolumeAnalytics /></LazyLoad>,
 });
 
 const adminUnderwritingRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/underwriting',
-  component: AdminUnderwriting,
+  component: () => <LazyLoad><AdminUnderwriting /></LazyLoad>,
 });
 
 const adminSettlementsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/settlements',
-  component: AdminSettlementList,
+  component: () => <LazyLoad><AdminSettlementList /></LazyLoad>,
 });
 
 // ── Catch-all 404 ─────────────────────────────────────────────────────────────
 const catchAllRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '$',
-  component: NotFound,
+  component: () => <LazyLoad><NotFound /></LazyLoad>,
 });
 
 // ── Route Tree ────────────────────────────────────────────────────────────────

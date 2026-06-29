@@ -23,10 +23,10 @@ const metricIcons = {
   trust: Shield,
 };
 
-export default function UserProfileScore() {
+export default function UserProfileScore({ chamaId }) {
   const { data: scoreResponse, isLoading, error } = useQuery({
-    queryKey: ['my-score'],
-    queryFn: () => profileApi.getMyScore().then((r) => r.data.data || r.data),
+    queryKey: ['my-score', chamaId],
+    queryFn: () => profileApi.getMyScore(chamaId ? { chama_id: chamaId } : undefined).then((r) => r.data.data || r.data),
   });
 
   if (isLoading) {

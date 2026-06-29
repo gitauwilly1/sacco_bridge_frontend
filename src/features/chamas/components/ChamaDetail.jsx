@@ -19,6 +19,7 @@ import LoansList from './LoansList';
 import MeetingsList from './MeetingsList';
 import PollsList from './PollsList';
 import ChamaAnalytics from './ChamaAnalytics';
+import UserProfileScore from '../../profile/components/UserProfileScore';
 
 const gradeColors = {
   'A+': 'bg-success text-white',
@@ -228,6 +229,7 @@ export default function ChamaDetail({ defaultTab = 'overview' }) {
 
         <TabsContent value="overview" className="mt-4 space-y-4 outline-none">
           <div className="space-y-4">
+            <UserProfileScore chamaId={chamaId} />
             {chama.recent_contributions?.length > 0 && (
               <Card className="border-sand shadow-subtle overflow-hidden">
                 <CardHeader className="pb-3 pt-4 border-b border-sand bg-sand-light/30">
