@@ -10,12 +10,17 @@ const useAuthStore = create(
       isLoading: true,
       isInitialized: false,
 
-      login: async (email, password) => {
-        const { data } = await apiClient.post('/auth/login/', {
+      login: async (email, password, recaptcha_token) => {
+        const body = {
           email,
           password,
           device_info: navigator.userAgent.slice(0, 50),
-        });
+        };
+        if (recaptcha_token) {
+          body.recaptcha = recaptcha_token;
+        }
+
+        const { data } = await apiClient.post('/auth/login/', body);
 
         if (data.data?.requires_2fa) {
           return {
