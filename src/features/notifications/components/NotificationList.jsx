@@ -11,6 +11,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorState, EmptyState } from '@/components/feedback';
+import SearchInput from '@/components/ui/SearchInput';
+import DateRangeFilter from '@/components/ui/DateRangeFilter';
 import { toast } from 'sonner';
 import { notificationApi } from '../api/notificationApi';
 import { formatTimeAgo } from '../../../utils/format';
@@ -127,6 +129,8 @@ export default function NotificationList() {
   const [page, setPage] = useState(1);
   const [filter, setFilter] = useState('all');
   const [showUnreadOnly, setShowUnreadOnly] = useState(false);
+  const [search, setSearch] = useState('');
+  const [days, setDays] = useState('all');
 
   const {
     data: notificationsData,
@@ -134,7 +138,7 @@ export default function NotificationList() {
     error,
     refetch,
   } = useQuery({
-    queryKey: ['notifications', page, filter, showUnreadOnly],
+    queryKey: ['notifications', page, filter, showUnreadOnly, search, days],
     queryFn: () =>
       notificationApi
         .getNotifications({
@@ -142,6 +146,8 @@ export default function NotificationList() {
           page_size: 20,
           ...(filter !== 'all' && { category: filter }),
           ...(showUnreadOnly && { is_read: false }),
+          ...(search && { search }),
+          ...(days !== 'all' && { days }),
         })
         .then((r) => r.data),
   });
@@ -165,32 +171,38 @@ export default function NotificationList() {
     <div className="pb-4">
       {/* Header */}
       <div className="sticky top-14 z-30 bg-white border-b border-sand/40">
-        <div className="flex items-center justify-between px-4 py-3">
-          <div>
-            <h1 className="text-sm font-bold text-slate">Notifications</h1>
-            <p className="text-xs text-gray-400 font-medium">{total} notifications</p>
+        <div className="px-4 pt-3 pb-2 space-y-2">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-sm font-bold text-slate">Notifications</h1>
+              <p className="text-xs text-gray-400 font-medium">{total} notifications</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowUnreadOnly(!showUnreadOnly)}
+                className={`text-xs font-bold px-3 py-1.5 rounded-full border cursor-pointer transition-all ${
+                  showUnreadOnly
+                    ? 'bg-terracotta/10 text-terracotta border-terracotta/20 shadow-none'
+                    : 'bg-sand-light/60 text-slate border-sand/40 hover:bg-sand-light'
+                }`}
+              >
+                Unread
+              </button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => markAllReadMutation.mutate()}
+                disabled={markAllReadMutation.isPending}
+                className="border-terracotta text-terracotta hover:bg-terracotta/5 hover:text-terracotta cursor-pointer h-8 rounded-lg text-xs font-semibold px-3 transition-all"
+              >
+                <CheckCheck className="h-3.5 w-3.5 mr-1" />
+                Read All
+              </Button>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setShowUnreadOnly(!showUnreadOnly)}
-              className={`text-xs font-bold px-3 py-1.5 rounded-full border cursor-pointer transition-all ${
-                showUnreadOnly
-                  ? 'bg-terracotta/10 text-terracotta border-terracotta/20 shadow-none'
-                  : 'bg-sand-light/60 text-slate border-sand/40 hover:bg-sand-light'
-              }`}
-            >
-              Unread
-            </button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => markAllReadMutation.mutate()}
-              disabled={markAllReadMutation.isPending}
-              className="border-terracotta text-terracotta hover:bg-terracotta/5 hover:text-terracotta cursor-pointer h-8 rounded-lg text-xs font-semibold px-3 transition-all"
-            >
-              <CheckCheck className="h-3.5 w-3.5 mr-1" />
-              Read All
-            </Button>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <SearchInput value={search} onChange={(v) => { setSearch(v); setPage(1); }} placeholder="Search notifications..." className="flex-1" />
+            <DateRangeFilter value={days} onChange={(v) => { setDays(v); setPage(1); }} />
           </div>
         </div>
 
