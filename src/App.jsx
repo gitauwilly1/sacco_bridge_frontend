@@ -5,7 +5,7 @@ import useAuthStore from './stores/authStore';
 import useUIStore from './stores/uiStore';
 import useSocketStore from './stores/socketStore';
 import { isAdmin } from './utils/permissions';
-import { AuthProvider } from './contexts/AuthContext';
+
 import { ModeProvider } from './contexts/ModeContext';
 import { Loader2 } from 'lucide-react';
 import { FullPageLoader } from './components/feedback/LoadingState';
@@ -125,10 +125,8 @@ export default function App() {
   };
 
   return (
-    <AuthProvider>
-      <ModeProvider>
-        {renderApp()}
-      </ModeProvider>
-    </AuthProvider>
+    <ModeProvider>
+      {renderApp()}
+    </ModeProvider>
   );
 }

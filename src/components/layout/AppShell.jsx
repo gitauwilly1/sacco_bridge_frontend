@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import useAuthStore from '../../stores/authStore';
 import useUIStore from '../../stores/uiStore';
+import { isAdmin } from '../../utils/permissions';
 import { getInitials } from '../../utils/format';
 import NotificationBell from '../../features/notifications/components/NotificationBell';
 import BridgeLogo from '../brand/BridgeLogo';
@@ -232,6 +233,11 @@ export default function AppShell({ children }) {
                 <DropdownMenuItem onClick={() => navigate({ to: '/help' })} className="gap-2.5 cursor-pointer">
                   <HelpCircle className="h-4 w-4 text-gray-400" /> Help
                 </DropdownMenuItem>
+                {isAdmin(user) && (
+                  <DropdownMenuItem onClick={() => navigate({ to: '/admin' })} className="gap-2.5 cursor-pointer">
+                    <Shield className="h-4 w-4 text-terracotta" /> Admin Panel
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={handleLogout}

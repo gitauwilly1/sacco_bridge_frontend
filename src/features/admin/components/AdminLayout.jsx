@@ -15,7 +15,7 @@ import {
   DropdownMenuItem,
 } from '@/components/ui/dropdown-menu';
 import useAuthStore from '../../../stores/authStore';
-import { isSupportAgent, isPlatformAdmin, RESTRICTED_ADMIN_ROUTES } from '../../../utils/permissions';
+import { isSupportAgent, RESTRICTED_ADMIN_ROUTES } from '../../../utils/permissions';
 
 const navItems = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard },
@@ -43,7 +43,6 @@ export default function AdminLayout({ children }) {
   const location = useLocation();
   const { user } = useAuthStore();
   const isSupportAgentRole = isSupportAgent(user);
-  const isPlatformAdminRole = isPlatformAdmin(user);
 
   const visibleNavItems = navItems.filter(
     (item) => !isSupportAgentRole || !RESTRICTED_ADMIN_ROUTES.includes(item.to)

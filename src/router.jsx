@@ -845,6 +845,7 @@ const routeTree = rootRoute.addChildren([
 
   // Legal
   legalVerifyRoute,
+  legalDocumentsRoute,
 
   // Admin
   adminDashboardRoute,
@@ -868,9 +869,6 @@ const routeTree = rootRoute.addChildren([
   adminVolumeRoute,
   adminUnderwritingRoute,
   adminSettlementsRoute,
-
-  // Legal
-  legalDocumentsRoute,
 
   // Profile sub pages
   profileDevicesRoute,
