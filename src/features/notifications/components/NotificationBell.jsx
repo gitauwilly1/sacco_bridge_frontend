@@ -3,18 +3,20 @@ import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { Bell } from 'lucide-react';
 import useNotificationStore from '../../../stores/notificationStore';
+import useSocketStore from '../../../stores/socketStore';
 import { notificationApi } from '../api/notificationApi';
 
 export default function NotificationBell() {
   const navigate = useNavigate();
   const { unreadCount, setUnreadCount } = useNotificationStore();
+  const { isConnected } = useSocketStore();
   const [isNewChange, setIsNewChange] = useState(false);
 
   const { data } = useQuery({
     queryKey: ['unread-count'],
     queryFn: () =>
       notificationApi.getUnreadCount().then((r) => r.data.data?.count || r.data.count || 0),
-    refetchInterval: 30000, // Poll every 30 seconds
+    refetchInterval: 120000,
   });
 
   useEffect(() => {
@@ -37,6 +39,7 @@ export default function NotificationBell() {
       className="relative p-2 hover:bg-sand-light/50 rounded-lg transition-colors cursor-pointer"
     >
       <Bell className={`h-5 w-5 text-slate transition-transform ${unreadCount > 0 ? 'animate-bell-ring origin-top' : ''}`} />
+      <span className={`absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border border-white ${isConnected ? 'bg-green-500' : 'bg-gray-300'}`} />
       {unreadCount > 0 && (
         <span
           className={`absolute -top-0.5 -right-0.5 bg-danger text-white text-[9px] font-extrabold rounded-full h-4.5 w-4.5 flex items-center justify-center border-2 border-white shadow-subtle transition-all duration-300 ${

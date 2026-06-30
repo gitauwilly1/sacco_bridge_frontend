@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import {
@@ -17,6 +17,7 @@ import { toast } from 'sonner';
 import { notificationApi } from '../api/notificationApi';
 import { formatTimeAgo } from '../../../utils/format';
 import useNotificationStore from '../../../stores/notificationStore';
+import useSocketStore from '../../../stores/socketStore';
 
 const categoryConfig = {
   chama: { icon: Users, color: 'text-blue-500', bg: 'bg-sand-light' },
@@ -126,11 +127,20 @@ function NotificationListSkeleton() {
 export default function NotificationList() {
   const queryClient = useQueryClient();
   const { resetUnread } = useNotificationStore();
+  const { lastNotification, clearLastNotification } = useSocketStore();
   const [page, setPage] = useState(1);
   const [filter, setFilter] = useState('all');
   const [showUnreadOnly, setShowUnreadOnly] = useState(false);
   const [search, setSearch] = useState('');
   const [days, setDays] = useState('all');
+
+  useEffect(() => {
+    if (lastNotification) {
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['unread-count'] });
+      clearLastNotification();
+    }
+  }, [lastNotification, queryClient, clearLastNotification]);
 
   const {
     data: notificationsData,

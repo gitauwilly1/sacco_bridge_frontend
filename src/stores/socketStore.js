@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { getAccessToken } from '../lib/apiClient';
 import env from '../config/env';
+import useNotificationStore from './notificationStore';
 
 const RECONNECT_BASE_MS = 2000;
 const RECONNECT_MAX_MS = 30000;
@@ -8,7 +9,7 @@ const RECONNECT_MAX_MS = 30000;
 const useSocketStore = create((set, get) => ({
   socket: null,
   isConnected: false,
-  notifications: [],
+  lastNotification: null,
   reconnectAttempts: 0,
   reconnectTimer: null,
 
@@ -34,10 +35,11 @@ const useSocketStore = create((set, get) => ({
     socket.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        if (data.type === 'notification') {
-          set((state) => ({
-            notifications: [data.notification, ...state.notifications],
-          }));
+        if (data.type === 'notification.count') {
+          useNotificationStore.getState().setUnreadCount(data.unread_count);
+        } else if (data.type === 'notification.new') {
+          useNotificationStore.getState().incrementUnread();
+          set({ lastNotification: data.data });
         }
       } catch {
         // ignore malformed messages
@@ -84,7 +86,7 @@ const useSocketStore = create((set, get) => ({
     set({ socket: null, isConnected: false, reconnectAttempts: 0, reconnectTimer: null });
   },
 
-  clearNotifications: () => set({ notifications: [] }),
+  clearLastNotification: () => set({ lastNotification: null }),
 }));
 
 export default useSocketStore;
