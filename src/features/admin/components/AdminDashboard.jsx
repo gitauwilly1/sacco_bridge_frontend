@@ -4,7 +4,7 @@ import {
   Users, Building2, HandCoins, AlertCircle,
   TrendingUp, Activity, ArrowRight, DollarSign,
   UserPlus, RefreshCw, BarChart3, Smartphone, Database,
-  CheckCircle2, XCircle, ShieldCheck, Download,
+  CheckCircle2, ShieldCheck, Download,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -117,16 +117,19 @@ export default function AdminDashboard() {
         };
       }),
     refetchInterval: 60000,
+    retry: 2,
   });
 
   /* ── System health ──────────────────────────────────────────────── */
   const {
     data: health,
+    isError: healthError,
   } = useQuery({
     queryKey: ['admin-health'],
     queryFn: () =>
       adminApi.getAdminHealth().then((r) => r.data.data || r.data),
     refetchInterval: 120000,
+    retry: 2,
   });
 
   /* ── Export handler ─────────────────────────────────────────────── */
@@ -182,7 +185,7 @@ export default function AdminDashboard() {
     {
       label: 'Active Chamas',
       value: c.total_active?.toLocaleString() || '—',
-      sub: `KES ${formatKES(c.total_savings)} saved`,
+      sub: `${formatKES(c.total_savings)} saved`,
       icon: HandCoins,
       color: 'text-terracotta',
       bg: 'bg-terracotta/10',
@@ -198,7 +201,7 @@ export default function AdminDashboard() {
     {
       label: 'Open Disputes',
       value: dp.open?.toLocaleString() || '0',
-      sub: `${st.disputed || 0} total disputed`,
+      sub: `${dp.total || dp.open || 0} total disputed`,
       icon: AlertCircle,
       color: dp.open > 0 ? 'text-danger' : 'text-slate/60',
       bg: dp.open > 0 ? 'bg-danger/10' : 'bg-sand-light',
@@ -285,12 +288,7 @@ export default function AdminDashboard() {
                 </div>
               </div>
               <p className="text-xl font-extrabold text-slate font-numbers">{stat.value}</p>
-              <div className="flex items-center gap-2 mt-1">
-                {stat.sub && <p className="text-[10px] text-gray-400 font-medium">{stat.sub}</p>}
-                <span className="insight-chip up">
-                  <TrendingUp className="h-2.5 w-2.5" /> +12%
-                </span>
-              </div>
+              {stat.sub && <p className="text-[10px] text-gray-400 font-medium mt-1">{stat.sub}</p>}
             </div>
           );
         })}
@@ -387,6 +385,14 @@ export default function AdminDashboard() {
       </div>
 
       {/* System Health */}
+      {healthError && (
+        <Card className="border-sand bg-white shadow-subtle rounded-2xl">
+          <CardContent className="p-4 text-center text-xs text-gray-400">
+            <Activity className="h-5 w-5 mx-auto mb-2 text-sand" />
+            Health data unavailable
+          </CardContent>
+        </Card>
+      )}
       {healthServices && (
         <Card className="border-sand bg-white shadow-subtle rounded-2xl">
           <CardHeader className="pb-2 border-b border-sand/40">
@@ -472,7 +478,7 @@ export default function AdminDashboard() {
                   <p className="text-[10px] text-gray-400 font-medium mt-0.5">Completed</p>
                 </div>
                 <div className="p-3 rounded-xl bg-sand-light/40">
-                  <p className="text-lg font-extrabold font-numbers text-alert">{st.disputed?.toLocaleString() || '0'}</p>
+                  <p className="text-lg font-extrabold font-numbers text-alert">{dp.open?.toLocaleString() || '0'}</p>
                   <p className="text-[10px] text-gray-400 font-medium mt-0.5">Disputed</p>
                 </div>
                 <div className="p-3 rounded-xl bg-sand-light/40">

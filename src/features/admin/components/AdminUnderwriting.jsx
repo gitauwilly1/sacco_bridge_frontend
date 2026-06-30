@@ -88,7 +88,7 @@ export default function AdminUnderwriting() {
     (c) => !search || c.name?.toLowerCase().includes(search.toLowerCase())
   );
 
-  if (selectedLoanId && underwriting !== undefined) {
+  if (selectedLoanId) {
     return (
       <div className="space-y-6">
         <Button
@@ -100,105 +100,107 @@ export default function AdminUnderwriting() {
           <ArrowLeft className="h-3.5 w-3.5 mr-1" /> Back to loans
         </Button>
 
-        <Card className="border-sand bg-white shadow-subtle rounded-2xl">
-          <CardHeader className="pb-3 border-b border-sand/40">
-            <CardTitle className="text-xs font-bold text-slate uppercase tracking-wider flex items-center gap-2">
-              <ShieldCheck className="h-4 w-4 text-terracotta" />
-              Underwriting Decision
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-4 space-y-4">
-            {uwLoading ? (
-              <Skeleton className="h-20 w-full" />
-            ) : (
-              <>
-                <div className="flex items-center gap-3">
-                  <Badge className={`text-xs font-bold px-3 py-1 rounded-full border-0 ${decisionColors[underwriting.decision] || 'bg-sand text-slate'}`}>
-                    {decisionLabels[underwriting.decision] || underwriting.decision}
+        {uwError && (
+          <ErrorState message="Failed to load underwriting decision" onRetry={uwRefetch} />
+        )}
+
+        {uwLoading ? (
+          <Skeleton className="h-40 w-full rounded-2xl" />
+        ) : underwriting && (
+          <Card className="border-sand bg-white shadow-subtle rounded-2xl">
+            <CardHeader className="pb-3 border-b border-sand/40">
+              <CardTitle className="text-xs font-bold text-slate uppercase tracking-wider flex items-center gap-2">
+                <ShieldCheck className="h-4 w-4 text-terracotta" />
+                Underwriting Decision
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-4 space-y-4">
+              <div className="flex items-center gap-3">
+                <Badge className={`text-xs font-bold px-3 py-1 rounded-full border-0 ${decisionColors[underwriting.decision] || 'bg-sand text-slate'}`}>
+                  {decisionLabels[underwriting.decision] || underwriting.decision}
+                </Badge>
+                {underwriting.overridden && (
+                  <Badge className="text-xs bg-alert/10 text-alert border-0 rounded-full">
+                    Overridden to {decisionLabels[underwriting.overridden_decision] || underwriting.overridden_decision}
                   </Badge>
-                  {underwriting.overridden && (
-                    <Badge className="text-xs bg-alert/10 text-alert border-0 rounded-full">
-                      Overridden to {decisionLabels[underwriting.overridden_decision] || underwriting.overridden_decision}
-                    </Badge>
-                  )}
+                )}
+              </div>
+
+              <div className="grid grid-cols-3 gap-3 text-center">
+                <div className="p-3 rounded-xl bg-sand-light/50">
+                  <p className="text-lg font-bold text-slate font-numbers">{underwriting.confidence ?? '—'}</p>
+                  <p className="text-[10px] text-gray-400 font-medium mt-0.5">Confidence</p>
                 </div>
-
-                <div className="grid grid-cols-3 gap-3 text-center">
-                  <div className="p-3 rounded-xl bg-sand-light/50">
-                    <p className="text-lg font-bold text-slate font-numbers">{underwriting.confidence ?? '—'}</p>
-                    <p className="text-[10px] text-gray-400 font-medium mt-0.5">Confidence</p>
-                  </div>
-                  <div className="p-3 rounded-xl bg-sand-light/50">
-                    <p className="text-lg font-bold text-slate font-numbers">{underwriting.credit_score ?? '—'}</p>
-                    <p className="text-[10px] text-gray-400 font-medium mt-0.5">Credit Score</p>
-                  </div>
-                  <div className="p-3 rounded-xl bg-sand-light/50">
-                    <p className="text-lg font-bold text-slate font-numbers">{underwriting.chama_health ?? '—'}</p>
-                    <p className="text-[10px] text-gray-400 font-medium mt-0.5">Chama Health</p>
-                  </div>
+                <div className="p-3 rounded-xl bg-sand-light/50">
+                  <p className="text-lg font-bold text-slate font-numbers">{underwriting.credit_score ?? '—'}</p>
+                  <p className="text-[10px] text-gray-400 font-medium mt-0.5">Credit Score</p>
                 </div>
+                <div className="p-3 rounded-xl bg-sand-light/50">
+                  <p className="text-lg font-bold text-slate font-numbers">{underwriting.chama_health ?? '—'}</p>
+                  <p className="text-[10px] text-gray-400 font-medium mt-0.5">Chama Health</p>
+                </div>
+              </div>
 
-                {underwriting.reasoning && (
-                  <div>
-                    <p className="text-xs font-semibold text-slate mb-1">Reasoning</p>
-                    <pre className="text-xs text-gray-500 bg-sand-light/50 rounded-lg p-3 overflow-auto whitespace-pre-wrap">
-                      {typeof underwriting.reasoning === 'string' ? underwriting.reasoning : JSON.stringify(underwriting.reasoning, null, 2)}
-                    </pre>
-                  </div>
-                )}
+              {underwriting.reasoning && (
+                <div>
+                  <p className="text-xs font-semibold text-slate mb-1">Reasoning</p>
+                  <pre className="text-xs text-gray-500 bg-sand-light/50 rounded-lg p-3 overflow-auto whitespace-pre-wrap">
+                    {typeof underwriting.reasoning === 'string' ? underwriting.reasoning : JSON.stringify(underwriting.reasoning, null, 2)}
+                  </pre>
+                </div>
+              )}
 
-                {underwriting.conditions?.length > 0 && (
-                  <div>
-                    <p className="text-xs font-semibold text-slate mb-1">Conditions</p>
-                    <ul className="space-y-1">
-                      {underwriting.conditions.map((c, i) => (
-                        <li key={i} className="text-xs text-gray-500 flex items-start gap-2">
-                          <CheckCircle2 className="h-3.5 w-3.5 text-alert mt-0.5 flex-shrink-0" />
-                          {typeof c === 'string' ? c : JSON.stringify(c)}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
+              {underwriting.conditions?.length > 0 && (
+                <div>
+                  <p className="text-xs font-semibold text-slate mb-1">Conditions</p>
+                  <ul className="space-y-1">
+                    {underwriting.conditions.map((c, i) => (
+                      <li key={i} className="text-xs text-gray-500 flex items-start gap-2">
+                        <CheckCircle2 className="h-3.5 w-3.5 text-alert mt-0.5 flex-shrink-0" />
+                        {typeof c === 'string' ? c : JSON.stringify(c)}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
-                {!underwriting.overridden && (
-                  <div className="border-t border-sand/40 pt-4 space-y-3">
-                    <p className="text-xs font-bold text-slate uppercase tracking-wider">Override Decision</p>
-                    <div className="flex gap-2">
-                      {['APPROVE', 'APPROVE_WITH_CONDITIONS', 'FLAG_FOR_REVIEW', 'REJECT'].map((d) => (
-                        <Button
-                          key={d}
-                          variant={overrideDecision === d ? 'default' : 'outline'}
-                          size="sm"
-                          onClick={() => setOverrideDecision(d)}
-                          className={`text-xs ${overrideDecision === d ? 'bg-terracotta text-white' : 'border-sand/40'}`}
-                        >
-                          {decisionLabels[d]}
-                        </Button>
-                      ))}
-                    </div>
-                    <textarea
-                      placeholder="Reason for override..."
-                      className="w-full text-sm border border-sand/40 rounded-xl p-3 bg-white resize-none h-20 outline-none focus:border-terracotta/50 transition-colors"
-                      value={overrideReason}
-                      onChange={(e) => setOverrideReason(e.target.value)}
-                    />
-                    <Button
-                      size="sm"
-                      className="bg-terracotta text-white hover:bg-clay"
-                      disabled={!overrideDecision || overrideMutation.isPending}
-                      onClick={() =>
-                        overrideMutation.mutate({ loanId: selectedLoanId, decision: overrideDecision, reason: overrideReason })
-                      }
-                    >
-                      {overrideMutation.isPending ? 'Submitting...' : 'Submit Override'}
-                    </Button>
+              {!underwriting.overridden && (
+                <div className="border-t border-sand/40 pt-4 space-y-3">
+                  <p className="text-xs font-bold text-slate uppercase tracking-wider">Override Decision</p>
+                  <div className="flex gap-2">
+                    {['APPROVE', 'APPROVE_WITH_CONDITIONS', 'FLAG_FOR_REVIEW', 'REJECT'].map((d) => (
+                      <Button
+                        key={d}
+                        variant={overrideDecision === d ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setOverrideDecision(d)}
+                        className={`text-xs ${overrideDecision === d ? 'bg-terracotta text-white' : 'border-sand/40'}`}
+                      >
+                        {decisionLabels[d]}
+                      </Button>
+                    ))}
                   </div>
-                )}
-              </>
-            )}
-          </CardContent>
-        </Card>
+                  <textarea
+                    placeholder="Reason for override..."
+                    className="w-full text-sm border border-sand/40 rounded-xl p-3 bg-white resize-none h-20 outline-none focus:border-terracotta/50 transition-colors"
+                    value={overrideReason}
+                    onChange={(e) => setOverrideReason(e.target.value)}
+                  />
+                  <Button
+                    size="sm"
+                    className="bg-terracotta text-white hover:bg-clay"
+                    disabled={!overrideDecision || overrideMutation.isPending}
+                    onClick={() =>
+                      overrideMutation.mutate({ loanId: selectedLoanId, decision: overrideDecision, reason: overrideReason })
+                    }
+                  >
+                    {overrideMutation.isPending ? 'Submitting...' : 'Submit Override'}
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
       </div>
     );
   }

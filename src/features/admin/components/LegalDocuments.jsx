@@ -75,7 +75,7 @@ export default function LegalDocuments() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-slate">Legal Documents</h1>
-          <p className="text-sm text-gray-500">{docs.length} versions</p>
+          {!error && <p className="text-sm text-gray-500">{docs.length} versions</p>}
         </div>
         <div className="flex items-center gap-2">
           <select
@@ -96,7 +96,12 @@ export default function LegalDocuments() {
         </div>
       </div>
 
-      {isLoading ? (
+      {error ? (
+        <div className="flex items-center justify-center gap-2 p-4 rounded-xl bg-danger/5 border border-danger/20 text-xs text-danger">
+          <span className="font-semibold">Failed to load documents.</span>
+          <button onClick={() => refetch()} className="ml-auto underline hover:no-underline">Retry</button>
+        </div>
+      ) : isLoading ? (
         <div className="space-y-2 py-8">
           {[1, 2].map((i) => (
             <div key={i} className="skeleton-shimmer h-16 w-full rounded-2xl" />

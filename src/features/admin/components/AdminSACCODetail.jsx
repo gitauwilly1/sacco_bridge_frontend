@@ -114,10 +114,17 @@ export default function AdminSACCODetail() {
     return (
       <div className="flex flex-col items-center justify-center py-20 gap-4">
         <Building2 className="h-12 w-12 text-gray-300" />
-        <p className="text-slate font-semibold">SACCO not found</p>
-        <Button variant="outline" onClick={() => navigate({ to: '/admin/saccos' })} className="border-sand">
-          <ArrowLeft className="h-4 w-4 mr-2" /> Back to SACCOs
-        </Button>
+        <p className="text-slate font-semibold">{error ? 'Failed to load SACCO' : 'SACCO not found'}</p>
+        <div className="flex gap-2">
+          {error && (
+            <Button variant="outline" onClick={() => refetch()} className="border-sand">
+              <RefreshCw className="h-4 w-4 mr-2" /> Retry
+            </Button>
+          )}
+          <Button variant="outline" onClick={() => navigate({ to: '/admin/saccos' })} className="border-sand">
+            <ArrowLeft className="h-4 w-4 mr-2" /> Back to SACCOs
+          </Button>
+        </div>
       </div>
     );
   }

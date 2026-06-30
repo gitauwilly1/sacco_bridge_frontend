@@ -326,7 +326,7 @@ function WebhookFormDialog({ open, onClose, webhook, onSuccess }) {
 function DeliveriesDialog({ webhookId, onClose }) {
   const [page, setPage] = useState(1);
 
-  const { data: deliveriesData, isLoading } = useQuery({
+  const { data: deliveriesData, isLoading, error, refetch } = useQuery({
     queryKey: ['webhook-deliveries', webhookId, page],
     queryFn: () =>
       adminApi
@@ -343,7 +343,12 @@ function DeliveriesDialog({ webhookId, onClose }) {
           <DialogTitle className="text-sm font-bold text-slate">Delivery History</DialogTitle>
         </DialogHeader>
         <div className="max-h-96 overflow-y-auto space-y-2.5 pt-2 pr-1 scrollbar-none">
-          {isLoading ? (
+          {error ? (
+            <div className="flex items-center justify-center gap-2 p-4 text-xs text-danger">
+              <span className="font-semibold">Failed to load deliveries.</span>
+              <button onClick={() => refetch()} className="underline hover:no-underline">Retry</button>
+            </div>
+          ) : isLoading ? (
             <div className="space-y-2 py-4">
               {[1, 2, 3].map((i) => (
                 <div key={i} className="skeleton-shimmer h-12 w-full rounded-xl" />

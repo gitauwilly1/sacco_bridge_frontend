@@ -8,6 +8,8 @@ import { toast } from 'sonner';
 import { adminApi } from '../api/adminApi';
 import { formatDate } from '../../../utils/format';
 
+const FALLBACK_REPORTS = [];
+
 export default function Reports() {
   const {
     data: reportsData,
@@ -26,9 +28,8 @@ export default function Reports() {
     try {
       toast.loading('Preparing report...');
       const response = await adminApi.getReports();
-      const reports = response.data.data || response.data;
-      // Find report metadata; if download URL available, use it
-      const reportList = Array.isArray(reports) ? reports : [];
+      const reportsResp = response.data.data || response.data;
+      const reportList = Array.isArray(reportsResp) ? reportsResp : [];
       const report = reportList.find((r) => r.id === reportId);
       if (report?.download_url || report?.file || report?.url) {
         const url = report.download_url || report.file || report.url;
@@ -42,7 +43,6 @@ export default function Reports() {
         toast.dismiss();
         toast.success('Report download started');
       } else {
-        // Fallback: export as JSON
         const blob = new Blob([JSON.stringify(report || response.data, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
@@ -61,17 +61,13 @@ export default function Reports() {
     }
   };
 
+  const hasError = !!error;
+
   if (isLoading) {
     return (
       <div className="space-y-4">
         <Skeleton className="h-8 w-48 bg-sand-light/60 animate-pulse" />
-      {hasError && (
-        <div className="flex items-center gap-2 p-3 rounded-xl bg-danger/5 border border-danger/20 text-xs text-danger">
-          <span className="font-semibold">Failed to load reports from server.</span>
-          <button onClick={() => refetch()} className="ml-auto underline hover:no-underline">Retry</button>
-        </div>
-      )}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {[1, 2, 3, 4].map((i) => (
             <Card key={i} className="glass-card border-sand bg-white/50 rounded-2xl overflow-hidden">
               <CardContent className="p-5">
@@ -86,8 +82,7 @@ export default function Reports() {
     );
   }
 
-  const hasError = !!error;
-  const reportList = hasError ? fallbackReports : (Array.isArray(reports) ? reports : fallbackReports);
+  const reportList = hasError ? FALLBACK_REPORTS : (Array.isArray(reports) ? reports : FALLBACK_REPORTS);
 
   return (
     <div className="space-y-4">
