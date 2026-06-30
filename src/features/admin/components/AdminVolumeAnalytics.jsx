@@ -132,7 +132,7 @@ export default function AdminVolumeAnalytics() {
             <div className="divide-y divide-sand max-h-80 overflow-y-auto">
               {data.slice().reverse().map((item) => (
                 <div key={item.date} className="flex items-center justify-between px-4 py-2.5 hover:bg-sand-light/25">
-                  <span className="text-xs text-gray-500">{new Date(item.date).toLocaleDateString()}</span>
+                  <span className="text-xs text-gray-500">{item.date ? new Date(item.date).toLocaleDateString() : '—'}</span>
                   <div className="flex items-center gap-4 text-xs">
                     <span className="font-semibold text-slate w-24 text-right">{formatKES(item.volume)}</span>
                     <span className="text-gray-400 w-16 text-right">{item.count} txns</span>

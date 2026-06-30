@@ -85,7 +85,7 @@ export default function DeletionRequestDetail() {
               <div>
                 <p className="text-[10px] text-gray-400 font-medium uppercase">Requested At</p>
                 <p className="text-sm font-semibold text-slate">{formatTimeAgo(data.requested_at)}</p>
-                <p className="text-xs text-gray-400">{new Date(data.requested_at).toLocaleString()}</p>
+                <p className="text-xs text-gray-400">{data.requested_at ? new Date(data.requested_at).toLocaleString() : '—'}</p>
               </div>
             </div>
           </div>

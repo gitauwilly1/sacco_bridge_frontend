@@ -38,7 +38,7 @@ export default function AdminUnderwriting() {
   const [loanPage, setLoanPage] = useState(1);
 
   /* Chamas list */
-  const { data: chamas, isLoading: chamasLoading } = useQuery({
+  const { data: chamas, isLoading: chamasLoading, error: chamasError } = useQuery({
     queryKey: ['admin-chamas-uw'],
     queryFn: () =>
       adminApi.getChamasAdmin({ page_size: 100 }).then((r) => {
@@ -48,7 +48,7 @@ export default function AdminUnderwriting() {
   });
 
   /* Loans for selected chama */
-  const { data: loansRes, isLoading: loansLoading } = useQuery({
+  const { data: loansRes, isLoading: loansLoading, error: loansError } = useQuery({
     queryKey: ['chama-loans-uw', selectedChamaId, loanPage],
     queryFn: () =>
       chamaApi.getLoans(selectedChamaId, { page: loanPage, page_size: 20 }).then((r) => {
@@ -226,6 +226,8 @@ export default function AdminUnderwriting() {
 
           {chamasLoading ? (
             <div className="space-y-3">{[1, 2, 3].map((i) => <Skeleton key={i} className="h-16 w-full rounded-xl" />)}</div>
+          ) : chamasError ? (
+            <ErrorState message="Failed to load chamas" onRetry={() => queryClient.invalidateQueries({ queryKey: ['admin-chamas-uw'] })} />
           ) : (
             <div className="space-y-2">
               {filteredChamas.map((chama) => (
@@ -262,6 +264,8 @@ export default function AdminUnderwriting() {
 
           {loansLoading ? (
             <div className="space-y-3">{[1, 2, 3].map((i) => <Skeleton key={i} className="h-16 w-full rounded-xl" />)}</div>
+          ) : loansError ? (
+            <ErrorState message="Failed to load loans" onRetry={() => queryClient.invalidateQueries({ queryKey: ['chama-loans-uw', selectedChamaId, loanPage] })} />
           ) : (
             <>
               {/* Summary stat cards */}

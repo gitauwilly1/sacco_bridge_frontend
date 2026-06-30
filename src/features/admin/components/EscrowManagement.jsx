@@ -94,7 +94,7 @@ export default function EscrowManagement() {
       key: 'created_at',
       header: 'Created',
       render: (value) => (
-        <span className="text-xs text-gray-500 font-medium">{formatDate(value)}</span>
+        <span className="text-xs text-gray-500 font-medium">{value ? formatDate(value) : '—'}</span>
       ),
     },
   ];

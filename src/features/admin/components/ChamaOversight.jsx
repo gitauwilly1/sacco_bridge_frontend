@@ -64,7 +64,7 @@ export default function ChamaOversight() {
     {
       key: 'total_savings',
       header: 'Savings',
-      render: (value) => <span className="text-sm font-bold text-slate">{formatKES(value)}</span>,
+      render: (value) => <span className="text-sm font-bold text-slate">{formatKES(value ?? 0)}</span>,
     },
     {
       key: 'status',

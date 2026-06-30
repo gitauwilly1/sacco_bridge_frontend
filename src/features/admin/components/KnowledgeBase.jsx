@@ -77,7 +77,7 @@ export default function KnowledgeBase() {
     {
       key: 'updated_at',
       header: 'Updated',
-      render: (value) => <span className="text-xs text-gray-500 font-medium">{formatDate(value)}</span>,
+      render: (value) => <span className="text-xs text-gray-500 font-medium">{value ? formatDate(value) : '—'}</span>,
     },
   ];
 

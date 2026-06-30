@@ -106,6 +106,7 @@ export default function AdminDashboard() {
   /* ── Trend data for charts ──────────────────────────────────────── */
   const {
     data: trends,
+    error: trendsError,
   } = useQuery({
     queryKey: ['admin-trends'],
     queryFn: () =>
@@ -342,6 +343,12 @@ export default function AdminDashboard() {
           </div>
         </CardContent>
       </Card>
+
+      {trendsError && (
+        <div className="text-center py-6">
+          <p className="text-xs text-red-500 mb-2">Failed to load trend data</p>
+        </div>
+      )}
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

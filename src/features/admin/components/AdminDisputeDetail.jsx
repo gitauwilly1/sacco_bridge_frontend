@@ -89,9 +89,9 @@ export default function AdminDisputeDetail() {
       queryClient.invalidateQueries({ queryKey: ['admin-dispute', disputeId] });
       toast.success('Dispute resolved');
       navigate({ to: '/admin/disputes' });
-    } catch (error) {
+    } catch (err) {
       toast.error(
-        error.response?.data?.error?.message || 'Failed to resolve dispute'
+        err.response?.data?.error?.message || 'Failed to resolve dispute'
       );
     } finally {
       setIsResolving(false);

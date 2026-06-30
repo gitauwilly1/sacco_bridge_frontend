@@ -59,7 +59,7 @@ export default function AdminSACCODetail() {
     enabled: !!saccoId,
   });
 
-  const { data: shareClasses } = useQuery({
+  const { data: shareClasses, error: shareClassesError } = useQuery({
     queryKey: ['admin-sacco-share-classes', saccoId],
     queryFn: () =>
       investmentsApi.getShareClasses(saccoId).then((r) => r.data.results || r.data.data || []),
@@ -324,6 +324,11 @@ export default function AdminSACCODetail() {
       </Card>
 
       {/* Share Classes */}
+      {shareClassesError && (
+        <div className="text-center py-4">
+          <p className="text-xs text-red-500">Failed to load share classes</p>
+        </div>
+      )}
       {shareClasses?.length > 0 && (
         <Card className="border-sand bg-white shadow-subtle overflow-hidden">
           <CardHeader className="pb-3 border-b border-sand/40 bg-sand-light/20">

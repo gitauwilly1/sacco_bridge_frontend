@@ -124,7 +124,7 @@ export default function LegalDocuments() {
                     )}
                   </div>
                   <p className="text-[11px] text-gray-400 font-medium mt-0.5 font-numbers">
-                    {formatDate(doc.created_at)}
+                    {doc.created_at ? formatDate(doc.created_at) : '—'}
                     {doc.published_at && ` · Published ${formatDate(doc.published_at)}`}
                   </p>
                 </div>
