@@ -1,5 +1,3 @@
-import React from 'react';
-
 /**
  * Shared Bridge SVG logo mark.
  * Generates the responsive SVG arch structure consistent with the Sacco Bridge visual style.

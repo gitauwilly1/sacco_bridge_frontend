@@ -1,4 +1,3 @@
-import React from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { Compass, Home, ArrowLeft, LifeBuoy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
