@@ -66,9 +66,9 @@ export default function UserDetail() {
         </button>
         <div className="flex-1">
           <h1 className="text-xl font-bold text-slate">
-            {user.first_name} {user.last_name}
+            {user.first_name || user.last_name ? `${user.first_name || ''} ${user.last_name || ''}`.trim() : user.email || 'User'}
           </h1>
-          <p className="text-sm text-gray-500">{user.email}</p>
+          <p className="text-sm text-gray-500">{user.email || '—'}</p>
         </div>
       </div>
 
@@ -97,7 +97,7 @@ export default function UserDetail() {
               </div>
               <div className="flex items-center gap-3 mt-2 text-sm text-gray-500">
                 <span className="flex items-center gap-1">
-                  <Mail className="h-3.5 w-3.5 text-gray-400" /> {user.email}
+                  <Mail className="h-3.5 w-3.5 text-gray-400" /> {user.email || '—'}
                 </span>
                 {user.phone_number && (
                   <span className="flex items-center gap-1">
@@ -110,7 +110,7 @@ export default function UserDetail() {
           <div className="grid grid-cols-2 gap-3 text-sm pt-4 border-t border-sand/30">
             <div>
               <p className="text-xs text-gray-400">Joined</p>
-              <p className="font-semibold text-slate">{formatDate(user.created_at)}</p>
+              <p className="font-semibold text-slate">{user.created_at ? formatDate(user.created_at) : '—'}</p>
             </div>
             <div>
               <p className="text-xs text-gray-400">KYC Status</p>
@@ -169,7 +169,8 @@ export default function UserDetail() {
               variant="outline"
               className="w-full border-danger/30 hover:border-danger hover:bg-danger/5 text-danger font-medium transition-colors"
               onClick={() => {
-                if (window.confirm(`Suspend ${user.first_name} ${user.last_name}?`)) {
+                const userName = user.first_name || user.last_name ? `${user.first_name || ''} ${user.last_name || ''}`.trim() : user.email || 'this user';
+                if (window.confirm(`Suspend ${userName}?`)) {
                   manageMutation.mutate({ action: 'suspend' });
                 }
               }}

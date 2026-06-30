@@ -72,9 +72,9 @@ export default function UserList() {
           </div>
           <div>
             <p className="font-bold text-slate text-xs">
-              {row.first_name} {row.last_name}
+              {row.first_name || ''} {row.last_name || ''}
             </p>
-            <p className="text-[10px] text-gray-400 font-medium mt-0.5">{row.email}</p>
+            <p className="text-[10px] text-gray-400 font-medium mt-0.5">{row.email || '—'}</p>
           </div>
         </div>
       ),
@@ -125,7 +125,7 @@ export default function UserList() {
       header: 'Joined',
       sortable: true,
       render: (value) => (
-        <span className="text-[11px] text-gray-405 font-medium font-numbers">{formatDate(value)}</span>
+        <span className="text-[11px] text-gray-405 font-medium font-numbers">{value ? formatDate(value) : '—'}</span>
       ),
     },
   ];
