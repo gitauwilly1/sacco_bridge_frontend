@@ -2,8 +2,8 @@ import { useState, useRef } from 'react';
 import { useParams, useNavigate } from '@tanstack/react-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  ArrowLeft, Building2, CheckCircle2, Ban, Upload,
-  Users, TrendingUp, Calendar, FileText, RefreshCw,
+  ArrowLeft, Building2, CheckCircle2, Upload,
+  Users, TrendingUp, Calendar, RefreshCw,
   ShieldCheck, ShieldOff, Layers,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

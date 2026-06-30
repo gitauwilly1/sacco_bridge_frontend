@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  ShieldCheck, Shield, AlertTriangle, CheckCircle2, XCircle,
-  ChevronRight, Search, RefreshCw, ArrowLeft, FileText,
+  ShieldCheck, CheckCircle2,
+  ChevronRight, Search, ArrowLeft, FileText,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
