@@ -1,10 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import {
-  Users, Shield, CheckCircle2, XCircle, Ban,
-  UserPlus, RefreshCw, User,
-} from 'lucide-react';
+import { RefreshCw, User } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';

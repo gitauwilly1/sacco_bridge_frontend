@@ -25,7 +25,7 @@ export default function AdminSettlementList() {
   const [days, setDays] = useState('all');
   const [page, setPage] = useState(1);
 
-  const { data, isLoading, refetch } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['admin-settlements', page, search, days],
     queryFn: () => adminApi.getAdminSettlements({ page, search, ...(days !== 'all' && { days }) }).then((r) => r.data),
   });
@@ -89,59 +89,70 @@ export default function AdminSettlementList() {
         <div className="space-y-2">{[1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="h-16 w-full rounded-xl" />)}</div>
       )}
 
-      <div className="space-y-2">
-        {settlements.map((s) => (
-          <Card
-            key={s.id}
-            className="border-sand bg-white shadow-subtle rounded-xl cursor-pointer hover:border-terracotta/30 transition-colors"
-            onClick={() => s.settlement_id && navigate({ to: `/transactions/${s.settlement_id}` })}
-          >
-            <CardContent className="p-3.5">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3 min-w-0 flex-1">
-                  <div className={`h-9 w-9 rounded-lg flex items-center justify-center ${(statusColors[s.status] || 'bg-gray-100')}`}>
-                    <div className={`h-2 w-2 rounded-full ${s.status === 'COMPLETED' ? 'bg-success' : s.status === 'PENDING' ? 'bg-warning' : s.status === 'DISPUTED' ? 'bg-alert' : 'bg-gray-400'}`} />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="text-sm font-semibold text-slate truncate">{s.sender_name || s.sender || s.from_user || '—'}</p>
-                      <span className="text-gray-300 text-xs">&rarr;</span>
-                      <p className="text-sm font-semibold text-slate truncate">{s.recipient_name || s.recipient || s.to_user || '—'}</p>
-                    </div>
-                    <p className="text-xs text-gray-400 mt-0.5">
-                      {formatKES(s.amount || s.total)} {s.fee && `· Fee: ${formatKES(s.fee)}`} · {formatDate(s.created_at || s.date)}
-                    </p>
-                  </div>
-                </div>
-                <Badge className={`text-[10px] font-semibold rounded-full border-0 flex-shrink-0 ml-2 ${statusColors[s.status] || 'bg-gray-100 text-gray-500'}`}>
-                  {s.status}
-                </Badge>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {!isLoading && settlements.length === 0 && (
-        <div className="text-center py-12">
-          <p className="text-sm text-gray-400">No settlements found</p>
+      {error && !isLoading && (
+        <div className="text-center py-8">
+          <p className="text-sm text-red-500 mb-2">Failed to load settlements</p>
+          <Button size="sm" variant="outline" onClick={() => refetch()} className="border-sand/40 text-xs">Retry</Button>
         </div>
       )}
 
-      {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2 pt-2">
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-            <button
-              key={p}
-              onClick={() => setPage(p)}
-              className={`h-8 w-8 rounded-lg text-xs font-semibold ${
-                p === page ? 'bg-terracotta text-white' : 'bg-sand-light text-slate hover:bg-sand'
-              }`}
-            >
-              {p}
-            </button>
-          ))}
-        </div>
+      {!error && (
+        <>
+          <div className="space-y-2">
+            {settlements.map((s) => (
+              <Card
+                key={s.id}
+                className="border-sand bg-white shadow-subtle rounded-xl cursor-pointer hover:border-terracotta/30 transition-colors"
+                onClick={() => s.settlement_id && navigate({ to: `/transactions/${s.settlement_id}` })}
+              >
+                <CardContent className="p-3.5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <div className={`h-9 w-9 rounded-lg flex items-center justify-center ${(statusColors[s.status] || 'bg-gray-100')}`}>
+                        <div className={`h-2 w-2 rounded-full ${s.status === 'COMPLETED' ? 'bg-success' : s.status === 'PENDING' ? 'bg-warning' : s.status === 'DISPUTED' ? 'bg-alert' : 'bg-gray-400'}`} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="text-sm font-semibold text-slate truncate">{s.sender_name || s.sender || s.from_user || '—'}</p>
+                          <span className="text-gray-300 text-xs">&rarr;</span>
+                          <p className="text-sm font-semibold text-slate truncate">{s.recipient_name || s.recipient || s.to_user || '—'}</p>
+                        </div>
+                        <p className="text-xs text-gray-400 mt-0.5">
+                          {formatKES(s.amount || s.total)} {s.fee && `· Fee: ${formatKES(s.fee)}`} · {formatDate(s.created_at || s.date)}
+                        </p>
+                      </div>
+                    </div>
+                    <Badge className={`text-[10px] font-semibold rounded-full border-0 flex-shrink-0 ml-2 ${statusColors[s.status] || 'bg-gray-100 text-gray-500'}`}>
+                      {s.status}
+                    </Badge>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {!isLoading && settlements.length === 0 && (
+            <div className="text-center py-12">
+              <p className="text-sm text-gray-400">No settlements found</p>
+            </div>
+          )}
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2 pt-2">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                <button
+                  key={p}
+                  onClick={() => setPage(p)}
+                  className={`h-8 w-8 rounded-lg text-xs font-semibold ${
+                    p === page ? 'bg-terracotta text-white' : 'bg-sand-light text-slate hover:bg-sand'
+                  }`}
+                >
+                  {p}
+                </button>
+              ))}
+            </div>
+          )}
+        </>
       )}
     </div>
   );

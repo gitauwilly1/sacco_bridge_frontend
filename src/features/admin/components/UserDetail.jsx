@@ -3,8 +3,7 @@ import { useParams, useNavigate } from '@tanstack/react-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   ArrowLeft, Shield, CheckCircle2, XCircle, Ban,
-  UserPlus, ShieldCheck, Mail, Phone, Calendar,
-  MapPin, Briefcase, User,
+  UserPlus, Mail, Phone, User,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
