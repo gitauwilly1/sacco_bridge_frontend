@@ -10,10 +10,17 @@ export default function useOfflineQueue() {
   }, []);
 
   useEffect(() => {
-    updateCount();
-    const interval = setInterval(updateCount, 5000);
+    const initCount = async () => {
+      const count = await offlineQueue.getPendingCount();
+      setPendingCount(count);
+    };
+    initCount();
+    const interval = setInterval(async () => {
+      const count = await offlineQueue.getPendingCount();
+      setPendingCount(count);
+    }, 5000);
     return () => clearInterval(interval);
-  }, [updateCount]);
+  }, []);
 
   return {
     pendingCount,

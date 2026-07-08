@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Bell, Mail, Smartphone, MessageSquare, Save } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -99,16 +99,19 @@ function PreferencesSkeleton() {
 
 export default function NotificationPreferences() {
   const queryClient = useQueryClient();
-  const [preferences, setPreferences] = useState({});
-  const [existingIds, setExistingIds] = useState({});
 
   const { data: prefsData, isLoading, error, refetch } = useQuery({
     queryKey: ['notification-preferences'],
     queryFn: () => apiClient.get('/notifications/preferences/').then((r) => r.data),
   });
 
+  const [preferences, setPreferences] = useState({});
+  const [existingIds, setExistingIds] = useState({});
+  const prevPrefsRef = useRef();
+
   useEffect(() => {
-    if (Array.isArray(prefsData)) {
+    if (Array.isArray(prefsData) && prefsData !== prevPrefsRef.current) {
+      prevPrefsRef.current = prefsData;
       const mapped = {};
       const ids = {};
       for (const pref of prefsData) {
@@ -123,8 +126,10 @@ export default function NotificationPreferences() {
           }
         }
       }
-      setPreferences(mapped);
-      setExistingIds(ids);
+      Promise.resolve().then(() => {
+        setPreferences(mapped);
+        setExistingIds(ids);
+      });
     }
   }, [prefsData]);
 

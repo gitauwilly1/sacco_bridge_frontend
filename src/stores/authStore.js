@@ -33,7 +33,7 @@ const useAuthStore = create(
         set({
           user: data.data.user,
           isAuthenticated: true,
-          isLoading: true,
+          isLoading: false,
         });
 
         return { success: true };
@@ -49,7 +49,7 @@ const useAuthStore = create(
         set({
           user: data.data.user,
           isAuthenticated: true,
-          isLoading: true,
+          isLoading: false,
         });
       },
 
@@ -63,7 +63,7 @@ const useAuthStore = create(
         set({
           user: data.data.user,
           isAuthenticated: true,
-          isLoading: true,
+          isLoading: false,
         });
 
         return { success: true };

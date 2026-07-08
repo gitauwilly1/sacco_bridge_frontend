@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useSyncExternalStore } from 'react';
 import { useTheme } from 'next-themes';
 import { Palette, SunMoon, Type, Accessibility, Contrast } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -14,14 +14,10 @@ import {
 
 export default function AppearanceSettings() {
   const { theme, setTheme, resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
+  const mounted = useSyncExternalStore(() => () => {}, () => true, () => false);
   const [fontSize, setFontSize] = useState(getStoredFontSize);
   const [reduceMotion, setReduceMotion] = useState(getStoredReduceMotion);
   const [highContrast, setHighContrast] = useState(getStoredHighContrast);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
     applyFontSize(fontSize);

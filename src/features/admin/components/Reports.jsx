@@ -10,6 +10,8 @@ import { formatDate } from '../../../utils/format';
 
 const FALLBACK_REPORTS = [];
 
+const getDownloadFileName = (reportId) => 'report-' + reportId + '-' + Date.now() + '.json';
+
 export default function Reports() {
   const {
     data: reportsData,
@@ -47,7 +49,7 @@ export default function Reports() {
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = 'report-' + reportId + '-' + Date.now() + '.json';
+        link.download = getDownloadFileName(reportId);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);

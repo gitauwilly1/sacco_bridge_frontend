@@ -27,9 +27,9 @@ export default function NotificationBell() {
 
   useEffect(() => {
     if (unreadCount > 0) {
-      setIsNewChange(true);
-      const t = setTimeout(() => setIsNewChange(false), 300);
-      return () => clearTimeout(t);
+      const t1 = setTimeout(() => setIsNewChange(true), 0);
+      const t2 = setTimeout(() => setIsNewChange(false), 300);
+      return () => { clearTimeout(t1); clearTimeout(t2); };
     }
   }, [unreadCount]);
 

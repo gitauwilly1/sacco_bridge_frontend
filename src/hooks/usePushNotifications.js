@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { initializeApp } from 'firebase/app';
 import { getMessaging, getToken, onMessage } from 'firebase/messaging';
 import { notificationApi } from '../features/notifications/api/notificationApi';
@@ -34,12 +34,38 @@ export function usePushNotifications() {
   const [fcmToken, setFcmToken] = useState(null);
   const [isRegistering, setIsRegistering] = useState(false);
 
+  const registerToken = useCallback(async () => {
+    if (!env.FIREBASE_API_KEY || !env.FIREBASE_MESSAGING_SENDER_ID) return;
+    if (isRegistering) return;
+    setIsRegistering(true);
+    try {
+      const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+      const messaging = getMessagingInstance();
+      const token = await getToken(messaging, {
+        vapidKey: env.FIREBASE_VAPID_KEY,
+        serviceWorkerRegistration: registration,
+      });
+      if (token) {
+        setFcmToken(token);
+        await notificationApi.registerDevice({
+          firebase_token: token,
+          device_type: 'WEB',
+          device_name: navigator.platform || 'Web Browser',
+        });
+      }
+    } catch {
+    } finally {
+      setIsRegistering(false);
+    }
+  }, [isRegistering]);
+
   useEffect(() => {
     if (!env.FIREBASE_API_KEY || !env.FIREBASE_MESSAGING_SENDER_ID) return;
     if (permission === 'granted') {
-      registerToken();
+      const id = setTimeout(() => registerToken(), 0);
+      return () => clearTimeout(id);
     }
-  }, []);
+  }, [registerToken, permission]);
 
   useEffect(() => {
     if (fcmToken) {
@@ -65,31 +91,6 @@ export function usePushNotifications() {
     } catch {
     }
   }, []);
-
-  const registerToken = async () => {
-    if (!env.FIREBASE_API_KEY || !env.FIREBASE_MESSAGING_SENDER_ID) return;
-    if (isRegistering) return;
-    setIsRegistering(true);
-    try {
-      const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-      const messaging = getMessagingInstance();
-      const token = await getToken(messaging, {
-        vapidKey: env.FIREBASE_VAPID_KEY,
-        serviceWorkerRegistration: registration,
-      });
-      if (token) {
-        setFcmToken(token);
-        await notificationApi.registerDevice({
-          firebase_token: token,
-          device_type: 'WEB',
-          device_name: navigator.platform || 'Web Browser',
-        });
-      }
-    } catch {
-    } finally {
-      setIsRegistering(false);
-    }
-  };
 
   const requestPermission = async () => {
     try {

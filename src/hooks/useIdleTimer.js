@@ -10,7 +10,7 @@ const ACTIVITY_EVENTS = ['mousemove', 'mousedown', 'keydown', 'click', 'scroll',
 export default function useIdleTimer({ onTimeout, enabled }) {
   const [showWarning, setShowWarning] = useState(false);
   const [timeLeft, setTimeLeft] = useState(WARNING_BEFORE_MS / 1000);
-  const lastActivity = useRef(Date.now());
+  const lastActivity = useRef(null);
   const showWarningRef = useRef(false);
 
   const resetTimer = useCallback(() => {
@@ -22,7 +22,6 @@ export default function useIdleTimer({ onTimeout, enabled }) {
   useEffect(() => {
     if (!enabled) {
       showWarningRef.current = false;
-      setShowWarning(false);
       return;
     }
 

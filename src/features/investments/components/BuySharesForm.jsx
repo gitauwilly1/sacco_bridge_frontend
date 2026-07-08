@@ -95,14 +95,13 @@ export default function BuySharesForm() {
   });
 
   const shareClassList = Array.isArray(shareClasses) ? shareClasses : [];
-  const selectedShareClass = shareClassList.find((sc) => sc.id.toString() === selectedShareClassId);
 
-  // Set default values when data loads
-  useEffect(() => {
-    if (shareClassList.length > 0 && !selectedShareClassId) {
-      setSelectedShareClassId(shareClassList[0].id.toString());
-    }
-  }, [shareClassList, selectedShareClassId]);
+  if (!selectedShareClassId && shareClassList.length > 0) {
+    // lazily set default — will trigger a re-render once
+    queueMicrotask(() => setSelectedShareClassId(shareClassList[0].id.toString()));
+  }
+
+  const selectedShareClass = shareClassList.find((sc) => sc.id.toString() === selectedShareClassId);
 
   if (saccoLoading || sharesLoading) return <PageSpinner />;
   if (saccoError || sharesError) {
