@@ -39,7 +39,7 @@ export default function AuditLog() {
 
   const handleExportCSV = async () => {
     try {
-      const { data } = await adminApi.getUnifiedAudit({ page_size: 1000, format: 'csv' });
+      const { data } = await adminApi.getUnifiedAudit({ export: 'true', page_size: 500 });
       const blob = new Blob([data], { type: 'text/csv' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');

@@ -136,7 +136,7 @@ export default function AdminDashboard() {
   /* ── Export handler ─────────────────────────────────────────────── */
   const handleExport = async () => {
     try {
-      const res = await adminApi.getAdminExport({ type: 'overview' });
+      const res = await adminApi.getAdminExport({ type: 'users' });
       const blob = new Blob([res.data], { type: 'text/csv' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
