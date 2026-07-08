@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import { RefreshCw, User } from 'lucide-react';
+import { RefreshCw, User, Ban, CheckCircle2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -9,12 +9,7 @@ import { adminApi } from '../api/adminApi';
 import { formatDate, formatTimeAgo } from '../../../utils/format';
 import DataTable from './DataTable';
 import { ROLE_COLORS } from '../../../utils/permissions';
-
-const statusColors = {
-  active: 'bg-success/10 text-success border border-success/20',
-  suspended: 'bg-alert/10 text-alert border border-alert/20',
-  deactivated: 'bg-gray-200 text-gray-600 border border-gray-300',
-};
+import { USER_STATUS_COLORS, KYC_COLORS, getStatusColor } from '../../../utils/statusMapping';
 
 export default function UserList() {
   const navigate = useNavigate();
@@ -23,6 +18,9 @@ export default function UserList() {
   const [search, setSearch] = useState('');
   const [role, setRole] = useState('all');
   const [status, setStatus] = useState('all');
+  const [sortKey, setSortKey] = useState(null);
+  const [sortOrder, setSortOrder] = useState('asc');
+  const [selectedIds, setSelectedIds] = useState(new Set());
 
   const {
     data: usersData,
@@ -39,22 +37,19 @@ export default function UserList() {
           ...(search && { search }),
           ...(role !== 'all' && { role }),
           ...(status !== 'all' && { status }),
+          ...(sortKey && { ordering: sortOrder === 'desc' ? `-${sortKey}` : sortKey }),
         })
         .then((r) => r.data),
   });
 
-  const suspendMutation = useMutation({
-    mutationFn: ({ userId, suspend }) =>
-      adminApi.manageUser(userId, { action: suspend ? 'suspend' : 'activate' }),
+  const bulkMutation = useMutation({
+    mutationFn: ({ ids, action }) => adminApi.bulkManageUsers(Array.from(ids), action),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
-      toast.success('User updated');
+      setSelectedIds(new Set());
+      toast.success('Users updated');
     },
-    onError: (error) => {
-      toast.error(
-        error.response?.data?.error?.message || 'Action failed'
-      );
-    },
+    onError: () => toast.error('Bulk action failed'),
   });
 
   const users = usersData?.results || usersData?.data || [];
@@ -97,7 +92,7 @@ export default function UserList() {
       header: 'Status',
       sortable: true,
       render: (value) => (
-        <Badge className={`${statusColors[value] || 'bg-gray-100 text-gray-605 border-gray-200'} text-[10px] font-extrabold rounded-full px-2 py-0.5 shadow-none`} variant="outline">
+        <Badge className={`${getStatusColor(value, USER_STATUS_COLORS)} text-[10px] font-extrabold rounded-full px-2 py-0.5 shadow-none`} variant="outline">
           {value}
         </Badge>
       ),
@@ -107,13 +102,7 @@ export default function UserList() {
       header: 'KYC',
       render: (value) => (
         <Badge
-          className={`text-[10px] font-extrabold rounded-full px-2 py-0.5 shadow-none ${
-            value === 'verified'
-              ? 'bg-success/10 text-success border border-success/20'
-              : value === 'pending'
-              ? 'bg-alert/10 text-alert border border-alert/20'
-              : 'bg-gray-100 text-gray-500 border border-gray-200'
-          }`}
+          className={`text-[10px] font-extrabold rounded-full px-2 py-0.5 shadow-none ${getStatusColor(value, KYC_COLORS)}`}
           variant="outline"
         >
           {value || 'unverified'}
@@ -147,7 +136,7 @@ export default function UserList() {
           className="text-alert hover:bg-alert/10 hover:text-alert h-8 rounded-lg text-xs font-semibold px-2 cursor-pointer transition-all"
           onClick={() => {
             if (window.confirm(`Suspend ${row.first_name} ${row.last_name}?`)) {
-              suspendMutation.mutate({ userId: row.id, suspend: true });
+              bulkMutation.mutate({ ids: new Set([row.id]), action: 'suspend' });
             }
           }}
         >
@@ -159,12 +148,37 @@ export default function UserList() {
           variant="ghost"
           className="text-success hover:bg-success/10 hover:text-success h-8 rounded-lg text-xs font-semibold px-2 cursor-pointer transition-all"
           onClick={() => {
-            suspendMutation.mutate({ userId: row.id, suspend: false });
+            bulkMutation.mutate({ ids: new Set([row.id]), action: 'activate' });
           }}
         >
           Activate
         </Button>
       )}
+    </div>
+  );
+
+  const bulkActionBar = (ids) => (
+    <div className="flex items-center gap-2">
+      <Button
+        size="sm"
+        className="text-success bg-success/10 hover:bg-success/20 border-0 text-xs font-semibold cursor-pointer h-8 rounded-lg"
+        onClick={() => bulkMutation.mutate({ ids, action: 'activate' })}
+        disabled={bulkMutation.isPending}
+      >
+        <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> Activate
+      </Button>
+      <Button
+        size="sm"
+        className="text-alert bg-alert/10 hover:bg-alert/20 border-0 text-xs font-semibold cursor-pointer h-8 rounded-lg"
+        onClick={() => {
+          if (window.confirm(`Suspend ${ids.size} users?`)) {
+            bulkMutation.mutate({ ids, action: 'suspend' });
+          }
+        }}
+        disabled={bulkMutation.isPending}
+      >
+        <Ban className="h-3.5 w-3.5 mr-1" /> Suspend
+      </Button>
     </div>
   );
 
@@ -225,6 +239,17 @@ export default function UserList() {
         }}
         emptyMessage="No users found"
         rowActions={rowActions}
+        sortKey={sortKey}
+        sortOrder={sortOrder}
+        onSort={(key, order) => {
+          setSortKey(key);
+          setSortOrder(order);
+          setPage(1);
+        }}
+        selectable
+        selectedIds={selectedIds}
+        onSelectionChange={setSelectedIds}
+        bulkActionBar={bulkActionBar}
       />
     </div>
   );

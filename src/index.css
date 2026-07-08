@@ -15,9 +15,9 @@
   --color-sand-light: #FFF8F0;
   --color-slate: #3D405B;
   --color-slate-dark: #1A1A2E;
-  --color-success: #2D8B4E;
-  --color-alert: #E8A838;
-  --color-danger: #E74C3C;
+  --color-success: #236F3E;
+  --color-alert: #8C6820;
+  --color-danger: #D32F2F;
   --color-surface: #FAFAF8;
 
   /* shadcn UI semantic mapping */
@@ -27,7 +27,7 @@
   --color-background: #FAFAF8;
   --color-foreground: #1A1A2E;
   --color-muted: #F5E6D3;
-  --color-muted-foreground: #7D809A;
+  --color-muted-foreground: #6B7280;
   --color-popover: #FAFAF8;
   --color-popover-foreground: #1A1A2E;
   --color-accent: #FFF8F0;
@@ -106,6 +106,9 @@
     --color-popover-foreground: #f0f1f5;
     --color-accent: #262840;
     --color-accent-foreground: #e0c09a;
+    --color-success: #3CB371;
+    --color-danger: #E74C3C;
+    --color-alert: #E8A838;
   }
 
   .dark body {

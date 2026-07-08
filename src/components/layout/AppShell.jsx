@@ -1,10 +1,13 @@
-import { useState } from 'react';
+import React, { useState, lazy, Suspense, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { chatbotApi } from '@/features/chatbot/api/chatbotApi';
 import { useNavigate, useLocation } from '@tanstack/react-router';
 import {
   Home, Users, ArrowLeftRight, Activity, User,
   Menu, X, LogOut, Settings, HelpCircle,
-  Shield, ChevronDown, WifiOff, Bot, Plus,
+  Shield, ChevronDown, WifiOff, Bot, Plus, MessageSquare,
   HandCoins, Building2, Wallet, LayoutGrid,
+  ChevronLeft, ChevronRight,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -19,7 +22,8 @@ import { getInitials } from '../../utils/format';
 import NotificationBell from '../../features/notifications/components/NotificationBell';
 import BridgeLogo from '../brand/BridgeLogo';
 import Footer from './Footer';
-import LanguageSwitcher from './LanguageSwitcher';
+import useFocusTrap from '../../hooks/useFocusTrap';
+const ChatScreen = lazy(() => import('@/features/chatbot/components/ChatScreen'));
 
 // ── Primary action FAB config (context-aware) ─────────────────────────────
 function usePrimaryAction(activeMode, navigate) {
@@ -68,6 +72,17 @@ const sidebarNav = [
 export default function AppShell({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [fabOpen, setFabOpen] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatMounted, setChatMounted] = useState(false);
+  const [chatVisible, setChatVisible] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    try {
+      const v = localStorage.getItem('sb_sidebar_collapsed');
+      return v ? JSON.parse(v) : false;
+    } catch (e) {
+      return false;
+    }
+  });
   const { user, logout } = useAuthStore();
   const { activeMode, setActiveMode, isOnline } = useUIStore();
   const navigate = useNavigate();
@@ -75,6 +90,9 @@ export default function AppShell({ children }) {
 
   const primaryAction = usePrimaryAction(activeMode, navigate);
   const navItems = useNavItems(activeMode);
+
+  const sidebarTrapRef = useFocusTrap(sidebarOpen);
+  const chatTrapRef = useFocusTrap(chatMounted);
 
   const handleLogout = async () => {
     await logout();
@@ -90,6 +108,16 @@ export default function AppShell({ children }) {
     if (path === '/') return location.pathname === '/';
     return location.pathname.startsWith(path);
   };
+
+  // Chat sessions unread count
+  const { data: sessionsData } = useQuery({
+    queryKey: ['chatbot-unread-count'],
+    queryFn: () => chatbotApi.getSessions({ page_size: 50 }).then((r) => r.data),
+    refetchInterval: 30000,
+    staleTime: 15000,
+  });
+  const sessionsList = sessionsData?.results || sessionsData?.data || [];
+  const chatUnreadCount = Array.isArray(sessionsList) ? sessionsList.reduce((acc, s) => acc + (s.unread_count || 0), 0) : 0;
 
   // Context-aware FAB menu items
   const fabItems = activeMode === 'investments'
@@ -108,7 +136,7 @@ export default function AppShell({ children }) {
     <div className="flex min-h-screen flex-col bg-surface dark:bg-surface">
       {/* ── Offline Banner ── */}
       {!isOnline && (
-        <div className="flex items-center justify-center gap-2 bg-alert text-white text-center text-xs py-2 font-medium">
+        <div role="status" aria-live="polite" className="flex items-center justify-center gap-2 bg-alert text-white text-center text-xs py-2 font-medium">
           <WifiOff className="h-3.5 w-3.5 animate-pulse-amber" />
           You are offline. Changes will sync when connected.
         </div>
@@ -174,7 +202,6 @@ export default function AppShell({ children }) {
 
           {/* Right: notifications + avatar */}
           <div className="flex items-center gap-1.5">
-            <LanguageSwitcher />
             <button
               id="header-help-btn"
               onClick={() => navigate({ to: '/help' })}
@@ -252,10 +279,46 @@ export default function AppShell({ children }) {
         </div>
       </header>
 
-      {/* ── Main Content ── */}
-      <main className="flex-1 pb-20 lg:pb-0">
-        {children}
-      </main>
+      {/* ── Main + Desktop Sidebar ── */}
+      <div className="flex flex-1 min-h-0">
+        {/* Desktop Sidebar */}
+        <aside className={`hidden lg:flex flex-col border-r border-sand/45 bg-slate-50 shadow-sm transition-all duration-300 ease-in-out ${sidebarCollapsed ? 'w-16' : 'w-64'}`}>
+          <div className="flex items-center justify-end p-3 border-b border-sand/40">
+            <button
+              onClick={() => setSidebarCollapsed((s) => !s)}
+              className="hidden lg:inline-flex p-1 rounded-md hover:bg-sand-light transition-colors"
+              aria-label="Toggle sidebar"
+              title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            >
+              {sidebarCollapsed ? <ChevronRight className="h-4 w-4 text-slate" /> : <ChevronLeft className="h-4 w-4 text-slate" />}
+            </button>
+          </div>
+          <nav className="p-2 flex-1 overflow-y-auto space-y-1 scrollbar-none">
+            {sidebarNav.map((item) => {
+              const active = isActive(item.path);
+              return (
+                <button
+                  key={item.path}
+                  onClick={() => navigate({ to: item.path })}
+                  className={`w-full flex items-center ${sidebarCollapsed ? 'justify-center' : 'gap-3 px-3'} py-2.5 text-sm font-medium rounded-lg transition-colors ${
+                    active ? 'bg-sand-light text-terracotta' : 'text-slate hover:bg-sand-light/50'
+                  }`}
+                  title={item.label}
+                  aria-label={item.label}
+                >
+                  <item.icon className={`h-5 w-5 ${active ? 'text-terracotta' : 'text-gray-400'}`} />
+                  {!sidebarCollapsed && <span>{item.label}</span>}
+                </button>
+              );
+            })}
+          </nav>
+        </aside>
+
+        {/* Main Content */}
+        <main id="main-content" className="flex-1 pb-20 lg:pb-0 overflow-auto">
+          {children}
+        </main>
+      </div>
 
       <div className="pb-16 lg:pb-0 hidden lg:block">
         <Footer />
@@ -318,8 +381,8 @@ export default function AppShell({ children }) {
                 key={item.id}
                 id={`nav-${item.id}-btn`}
                 onClick={() => navigate({ to: item.path })}
-                className={`flex flex-col items-center justify-center gap-0.5 min-w-[52px] py-1 rounded-xl transition-all duration-200 ${
-                  active ? 'scale-105' : ''
+                className={`flex flex-col items-center justify-center gap-0.5 min-w-[52px] py-1 transition-all duration-200 ${
+                  active ? 'scale-105 bg-slate-100 rounded-lg px-3 py-2' : 'rounded-xl'
                 }`}
               >
                 <div className={`h-1 w-4 rounded-full mb-0.5 transition-all duration-200 ${
@@ -349,7 +412,7 @@ export default function AppShell({ children }) {
 
       {/* ── Mobile Sidebar Overlay ── */}
       {sidebarOpen && (
-        <div className="fixed inset-0 z-40 lg:hidden">
+        <div ref={sidebarTrapRef} className="fixed inset-0 z-40 lg:hidden">
           {/* Backdrop */}
           <div
             className="absolute inset-0 bg-slate-dark/40 backdrop-blur-sm"
@@ -414,19 +477,19 @@ export default function AppShell({ children }) {
             <div className="flex-1 overflow-y-auto p-3 space-y-0.5">
               {sidebarNav.map((item) => {
                 const active = isActive(item.path);
-                const accentColor = activeMode === 'investments' ? 'text-slate border-slate bg-slate/5' : 'text-terracotta border-terracotta bg-sand-light';
+                const activeBg = activeMode === 'investments' ? 'bg-slate-100 text-slate border-slate-200' : 'bg-sand-light text-terracotta border-terracotta';
                 return (
                   <button
                     key={item.path}
                     onClick={() => handleNavClick(item.path)}
-                    className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 ${
+                    className={`flex items-center gap-3 w-full px-3 py-2.5 transition-all duration-150 text-sm font-medium ${
                       active
-                        ? `${accentColor} border-l-2 pl-[10px]`
-                        : 'text-slate hover:bg-sand-light hover:text-slate'
+                        ? `${activeBg} border-l-2 pl-[10px] rounded-lg shadow-sm`
+                        : 'text-slate hover:bg-sand-light hover:text-slate rounded-lg'
                     }`}
                   >
                     <item.icon className={`h-5 w-5 ${active ? (activeMode === 'investments' ? 'text-slate' : 'text-terracotta') : 'text-gray-400'}`} />
-                    {item.label}
+                    <span className="ml-1">{item.label}</span>
                   </button>
                 );
               })}
@@ -442,7 +505,6 @@ export default function AppShell({ children }) {
                 Help & Support
               </button>
               <div className="flex items-center justify-center py-2 border-t border-sand/40 mt-2 pt-2">
-                <LanguageSwitcher />
               </div>
               <button
                 id="sidebar-logout-btn"
@@ -458,14 +520,79 @@ export default function AppShell({ children }) {
       )}
 
       {/* ── Desktop AI Assistant FAB ── */}
-      <button
-        id="ai-assistant-fab"
-        onClick={() => navigate({ to: '/chat' })}
-        className="hidden lg:flex fixed bottom-6 right-6 z-40 h-12 w-12 items-center justify-center rounded-full bg-terracotta hover:bg-clay text-white shadow-elevated transition-all hover:scale-105 active:scale-95 cursor-pointer"
-        aria-label="AI Assistant"
-      >
-        <Bot className="h-6 w-6" />
-      </button>
+      {!chatOpen && (
+        <button
+          id="chat-fab"
+          onClick={() => {
+            setChatOpen(true);
+            setChatMounted(true);
+          }}
+          className="fixed right-4 z-[60] h-12 w-12 flex items-center justify-center rounded-full bg-terracotta hover:bg-clay text-white shadow-elevated transition-all hover:scale-105 active:scale-95 cursor-pointer bottom-28 sm:bottom-6"
+          aria-label="Open chat"
+          title="Open chat"
+        >
+          <MessageSquare className="h-6 w-6" />
+          {/* Unread badge */}
+          {chatUnreadCount > 0 && (
+            <span className="absolute -top-1 -right-1 inline-flex items-center justify-center h-5 min-w-[20px] px-1.5 rounded-full bg-danger text-white text-[11px] font-bold">{chatUnreadCount > 99 ? '99+' : chatUnreadCount}</span>
+          )}
+        </button>
+      )}
+
+      {/* Chat Slide-over */}
+      {chatMounted && (
+        <div ref={chatTrapRef} className="fixed inset-0 z-50">
+          <div
+            className={`absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-300 ${chatVisible ? 'opacity-100' : 'opacity-0'}`}
+            onClick={() => setChatOpen(false)}
+          />
+          <div className={`absolute right-0 top-0 bottom-0 w-full sm:w-[420px] bg-white shadow-elevated transform transition-all duration-300 ${chatVisible ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'}`}>
+            <div className="h-full flex flex-col">
+              <div className="flex items-center justify-between p-3 border-b border-sand/40">
+                <div className="flex items-center gap-2">
+                  <MessageSquare className="h-5 w-5 text-terracotta" />
+                  <h3 className="text-sm font-bold text-slate">Chat Assistant</h3>
+                </div>
+                <button onClick={() => setChatOpen(false)} className="p-1.5 rounded-lg hover:bg-sand-light transition-colors">
+                  <X className="h-5 w-5 text-slate" />
+                </button>
+              </div>
+              <div className="h-[calc(100vh-64px)] overflow-hidden flex-1">
+                <Suspense fallback={<div className="h-full flex items-center justify-center"><div className="skeleton-shimmer h-8 w-8 rounded-full" /></div>}>
+                  <ChatScreen />
+                </Suspense>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* manage mount/visibility for animation */}
+      {/** Toggle visibility when chatOpen changes **/}
+      {chatMounted && (
+        <ChatMountEffect chatOpen={chatOpen} setChatVisible={setChatVisible} setChatMounted={setChatMounted} />
+      )}
     </div>
   );
+}
+
+function ChatMountEffect({ chatOpen, setChatVisible, setChatMounted }) {
+  useEffect(() => {
+    let t1;
+    let t2;
+    if (chatOpen) {
+      // small delay to ensure element is mounted before making it visible
+      t1 = setTimeout(() => setChatVisible(true), 20);
+    } else {
+      // hide then unmount after transition
+      setChatVisible(false);
+      t2 = setTimeout(() => setChatMounted(false), 320);
+    }
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, [chatOpen, setChatMounted, setChatVisible]);
+
+  return null;
 }

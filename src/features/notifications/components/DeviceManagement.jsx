@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  Smartphone, Monitor, Trash2, Circle,
+  Smartphone, Monitor, Trash2, Circle, BellPlus,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,11 +8,13 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { notificationApi } from '../api/notificationApi';
 import { formatDate } from '../../../utils/format';
 import { toast } from 'sonner';
+import { usePushNotifications } from '../../../hooks/usePushNotifications';
 
 const deviceIcons = { IOS: Smartphone, ANDROID: Smartphone, WEB: Monitor };
 
 export default function DeviceManagement() {
   const queryClient = useQueryClient();
+  const { permission, fcmToken, isRegistering, requestPermission } = usePushNotifications();
 
   const { data, isLoading } = useQuery({
     queryKey: ['user-devices'],
@@ -35,7 +37,19 @@ export default function DeviceManagement() {
       <CardHeader className="pb-3 border-b border-sand/40">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm font-bold text-slate">Registered Devices</CardTitle>
+          <Button
+            variant="ghost" size="sm"
+            onClick={requestPermission}
+            disabled={isRegistering || permission === 'granted'}
+            className="text-xs font-semibold text-terracotta hover:text-terracotta-dark hover:bg-terracotta/5 cursor-pointer"
+          >
+            <BellPlus className="h-3.5 w-3.5 mr-1" />
+            {isRegistering ? 'Registering...' : permission === 'granted' ? 'Active' : 'Enable Push'}
+          </Button>
         </div>
+        {permission === 'denied' && (
+          <p className="text-xs text-alert mt-1">Push notifications blocked. Update your browser settings to enable.</p>
+        )}
       </CardHeader>
       <CardContent className="pt-3">
         {isLoading && (

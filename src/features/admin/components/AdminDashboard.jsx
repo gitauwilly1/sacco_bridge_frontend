@@ -246,7 +246,7 @@ export default function AdminDashboard() {
   const serviceIcons = { database: Database, redis: RefreshCw, celery: Activity, disk: BarChart3 };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-4 bg-slate-50 rounded-2xl">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

@@ -30,6 +30,7 @@ export default function AccountDeactivation() {
   const [showDelete, setShowDelete] = useState(false);
   const [isDeactivating, setIsDeactivating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [deactivatePassword, setDeactivatePassword] = useState('');
   const { logout } = useAuthStore();
 
   const deleteForm = useForm({
@@ -38,13 +39,15 @@ export default function AccountDeactivation() {
   });
 
   const handleDeactivate = async () => {
+    if (!deactivatePassword) { toast.error('Enter your password to deactivate.'); return; }
     setIsDeactivating(true);
     try {
-      await profileApi.deactivateAccount({});
+      await profileApi.deactivateAccount({ password: deactivatePassword });
       toast.success('Account deactivated. You can reactivate by logging in again.');
       await logout();
     } catch (error) {
-      toast.error('Failed to deactivate account');
+      const msg = error.response?.data?.error?.message || 'Failed to deactivate account';
+      toast.error(msg);
     } finally {
       setIsDeactivating(false);
     }
@@ -95,6 +98,13 @@ export default function AccountDeactivation() {
               Your account will be temporarily disabled. You can reactivate at any time by simply
               logging back in.
             </p>
+            <Input
+              type="password"
+              placeholder="Enter your password to confirm"
+              value={deactivatePassword}
+              onChange={(e) => setDeactivatePassword(e.target.value)}
+              className="border-input rounded-xl bg-white text-sm h-10"
+            />
             <div className="flex gap-2">
               <Button
                 className="bg-danger hover:bg-danger/90 text-white shadow-subtle cursor-pointer h-9 rounded-lg text-xs font-semibold px-4 transition-all"
@@ -106,7 +116,7 @@ export default function AccountDeactivation() {
               <Button
                 variant="outline"
                 className="border-sand hover:bg-sand-light text-slate cursor-pointer h-9 rounded-lg text-xs font-semibold px-4 transition-all"
-                onClick={() => setShowDeactivate(false)}
+                onClick={() => { setShowDeactivate(false); setDeactivatePassword(''); }}
               >
                 Cancel
               </Button>

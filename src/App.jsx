@@ -1,4 +1,4 @@
-import { useEffect, lazy, Suspense } from 'react';
+import { useEffect, lazy, Suspense, ErrorBoundary } from 'react';
 const AuthLayout = lazy(() => import('./features/auth/components/AuthLayout'));
 import { useLocation } from '@tanstack/react-router';
 import useAuthStore from './stores/authStore';
@@ -8,11 +8,16 @@ import { isAdmin } from './utils/permissions';
 
 import { ModeProvider } from './contexts/ModeContext';
 import { Loader2 } from 'lucide-react';
+import SkipToContent from './components/accessibility/SkipToContent';
 import { FullPageLoader } from './components/feedback/LoadingState';
 import { Toaster } from '@/components/ui/sonner';
 import AppShell from './components/layout/AppShell';
 import AdminLayout from './features/admin/components/AdminLayout';
 import { Outlet, useNavigate } from '@tanstack/react-router';
+import ErrorFallback from './components/feedback/ErrorFallback';
+import useIdleTimer from './hooks/useIdleTimer';
+import SessionTimeoutModal from './components/feedback/SessionTimeoutModal';
+import CookieConsentBanner from './components/CookieConsentBanner';
 
 // Auth routes and the view they map to in AuthLayout
 const AUTH_ROUTE_VIEWS = {
@@ -40,6 +45,15 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    if (isAuthenticated && isInitialized && isLoading) {
+      const timer = setTimeout(() => {
+        useAuthStore.setState({ isLoading: false });
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+  }, [isAuthenticated, isInitialized, isLoading]);
+
+  useEffect(() => {
     if (isAuthenticated) {
       connect();
     }
@@ -56,6 +70,13 @@ export default function App() {
       window.removeEventListener('offline', handleOffline);
     };
   }, []);
+
+  const { showWarning, timeLeft, resetTimer } = useIdleTimer({
+    enabled: isAuthenticated,
+    onTimeout: () => {
+      useAuthStore.getState().logout();
+    },
+  });
 
   // Redirect authenticated users away from auth routes
   useEffect(() => {
@@ -93,10 +114,11 @@ export default function App() {
     return <FullPageLoader />;
   }
 
-  const renderApp = () => {
+const renderApp = () => {
     if (!isAuthenticated) {
       return (
         <div className="min-h-screen bg-surface dark:bg-surface">
+          <SkipToContent />
           <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><Loader2 className="animate-spin size-8 text-primary" /></div>}>
             <AuthLayout initialView={authView || 'login'} />
           </Suspense>
@@ -107,6 +129,7 @@ export default function App() {
     if (userIsAdmin) {
       return (
         <div className="min-h-screen bg-surface dark:bg-surface">
+          <SkipToContent />
           <AdminLayout>
             <Outlet />
           </AdminLayout>
@@ -116,6 +139,7 @@ export default function App() {
     }
     return (
       <div className="min-h-screen bg-surface dark:bg-surface">
+        <SkipToContent />
         <AppShell>
           <Outlet />
         </AppShell>
@@ -125,8 +149,12 @@ export default function App() {
   };
 
   return (
-    <ModeProvider>
-      {renderApp()}
-    </ModeProvider>
+    <ErrorBoundary fallback={<ErrorFallback />} onReset={() => window.location.reload()}>
+      <ModeProvider>
+        {showWarning && <SessionTimeoutModal timeLeft={timeLeft} onStayLoggedIn={resetTimer} />}
+        <CookieConsentBanner />
+        {renderApp()}
+      </ModeProvider>
+    </ErrorBoundary>
   );
 }

@@ -14,21 +14,8 @@ import { adminApi } from '../api/adminApi';
 import { scoringApi } from '../../chamas/api/scoringApi';
 import { chamaApi } from '../../chamas/api/chamaApi';
 import { formatKES } from '../../../utils/format';
+import { UNDERWRITING_DECISION_COLORS, UNDERWRITING_DECISION_LABELS } from '../../../utils/statusMapping';
 import { toast } from 'sonner';
-
-const decisionColors = {
-  APPROVE: 'bg-success/10 text-success',
-  APPROVE_WITH_CONDITIONS: 'bg-blue-500/10 text-blue-600',
-  FLAG_FOR_REVIEW: 'bg-alert/10 text-alert',
-  REJECT: 'bg-danger/10 text-danger',
-};
-
-const decisionLabels = {
-  APPROVE: 'Approve',
-  APPROVE_WITH_CONDITIONS: 'Conditional',
-  FLAG_FOR_REVIEW: 'Flagged',
-  REJECT: 'Reject',
-};
 
 export default function AdminUnderwriting() {
   const queryClient = useQueryClient();
@@ -116,12 +103,12 @@ export default function AdminUnderwriting() {
             </CardHeader>
             <CardContent className="pt-4 space-y-4">
               <div className="flex items-center gap-3">
-                <Badge className={`text-xs font-bold px-3 py-1 rounded-full border-0 ${decisionColors[underwriting.decision] || 'bg-sand text-slate'}`}>
-                  {decisionLabels[underwriting.decision] || underwriting.decision}
+                <Badge className={`text-xs font-bold px-3 py-1 rounded-full border-0 ${UNDERWRITING_DECISION_COLORS[underwriting.decision] || 'bg-sand text-slate'}`}>
+                  {UNDERWRITING_DECISION_LABELS[underwriting.decision] || underwriting.decision}
                 </Badge>
                 {underwriting.overridden && (
                   <Badge className="text-xs bg-alert/10 text-alert border-0 rounded-full">
-                    Overridden to {decisionLabels[underwriting.overridden_decision] || underwriting.overridden_decision}
+                    Overridden to {UNDERWRITING_DECISION_LABELS[underwriting.overridden_decision] || underwriting.overridden_decision}
                   </Badge>
                 )}
               </div>
@@ -176,7 +163,7 @@ export default function AdminUnderwriting() {
                         onClick={() => setOverrideDecision(d)}
                         className={`text-xs ${overrideDecision === d ? 'bg-terracotta text-white' : 'border-sand/40'}`}
                       >
-                        {decisionLabels[d]}
+                        {UNDERWRITING_DECISION_LABELS[d]}
                       </Button>
                     ))}
                   </div>

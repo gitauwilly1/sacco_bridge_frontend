@@ -10,7 +10,7 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png'],
+      includeAssets: ['favicon.svg', 'apple-touch-icon.svg', 'firebase-messaging-sw.js'],
       manifest: {
         name: 'Sacco Bridge',
         short_name: 'SaccoBridge',
@@ -20,27 +20,30 @@ export default defineConfig({
         display: 'standalone',
         orientation: 'portrait-primary',
         start_url: '/',
+        gcm_sender_id: '___FIREBASE_MESSAGING_SENDER_ID___',
         icons: [
           {
-            src: '/icon-192.png',
+            src: '/icon-192.svg',
             sizes: '192x192',
-            type: 'image/png',
+            type: 'image/svg+xml',
           },
           {
-            src: '/icon-512.png',
+            src: '/icon-512.svg',
             sizes: '512x512',
-            type: 'image/png',
+            type: 'image/svg+xml',
           },
           {
-            src: '/icon-512.png',
+            src: '/icon-512.svg',
             sizes: '512x512',
-            type: 'image/png',
+            type: 'image/svg+xml',
             purpose: 'maskable',
           },
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        globPatterns: ['**/*.{js,css,html,ico,svg,png,woff2}'],
+        navigateFallback: '/',
+        navigateFallbackAllowlist: [/^(?!\/api\/)/],
         runtimeCaching: [
           {
             urlPattern: /\/api\/v1\/.*/i,

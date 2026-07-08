@@ -1,16 +1,22 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import {
   HandCoins, Calendar, Clock, AlertCircle,
-  CheckCircle2, XCircle, ChevronRight, RefreshCw,
+  CheckCircle2, XCircle, ChevronRight, RefreshCw, Trash2,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { EmptyState, ErrorState } from '@/components/feedback';
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
+  DialogFooter, DialogClose, DialogTrigger,
+} from '@/components/ui/dialog';
 import { chamaApi } from '../api/chamaApi';
 import { formatKES, formatDate, formatTimeAgo } from '../../../utils/format';
+import { toast } from 'sonner';
+import useAuthStore from '../../../stores/authStore';
 
 const loanStatusConfig = {
   pending: {
@@ -40,16 +46,31 @@ const loanStatusConfig = {
   },
 };
 
-function LoanCard({ loan, chamaId }) {
+const adminRoles = ['CHAIRPERSON', 'TREASURER', 'SECRETARY', 'VICE_CHAIRPERSON'];
+
+function LoanCard({ loan, chamaId, isAdmin }) {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [showCancel, setShowCancel] = useState(false);
+
   const status = loanStatusConfig[loan.status] || loanStatusConfig.pending;
   const StatusIcon = status.icon;
-  
+
+  const cancelMutation = useMutation({
+    mutationFn: () => chamaApi.cancelLoan(chamaId, loan.id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['chama-loans', chamaId] });
+      setShowCancel(false);
+      toast.success('Loan cancelled');
+    },
+    onError: (err) => toast.error(err.response?.data?.error?.message || 'Failed to cancel loan'),
+  });
+
   const progressPercent = loan.total_repaid
     ? Math.min(Math.round((loan.total_repaid / loan.amount) * 100), 100)
     : 0;
 
-  const leftBorderColor = 
+  const leftBorderColor =
     loan.status === 'active' ? 'border-l-success' :
     loan.status === 'pending' ? 'border-l-alert' :
     loan.status === 'repaid' ? 'border-l-blue-500' :
@@ -57,93 +78,112 @@ function LoanCard({ loan, chamaId }) {
     'border-l-gray-300';
 
   return (
-    <Card
-      className={`cursor-pointer border-sand border-l-4 ${leftBorderColor} hover:shadow-md hover:-translate-y-0.5 transition-all duration-200`}
-      onClick={() => navigate({ to: `/chamas/${chamaId}/loans/${loan.id}` })}
-    >
-      <CardContent className="p-4">
-        <div className="flex items-start justify-between mb-3.5">
-          <div className="flex-1 min-w-0 pr-2">
-            <div className="flex items-center gap-2 mb-1 flex-wrap">
-              <h3 className="font-semibold text-slate text-sm truncate">
-                {loan.purpose || 'Loan'}
-              </h3>
-              <Badge className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border-0 shadow-none capitalize ${status.color}`}>
-                <StatusIcon className="h-3 w-3 mr-1" />
-                {status.label}
-              </Badge>
+    <>
+      <Card
+        className={`cursor-pointer border-sand border-l-4 ${leftBorderColor} hover:shadow-md hover:-translate-y-0.5 transition-all duration-200`}
+        onClick={() => navigate({ to: `/chamas/${chamaId}/loans/${loan.id}` })}
+      >
+        <CardContent className="p-4">
+          <div className="flex items-start justify-between mb-3.5">
+            <div className="flex-1 min-w-0 pr-2">
+              <div className="flex items-center gap-2 mb-1 flex-wrap">
+                <h3 className="font-semibold text-slate text-sm truncate">
+                  {loan.purpose || 'Loan'}
+                </h3>
+                <Badge className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border-0 shadow-none capitalize ${status.color}`}>
+                  <StatusIcon className="h-3 w-3 mr-1" />
+                  {status.label}
+                </Badge>
+              </div>
+              <p className="text-xs text-gray-400 font-medium">
+                Applied {formatTimeAgo(loan.created_at)}
+              </p>
             </div>
-            <p className="text-xs text-gray-400 font-medium">
-              Applied {formatTimeAgo(loan.created_at)}
-            </p>
+            <div className="flex items-center gap-1">
+              {isAdmin && loan.status === 'pending' && (
+                <Dialog open={showCancel} onOpenChange={setShowCancel}>
+                  <DialogTrigger asChild>
+                    <button onClick={(e) => { e.stopPropagation(); setShowCancel(true); }}
+                      className="p-1.5 rounded text-gray-400 hover:text-danger hover:bg-danger/5 transition-colors">
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Cancel Loan</DialogTitle>
+                      <DialogDescription>Cancel this pending loan application?</DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                      <DialogClose asChild>
+                        <Button variant="outline" className="border-sand text-slate">Keep</Button>
+                      </DialogClose>
+                      <Button onClick={() => cancelMutation.mutate()}
+                        disabled={cancelMutation.isPending}
+                        className="bg-danger hover:bg-danger/90 text-white">
+                        {cancelMutation.isPending ? 'Cancelling...' : 'Cancel Loan'}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              )}
+              <ChevronRight className="h-4 w-4 text-gray-400 flex-shrink-0" />
+            </div>
           </div>
-          <ChevronRight className="h-4 w-4 text-gray-400 flex-shrink-0" />
-        </div>
 
-        <div className="grid grid-cols-2 gap-3 mb-3">
-          <div>
-            <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Amount</p>
-            <p className="text-sm font-bold text-slate font-numbers mt-0.5" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-              {formatKES(loan.amount)}
-            </p>
-          </div>
-          <div>
-            <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Balance</p>
-            <p className="text-sm font-bold text-slate font-numbers mt-0.5" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-              {formatKES(loan.outstanding_balance || loan.amount)}
-            </p>
-          </div>
-          <div>
-            <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Interest</p>
-            <p className="text-sm font-semibold text-slate font-numbers mt-0.5" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-              {loan.interest_rate}%
-            </p>
-          </div>
-          <div>
-            <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Term</p>
-            <p className="text-sm font-semibold text-slate mt-0.5">
-              {loan.term_months || loan.duration_months || '—'} months
-            </p>
-          </div>
-        </div>
-
-        {/* Repayment Progress */}
-        {loan.status === 'active' && (
-          <div className="space-y-1.5 mt-4 pt-3 border-t border-sand/40">
-            <div className="flex justify-between text-xs">
-              <span className="text-gray-400 font-medium">Repaid</span>
-              <span className="font-bold text-success font-numbers" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{progressPercent}%</span>
-            </div>
-            <div className="w-full bg-sand rounded-full h-2">
-              <div
-                className="bg-success rounded-full h-2 transition-all duration-300"
-                style={{ width: `${progressPercent}%` }}
-              />
-            </div>
-            <div className="flex justify-between text-[11px] text-gray-400 font-medium font-numbers" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-              <span>
-                {formatKES(loan.total_repaid || 0)}
-              </span>
-              <span>
+          <div className="grid grid-cols-2 gap-3 mb-3">
+            <div>
+              <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Amount</p>
+              <p className="text-sm font-bold text-slate font-numbers mt-0.5" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
                 {formatKES(loan.amount)}
-              </span>
+              </p>
+            </div>
+            <div>
+              <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Balance</p>
+              <p className="text-sm font-bold text-slate font-numbers mt-0.5" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                {formatKES(loan.outstanding_balance || loan.amount)}
+              </p>
+            </div>
+            <div>
+              <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Interest</p>
+              <p className="text-sm font-semibold text-slate font-numbers mt-0.5" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                {loan.interest_rate}%
+              </p>
+            </div>
+            <div>
+              <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Term</p>
+              <p className="text-sm font-semibold text-slate mt-0.5">
+                {loan.term_months || loan.duration_months || '—'} months
+              </p>
             </div>
           </div>
-        )}
 
-        {/* Next Payment */}
-        {loan.next_payment_date && loan.status === 'active' && (
-          <div className="mt-3.5 pt-3.5 border-t border-sand/40 flex items-center gap-2 text-xs">
-            <Calendar className="h-3.5 w-3.5 text-terracotta" />
-            <span className="text-gray-400 font-medium">
-              Next payment: <span className="font-bold text-slate">
-                {formatDate(loan.next_payment_date)}
+          {loan.status === 'active' && (
+            <div className="space-y-1.5 mt-4 pt-3 border-t border-sand/40">
+              <div className="flex justify-between text-xs">
+                <span className="text-gray-400 font-medium">Repaid</span>
+                <span className="font-bold text-success font-numbers" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{progressPercent}%</span>
+              </div>
+              <div className="w-full bg-sand rounded-full h-2">
+                <div className="bg-success rounded-full h-2 transition-all duration-300" style={{ width: `${progressPercent}%` }} />
+              </div>
+              <div className="flex justify-between text-[11px] text-gray-400 font-medium font-numbers" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                <span>{formatKES(loan.total_repaid || 0)}</span>
+                <span>{formatKES(loan.amount)}</span>
+              </div>
+            </div>
+          )}
+
+          {loan.next_payment_date && loan.status === 'active' && (
+            <div className="mt-3.5 pt-3.5 border-t border-sand/40 flex items-center gap-2 text-xs">
+              <Calendar className="h-3.5 w-3.5 text-terracotta" />
+              <span className="text-gray-400 font-medium">
+                Next payment: <span className="font-bold text-slate">{formatDate(loan.next_payment_date)}</span>
               </span>
-            </span>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </>
   );
 }
 
@@ -177,8 +217,18 @@ function LoansListSkeleton() {
 }
 
 export default function LoansList({ chamaId }) {
+  const { user } = useAuthStore();
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState('all');
+
+  const { data: membersData } = useQuery({
+    queryKey: ['chama-members', chamaId],
+    queryFn: () => chamaApi.getMembers(chamaId).then((r) => r.data),
+    enabled: !!chamaId,
+  });
+  const members = membersData?.data || membersData?.results || [];
+  const currentMember = members.find((m) => m.user_id === user?.id || m.user?.id === user?.id);
+  const isAdmin = currentMember && adminRoles.includes(currentMember.role);
 
   const {
     data: loansData,
@@ -230,7 +280,6 @@ export default function LoansList({ chamaId }) {
 
   return (
     <div className="space-y-4">
-      {/* Header with filters */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <HandCoins className="h-4 w-4 text-terracotta" />
@@ -264,14 +313,12 @@ export default function LoansList({ chamaId }) {
         </div>
       </div>
 
-      {/* Loans List */}
       <div className="space-y-3">
         {loans.map((loan) => (
-          <LoanCard key={loan.id} loan={loan} chamaId={chamaId} />
+          <LoanCard key={loan.id} loan={loan} chamaId={chamaId} isAdmin={isAdmin} />
         ))}
       </div>
 
-      {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-2 pt-2">
           <Button

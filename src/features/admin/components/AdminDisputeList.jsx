@@ -7,19 +7,15 @@ import { Button } from '@/components/ui/button';
 import { adminApi } from '../api/adminApi';
 import { formatKES, formatTimeAgo } from '../../../utils/format';
 import DataTable from './DataTable';
-
-const disputeStatusColors = {
-  open: 'bg-danger/10 text-danger border-danger/20',
-  under_review: 'bg-alert/10 text-alert border-alert/20',
-  resolved: 'bg-success/10 text-success border-success/20',
-  closed: 'bg-sand text-slate border-sand-dark/20',
-};
+import { DISPUTE_STATUS_COLORS, getStatusColor } from '../../../utils/statusMapping';
 
 export default function AdminDisputeList() {
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('all');
+  const [sortKey, setSortKey] = useState(null);
+  const [sortOrder, setSortOrder] = useState('asc');
 
   const {
     data: disputesData,
@@ -35,6 +31,7 @@ export default function AdminDisputeList() {
           page_size: 15,
           ...(search && { search }),
           ...(status !== 'all' && { status }),
+          ...(sortKey && { ordering: sortOrder === 'desc' ? `-${sortKey}` : sortKey }),
         })
         .then((r) => r.data),
   });
@@ -47,49 +44,48 @@ export default function AdminDisputeList() {
       key: 'id',
       header: 'ID',
       width: '80px',
+      sortable: true,
       render: (value) => <span className="font-mono text-xs font-semibold text-slate/75">#{value}</span>,
     },
     {
-      key: 'reason',
-      header: 'Reason',
+      key: 'buyer_sacco_name',
+      header: 'Parties',
       render: (_, row) => (
         <div>
           <p className="text-sm font-semibold text-slate">
-            {row.reason_display || row.reason}
+            {row.buyer_name || '—'} → {row.seller_name || '—'}
           </p>
-          <p className="text-xs text-gray-400 truncate max-w-[200px]">
-            {row.description}
+          <p className="text-xs text-gray-400">
+            {row.buyer_sacco_name || '—'} / {row.seller_sacco_name || '—'}
           </p>
         </div>
       ),
     },
     {
-      key: 'sacco_name',
-      header: 'SACCO',
-      render: (value) => <span className="text-sm font-medium text-slate">{value || '—'}</span>,
-    },
-    {
-      key: 'settlement_amount',
+      key: 'amount',
       header: 'Amount',
+      sortable: true,
       render: (value) => (
         <span className="text-sm font-bold text-slate">{formatKES(value)}</span>
       ),
     },
     {
-      key: 'status',
+      key: 'state',
       header: 'Status',
+      sortable: true,
       render: (value) => (
         <Badge
-          className={`${disputeStatusColors[value] || 'bg-sand text-slate border-sand-dark/20'} border`}
+          className={`${getStatusColor(value, DISPUTE_STATUS_COLORS)} border`}
           variant="outline"
         >
-          {value?.replace('_', ' ')}
+          {value?.replace(/_/g, ' ')?.toLowerCase()}
         </Badge>
       ),
     },
     {
       key: 'created_at',
       header: 'Filed',
+      sortable: true,
       render: (value) => (
         <span className="text-xs text-gray-500">{formatTimeAgo(value)}</span>
       ),
@@ -124,9 +120,7 @@ export default function AdminDisputeList() {
             className="text-xs border border-sand bg-white/90 hover:border-terracotta focus:outline-none focus:ring-1 focus:ring-terracotta rounded-lg px-2.5 py-1.5 text-slate font-medium shadow-subtle transition-all cursor-pointer"
           >
             <option value="all">All</option>
-            <option value="open">Open</option>
-            <option value="under_review">Under Review</option>
-            <option value="resolved">Resolved</option>
+            <option value="DISPUTED_MANUAL">Disputed</option>
           </select>
           <Button 
             size="sm" 
@@ -156,6 +150,13 @@ export default function AdminDisputeList() {
         }}
         emptyMessage="No disputes found"
         rowActions={rowActions}
+        sortKey={sortKey}
+        sortOrder={sortOrder}
+        onSort={(key, order) => {
+          setSortKey(key);
+          setSortOrder(order);
+          setPage(1);
+        }}
       />
     </div>
   );

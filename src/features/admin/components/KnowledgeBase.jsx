@@ -13,6 +13,8 @@ export default function KnowledgeBase() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('all');
+  const [sortKey, setSortKey] = useState(null);
+  const [sortOrder, setSortOrder] = useState('asc');
 
   const {
     data: articlesData,
@@ -28,6 +30,7 @@ export default function KnowledgeBase() {
           page_size: 15,
           ...(search && { search }),
           ...(status !== 'all' && { status }),
+          ...(sortKey && { ordering: sortOrder === 'desc' ? `-${sortKey}` : sortKey }),
         })
         .then((r) => r.data),
   });
@@ -147,6 +150,13 @@ export default function KnowledgeBase() {
         onSearch={(v) => { setSearch(v); setPage(1); }}
         emptyMessage="No articles found"
         rowActions={rowActions}
+        sortKey={sortKey}
+        sortOrder={sortOrder}
+        onSort={(key, order) => {
+          setSortKey(key);
+          setSortOrder(order);
+          setPage(1);
+        }}
       />
     </div>
   );

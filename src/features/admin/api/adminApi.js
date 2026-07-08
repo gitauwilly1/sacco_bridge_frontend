@@ -7,6 +7,8 @@ export const adminApi = {
   // Users
   getUsers: (params) => apiClient.get('/users/admin/manage/', { params }),
   manageUser: (userId, data) => apiClient.post(`/users/admin/manage/`, { user_id: userId, ...data }),
+  bulkManageUsers: (ids, action) =>
+    Promise.all(ids.map((id) => apiClient.post('/users/admin/manage/', { user_id: id, action }))),
 
   // SACCOs
   getSACCOsAdmin: (params) => apiClient.get('/investments/admin/saccos/', { params }),
@@ -18,20 +20,30 @@ export const adminApi = {
     apiClient.post(`/investments/admin/saccos/${id}/upload_logo/`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     }),
+  bulkSuspendsSACCOS: (ids, reason) =>
+    Promise.all(ids.map((id) => apiClient.post(`/investments/admin/saccos/${id}/suspend/`, { reason }))),
+  bulkReactivateSACCOS: (ids) =>
+    Promise.all(ids.map((id) => apiClient.post(`/investments/admin/saccos/${id}/reactivate/`))),
 
   // Chamas
   getChamasAdmin: (params) => apiClient.get('/chamas/admin/manage/', { params }),
   manageChama: (chamaId, data) =>
     apiClient.post('/chamas/admin/manage/', { chama_id: chamaId, ...data }),
+  bulkManageChamas: (ids, action) =>
+    Promise.all(ids.map((chamaId) => apiClient.post('/chamas/admin/manage/', { chama_id: chamaId, action }))),
 
   // Disputes
   getDisputesAdmin: (params) => apiClient.get('/transactions/disputes/', { params }),
   resolveDispute: (id, data) => apiClient.post(`/transactions/disputes/${id}/resolve/`, data),
+  bulkResolveDisputes: (ids, data) =>
+    Promise.all(ids.map((id) => apiClient.post(`/transactions/disputes/${id}/resolve/`, data))),
 
   // Fraud
   getFraudAssessments: (params) => apiClient.get('/fraud/assessments/', { params }),
   reviewFraudAssessment: (id, data) =>
     apiClient.post(`/fraud/assessments/${id}/review/`, data),
+  bulkReviewFraud: (ids, action) =>
+    Promise.all(ids.map((id) => apiClient.post(`/fraud/assessments/${id}/review/`, { action }))),
 
   // Escrow
   getEscrowAccounts: (params) => apiClient.get('/escrow/held/', { params }),
@@ -39,11 +51,15 @@ export const adminApi = {
 
   // Audit
   getAuditLog: (params) => apiClient.get('/users/admin/audit/', { params }),
-  getUnifiedAudit: (params) => apiClient.get('/users/admin/unified-audit/', { params }),
+  getUnifiedAudit: (params) => apiClient.get('/users/admin/unified-audit/', { params, responseType: 'blob' }),
   getDeletionRequests: (params) => apiClient.get('/users/admin/deletion-requests/', { params }),
   getDeletionRequestDetail: (id) => apiClient.get(`/users/admin/deletion-requests/${id}/`),
   reviewDeletionRequest: (id, data) =>
     apiClient.post(`/users/admin/deletion-requests/${id}/review/`, data),
+  bulkReviewDeletionRequests: (ids, status, notes) =>
+    Promise.all(ids.map((id) =>
+      apiClient.post(`/users/admin/deletion-requests/${id}/review/`, { status, review_notes: notes })
+    )),
 
   // Webhooks
   getWebhooks: (params) => apiClient.get('/webhooks/subscriptions/', { params }),
@@ -72,8 +88,17 @@ export const adminApi = {
   getAdminHealth: () => apiClient.get('/analytics/admin/health/'),
   getAdminVolume: (params) => apiClient.get('/analytics/admin/volume/', { params }),
   getAdminSettlements: (params) => apiClient.get('/analytics/admin/settlements/', { params }),
-  getAdminExport: (params) => apiClient.get('/analytics/admin/export/', { params }),
+  getAdminExport: (params) => apiClient.get('/analytics/admin/export/', { params, responseType: 'blob' }),
   refreshAnalytics: () => apiClient.post('/analytics/refresh/'),
+
+  // Admin Notification Summary
+  getAdminNotificationSummary: () => apiClient.get('/notifications/admin/summary/'),
+
+  // Admin Approval Workflow
+  getApprovals: (params) => apiClient.get('/admin/approvals/', { params }),
+  createApproval: (data) => apiClient.post('/admin/approvals/', data),
+  reviewApproval: (id, action, notes) =>
+    apiClient.post(`/admin/approvals/${id}/review/`, { action, notes }),
 
   // Reports
   getReports: () => apiClient.get('/reports/'),

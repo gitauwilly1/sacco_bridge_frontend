@@ -49,10 +49,7 @@ export default function ShareReceipt() {
     return <ErrorState message="Failed to load receipt details" onRetry={refetch} />;
   }
 
-  // Construct a QR code URL using the verification code / hash
-  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
-    receipt.verification_code || receipt.receipt_number || 'SaccoBridge'
-  )}`;
+  const qrCodeUrl = receipt.qr_code_url || `/api/v1/receipts/${receipt.receipt_number}/qr/`;
 
   return (
     <div className="pb-8">

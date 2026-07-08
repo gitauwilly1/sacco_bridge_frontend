@@ -36,6 +36,7 @@ export default function SecuritySettings({ profile }) {
   const [qrCode, setQrCode] = useState(null);
   const [totpSecret, setTotpSecret] = useState('');
   const [totpCode, setTotpCode] = useState('');
+  const [disablePassword, setDisablePassword] = useState('');
 
   const passwordForm = useForm({
     resolver: zodResolver(passwordSchema),
@@ -97,12 +98,18 @@ export default function SecuritySettings({ profile }) {
       toast.error('Enter your authenticator code to disable 2FA');
       return;
     }
+    if (!disablePassword) {
+      toast.error('Enter your password to disable 2FA');
+      return;
+    }
     try {
-      await profileApi.disable2FA({ totp_code: totpCode });
+      await profileApi.disable2FA({ totp_code: totpCode, current_password: disablePassword });
       toast.success('2FA disabled');
       setTotpCode('');
+      setDisablePassword('');
     } catch (error) {
-      toast.error('Invalid code');
+      const msg = error.response?.data?.error?.message || 'Invalid code or password';
+      toast.error(msg);
     }
   };
 
@@ -273,10 +280,17 @@ export default function SecuritySettings({ profile }) {
           {profile?.two_factor_enabled ? (
             <div className="space-y-3">
               <Input
-                placeholder="Enter code to disable 2FA"
+                placeholder="Enter authenticator code"
                 className="border-input rounded-xl bg-white text-sm font-numbers focus:border-terracotta focus:ring-1 focus:ring-terracotta h-10"
                 value={totpCode}
                 onChange={(e) => setTotpCode(e.target.value)}
+              />
+              <Input
+                type="password"
+                placeholder="Enter your password to confirm"
+                className="border-input rounded-xl bg-white text-sm focus:border-terracotta focus:ring-1 focus:ring-terracotta h-10"
+                value={disablePassword}
+                onChange={(e) => setDisablePassword(e.target.value)}
               />
               <Button
                 variant="outline"

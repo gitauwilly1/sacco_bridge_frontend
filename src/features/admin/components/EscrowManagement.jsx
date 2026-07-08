@@ -7,12 +7,15 @@ import { toast } from 'sonner';
 import { adminApi } from '../api/adminApi';
 import { formatKES, formatDate } from '../../../utils/format';
 import DataTable from './DataTable';
+import { ESCROW_STATUS_COLORS, getStatusColor } from '../../../utils/statusMapping';
 
 export default function EscrowManagement() {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('all');
+  const [sortKey, setSortKey] = useState(null);
+  const [sortOrder, setSortOrder] = useState('asc');
 
   const {
     data: escrowData,
@@ -28,6 +31,7 @@ export default function EscrowManagement() {
           page_size: 15,
           ...(search && { search }),
           ...(status !== 'all' && { status }),
+          ...(sortKey && { ordering: sortOrder === 'desc' ? `-${sortKey}` : sortKey }),
         })
         .then((r) => r.data),
   });
@@ -51,21 +55,23 @@ export default function EscrowManagement() {
       key: 'id',
       header: 'ID',
       width: '80px',
+      sortable: true,
       render: (value) => <span className="font-mono text-xs font-semibold text-slate/75">#{value}</span>,
     },
     {
-      key: 'sacco_name',
-      header: 'SACCO',
+      key: 'buyer_name',
+      header: 'Parties',
       render: (_, row) => (
         <div>
-          <p className="font-semibold text-slate text-sm">{row.sacco_name || '—'}</p>
-          <p className="text-xs text-gray-400">{row.share_class_name}</p>
+          <p className="font-semibold text-slate text-sm">{row.buyer_name || '—'} → {row.seller_name || '—'}</p>
+          <p className="text-xs text-gray-400">{row.buyer_sacco_name || '—'}</p>
         </div>
       ),
     },
     {
       key: 'amount',
       header: 'Amount Held',
+      sortable: true,
       render: (value) => (
         <span className="text-sm font-bold text-terracotta">
           {formatKES(value)}
@@ -75,17 +81,9 @@ export default function EscrowManagement() {
     {
       key: 'status',
       header: 'Status',
+      sortable: true,
       render: (value) => (
-        <Badge
-          className={
-            value === 'held'
-              ? 'bg-blue-500/10 text-blue-500 border border-blue-500/20'
-              : value === 'released'
-              ? 'bg-success/10 text-success border border-success/20'
-              : 'bg-sand text-slate border border-sand-dark/20'
-          }
-          variant="outline"
-        >
+        <Badge className={`${getStatusColor(value, ESCROW_STATUS_COLORS)} border`} variant="outline">
           {value}
         </Badge>
       ),
@@ -93,6 +91,7 @@ export default function EscrowManagement() {
     {
       key: 'created_at',
       header: 'Created',
+      sortable: true,
       render: (value) => (
         <span className="text-xs text-gray-500 font-medium">{value ? formatDate(value) : '—'}</span>
       ),
@@ -101,7 +100,7 @@ export default function EscrowManagement() {
 
   const rowActions = (row) => (
     <div className="flex items-center gap-2 justify-end">
-      {row.status === 'held' && (
+      {(row.status === 'held' || row.status === 'HELD') && (
         <>
           <Button
             size="sm"
@@ -149,9 +148,9 @@ export default function EscrowManagement() {
             className="text-xs border border-sand bg-white/90 hover:border-terracotta focus:outline-none focus:ring-1 focus:ring-terracotta rounded-lg px-2.5 py-1.5 text-slate font-medium shadow-subtle transition-all cursor-pointer"
           >
             <option value="all">All</option>
-            <option value="held">Held</option>
-            <option value="released">Released</option>
-            <option value="refunded">Refunded</option>
+            <option value="HELD">Held</option>
+            <option value="RELEASED">Released</option>
+            <option value="REFUNDED">Refunded</option>
           </select>
           <Button 
             size="sm" 
@@ -181,6 +180,13 @@ export default function EscrowManagement() {
         }}
         emptyMessage="No escrow accounts found"
         rowActions={rowActions}
+        sortKey={sortKey}
+        sortOrder={sortOrder}
+        onSort={(key, order) => {
+          setSortKey(key);
+          setSortOrder(order);
+          setPage(1);
+        }}
       />
     </div>
   );

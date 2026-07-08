@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1200" height="800" viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .bg { fill: #f7f6f4; }
+      .card { fill: #ffffff; stroke: #e8e6e3; stroke-width:1; rx:12; }
+      .kpi-title { font: 600 14px/1.2 Inter, Arial, sans-serif; fill: #6b6b6b; }
+      .kpi-value { font: 700 28px/1.2 Inter, Arial, sans-serif; fill: #2e2e2e; }
+      .delta { font: 600 12px/1.2 Inter, Arial, sans-serif; fill: #16a34a; }
+      .spark { fill: none; stroke: #c96f56; stroke-width:2; stroke-linejoin:round; stroke-linecap:round; }
+      .list-row { fill: none; stroke: #eee; stroke-width:1; }
+      .muted { fill: #8b8b8b; font: 14px Inter, Arial, sans-serif; }
+      .btn { fill: #c96f56; rx:6; }
+      .btn-text { fill: #fff; font: 600 13px Inter, Arial, sans-serif; }
+    </style>
+  </defs>
+  <rect class="bg" width="1200" height="800" />
+
+  <!-- Header / CTA area -->
+  <g transform="translate(40,30)">
+    <text x="0" y="0" class="kpi-value">Harambee SACCO</text>
+    <g transform="translate(0,14)">
+      <rect x="0" y="24" width="110" height="36" class="btn" />
+      <text x="55" y="51" text-anchor="middle" class="btn-text">Buy Shares</text>
+      <rect x="130" y="24" width="110" height="36" fill="#fff" stroke="#e8e6e3" rx="6" />
+      <text x="185" y="51" text-anchor="middle" fill="#6b6b6b">Sell Shares</text>
+    </g>
+  </g>
+
+  <!-- Main container -->
+  <g transform="translate(40,100)">
+    <!-- Left column: KPI grid -->
+    <g transform="translate(0,0)">
+      <rect x="0" y="0" width="700" height="560" class="card" />
+      <!-- Grid items -->
+      <g transform="translate(18,18)">
+        <!-- Card 1 -->
+        <rect x="0" y="0" width="332" height="160" class="card" />
+        <text x="16" y="30" class="kpi-title">Current Price</text>
+        <text x="16" y="72" class="kpi-value">KSh 270.45</text>
+        <text x="16" y="96" class="delta">+0.8%</text>
+        <polyline points="16,130 48,120 80,124 112,100 144,110 176,90 208,110 240,105 288,115" class="spark" />
+
+        <!-- Card 2 -->
+        <rect x="356" y="0" width="332" height="160" class="card" />
+        <text x="372" y="30" class="kpi-title">30d Avg Price</text>
+        <text x="372" y="72" class="kpi-value">KSh 268.77</text>
+        <text x="372" y="96" class="delta" fill="#ef4444">-0.3%</text>
+        <polyline points="372,130 404,125 436,118 468,122 500,115 532,120 604,110" class="spark" />
+
+        <!-- Card 3 -->
+        <rect x="0" y="192" width="332" height="160" class="card" />
+        <text x="16" y="222" class="kpi-title">Market Cap</text>
+        <text x="16" y="264" class="kpi-value">KSh 1.2B</text>
+        <text x="16" y="288" class="muted">Outstanding shares: 4.4M</text>
+        <polyline points="16,320 48,312 80,318 112,300 144,308 176,298 208,305 240,302 288,308" class="spark" />
+
+        <!-- Card 4 -->
+        <rect x="356" y="192" width="332" height="160" class="card" />
+        <text x="372" y="222" class="kpi-title">30d Volume</text>
+        <text x="372" y="264" class="kpi-value">81,947</text>
+        <text x="372" y="288" class="muted">Avg daily: 2,731</text>
+        <polyline points="372,320 404,310 436,320 468,305 500,315 532,308 604,318" class="spark" />
+
+        <!-- Small mini-portfolio donut (top-right corner of grid) -->
+        <g transform="translate(260,-40)">
+          <circle cx="36" cy="36" r="34" fill="#fff" stroke="#e8e6e3" />
+          <path d="M36 2 A34 34 0 0 1 70 48 L36 36 Z" fill="#c96f56" />
+          <circle cx="36" cy="36" r="14" fill="#fff" />
+        </g>
+      </g>
+    </g>
+
+    <!-- Right column: Share classes list -->
+    <g transform="translate(740,0)">
+      <rect x="0" y="0" width="400" height="560" class="card" />
+      <text x="18" y="28" class="kpi-title">Share Classes</text>
+
+      <!-- List header -->
+      <g transform="translate(16,44)">
+        <rect x="0" y="0" width="368" height="1" fill="#eee" />
+      </g>
+
+      <!-- List rows -->
+      <g transform="translate(16,64)">
+        <!-- Row 1 -->
+        <g transform="translate(0,0)">
+          <rect x="0" y="0" width="368" height="60" rx="8" fill="#fff" stroke="#f1f1f1" />
+          <text x="12" y="22" class="kpi-title">Class A</text>
+          <text x="12" y="44" class="kpi-value">KSh 272.10</text>
+          <text x="200" y="28" class="muted">81,000</text>
+          <polyline points="12,50 40,46 70,48 100,40 130,44 160,42" class="spark" />
+          <rect x="296" y="14" width="60" height="32" fill="#fff" stroke="#c96f56" rx="6" />
+          <text x="326" y="34" text-anchor="middle" class="kpi-title" fill="#c96f56">Buy</text>
+        </g>
+
+        <!-- Row 2 -->
+        <g transform="translate(0,76)">
+          <rect x="0" y="0" width="368" height="60" rx="8" fill="#fff" stroke="#f1f1f1" />
+          <text x="12" y="22" class="kpi-title">Class B</text>
+          <text x="12" y="44" class="kpi-value">KSh 268.30</text>
+          <text x="200" y="28" class="muted">12,947</text>
+          <polyline points="12,50 40,48 70,46 100,50 130,48 160,46" class="spark" />
+          <rect x="296" y="14" width="60" height="32" class="btn" />
+          <text x="326" y="34" text-anchor="middle" class="btn-text">Buy</text>
+        </g>
+
+        <!-- Row 3 -->
+        <g transform="translate(0,152)">
+          <rect x="0" y="0" width="368" height="60" rx="8" fill="#fff" stroke="#f1f1f1" />
+          <text x="12" y="22" class="kpi-title">Class C</text>
+          <text x="12" y="44" class="kpi-value">KSh 265.90</text>
+          <text x="200" y="28" class="muted">-</text>
+          <polyline points="12,50 40,52 70,50 100,54 130,50 160,48" class="spark" />
+          <rect x="296" y="14" width="60" height="32" fill="#fff" stroke="#c96f56" rx="6" />
+          <text x="326" y="34" text-anchor="middle" class="kpi-title" fill="#c96f56">Buy</text>
+        </g>
+
+        <!-- Footer note -->
+        <text x="0" y="260" class="muted">Expand a class to view dividends, min investment, and history.</text>
+      </g>
+    </g>
+  </g>
+</svg>

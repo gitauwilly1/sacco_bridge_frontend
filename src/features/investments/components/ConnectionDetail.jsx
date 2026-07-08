@@ -48,6 +48,9 @@ export default function ConnectionDetail() {
   const [offerPrice, setOfferPrice] = useState('');
   const [offerNotes, setOfferNotes] = useState('');
   const [showOfferForm, setShowOfferForm] = useState(false);
+  const [counterTarget, setCounterTarget] = useState(null);
+  const [counterPrice, setCounterPrice] = useState('');
+  const [counterNotes, setCounterNotes] = useState('');
 
   const {
     data: connection,
@@ -99,6 +102,22 @@ export default function ConnectionDetail() {
     onError: (error) => {
       toast.error(
         error.response?.data?.error?.message || 'Failed to decline offer'
+      );
+    },
+  });
+
+  const counterOfferMutation = useMutation({
+    mutationFn: ({ offerId, data }) => investmentsApi.counterOffer(connectionId, offerId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['connection', connectionId] });
+      setCounterTarget(null);
+      setCounterPrice('');
+      setCounterNotes('');
+      toast.success('Counter-offer sent');
+    },
+    onError: (error) => {
+      toast.error(
+        error.response?.data?.error?.message || 'Failed to send counter-offer'
       );
     },
   });
@@ -382,6 +401,15 @@ export default function ConnectionDetail() {
                           <Button
                             size="sm"
                             variant="outline"
+                            className="flex-1 border-blue-200 hover:bg-blue-50 text-blue-600 cursor-pointer h-8 text-xs font-semibold rounded-lg"
+                            onClick={() => { setCounterTarget(offer.id); setCounterPrice(''); setCounterNotes(''); }}
+                          >
+                            <RefreshCcw className="h-3.5 w-3.5 mr-1" />
+                            Counter
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
                             className="flex-1 border-sand hover:bg-sand-light text-slate cursor-pointer h-8 text-xs font-semibold rounded-lg"
                             onClick={() => declineOfferMutation.mutate(offer.id)}
                             disabled={declineOfferMutation.isPending}
@@ -389,6 +417,51 @@ export default function ConnectionDetail() {
                             <XCircle className="h-3.5 w-3.5 mr-1" />
                             Decline
                           </Button>
+                        </div>
+                      )}
+
+                      {/* Counter Offer Inline Form */}
+                      {counterTarget === offer.id && (
+                        <div className="bg-blue-50/50 border border-blue-200 rounded-xl p-3 space-y-2.5 animate-in fade-in duration-200">
+                          <p className="text-xs font-bold text-blue-700">Your Counter Offer</p>
+                          <Input
+                            placeholder="Your price per share (KES)"
+                            type="number" min="0" step="0.01"
+                            value={counterPrice}
+                            onChange={(e) => setCounterPrice(e.target.value)}
+                            className="border-blue-200 bg-white text-sm font-numbers rounded-xl focus:border-blue-400 focus:ring-blue-400"
+                          />
+                          <Input
+                            placeholder="Notes (optional)"
+                            value={counterNotes}
+                            onChange={(e) => setCounterNotes(e.target.value)}
+                            className="border-blue-200 bg-white text-sm rounded-xl focus:border-blue-400 focus:ring-blue-400"
+                          />
+                          <div className="flex gap-2">
+                            <Button size="sm" variant="outline"
+                              className="flex-1 border-sand text-slate rounded-lg"
+                              onClick={() => setCounterTarget(null)}>
+                              Cancel
+                            </Button>
+                            <Button size="sm"
+                              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
+                              onClick={() => {
+                                if (!counterPrice || parseFloat(counterPrice) <= 0) {
+                                  toast.error('Enter a valid price');
+                                  return;
+                                }
+                                counterOfferMutation.mutate({
+                                  offerId: offer.id,
+                                  data: {
+                                    price_per_share: parseFloat(counterPrice),
+                                    notes: counterNotes || undefined,
+                                  },
+                                });
+                              }}
+                              disabled={counterOfferMutation.isPending}>
+                              {counterOfferMutation.isPending ? 'Sending...' : 'Send Counter Offer'}
+                            </Button>
+                          </div>
                         </div>
                       )}
                     </div>

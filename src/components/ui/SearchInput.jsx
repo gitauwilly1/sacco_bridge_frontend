@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Search, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 
-export default function SearchInput({ value, onChange, placeholder = 'Search...', className = '', debounceMs = 300 }) {
+export default function SearchInput({ value, onChange, placeholder = 'Search...', className = '', debounceMs = 500, minLength = 2 }) {
   const [local, setLocal] = useState(value || '');
   const initial = useRef(true);
 
@@ -15,13 +15,14 @@ export default function SearchInput({ value, onChange, placeholder = 'Search...'
   }, [value]);
 
   useEffect(() => {
+    if (local === value) return;
     const timer = setTimeout(() => {
-      if (local !== value) {
+      if (local.length === 0 || local.length >= minLength) {
         onChange(local);
       }
     }, debounceMs);
     return () => clearTimeout(timer);
-  }, [local, debounceMs]);
+  }, [local, debounceMs, minLength, onChange]);
 
   return (
     <div className={`relative ${className}`}>

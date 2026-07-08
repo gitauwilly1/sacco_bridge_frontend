@@ -1,41 +1,49 @@
-import React, { useState } from 'react';
-import { HelpCircle, Mail, Phone, MessageSquare, Search, ChevronDown, ChevronUp, ShieldCheck, Landmark, Users2, Info } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { HelpCircle, Mail, Phone, MessageSquare, Search, ChevronDown, ChevronUp, ShieldCheck, Landmark, Users2, Info, LifeBuoy } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useNavigate } from '@tanstack/react-router';
+import { supportApi } from '../../support/api/supportApi';
 
-const faqs = [
-  {
-    category: 'investments',
-    question: 'How do I link my SACCO account to Sacco Bridge?',
-    answer: 'Navigate to your Profile page, click on the Link SACCO button, select your SACCO from the list, and enter your member identification number. We will verify your credentials securely with your SACCO API system.',
-  },
-  {
-    category: 'investments',
-    question: 'How does secondary market share trading work?',
-    answer: 'Members holding shares in supported SACCOs can create a Liquidity Request to sell their shares at a negotiated price. Other verified members can view these opportunities, express interest, enter negotiation rooms, and complete transactions securely via escrow.',
-  },
-  {
-    category: 'chamas',
-    question: 'What is a Chama and how do I manage one?',
-    answer: 'A Chama is a traditional cooperative investment group. Sacco Bridge allows you to create groups, invite members, schedule meetings, host polls, track recurring contributions, and request collective loans backed by SACCO share holdings.',
-  },
-  {
-    category: 'security',
-    question: 'How is transaction security and settlement guaranteed?',
-    answer: 'Sacco Bridge utilizes a double-lien escrow mechanism. When a trade is accepted, the seller\'s SACCO shares are locked, and the buyer\'s cash funds are held in lien. Once the transfer is approved by the cooperative operations team, the shares are credited and the funds released simultaneously.',
-  },
-  {
-    category: 'security',
-    question: 'What happens if a dispute arises during a transaction?',
-    answer: 'If there is any disagreement, either party can click "Raise Dispute" on the transaction page. This locks the escrow lien and escalates the transaction to Platform Support agents who review the audit logs and ledger entries to resolve the dispute fairly.',
-  },
+const FALLBACK_FAQS = [
+  { category: 'investments', question: 'How do I link my SACCO account to Sacco Bridge?', answer: 'Navigate to your Profile page, click on the Link SACCO button, select your SACCO from the list, and enter your member identification number. We will verify your credentials securely with your SACCO API system.' },
+  { category: 'investments', question: 'How does secondary market share trading work?', answer: 'Members holding shares in supported SACCOs can create a Liquidity Request to sell their shares at a negotiated price. Other verified members can view these opportunities, express interest, enter negotiation rooms, and complete transactions securely via escrow.' },
+  { category: 'chamas', question: 'What is a Chama and how do I manage one?', answer: 'A Chama is a traditional cooperative investment group. Sacco Bridge allows you to create groups, invite members, schedule meetings, host polls, track recurring contributions, and request collective loans backed by SACCO share holdings.' },
+  { category: 'security', question: 'How is transaction security and settlement guaranteed?', answer: 'Sacco Bridge utilizes a double-lien escrow mechanism. When a trade is accepted, the seller\'s SACCO shares are locked, and the buyer\'s cash funds are held in lien. Once the transfer is approved by the cooperative operations team, the shares are credited and the funds released simultaneously.' },
+  { category: 'security', question: 'What happens if a dispute arises during a transaction?', answer: 'If there is any disagreement, either party can click "Raise Dispute" on the transaction page. This locks the escrow lien and escalates the transaction to Platform Support agents who review the audit logs and ledger entries to resolve the dispute fairly.' },
 ];
 
+const CATEGORY_MAP = {
+  SACCO_SHARES: 'investments', BUYING_SHARES: 'investments', SELLING_SHARES: 'investments',
+  SETTLEMENTS: 'investments', FEES_PRICING: 'investments',
+  CHAMA_BASICS: 'chamas', CHAMA_SETUP: 'chamas', CONTRIBUTIONS: 'chamas',
+  LOANS: 'chamas', MEETINGS: 'chamas',
+  ACCOUNT_SECURITY: 'security', DISPUTES: 'security', REGULATIONS: 'security',
+};
+
 export default function HelpPage() {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedIndex, setExpandedIndex] = useState(null);
   const [activeCategory, setActiveCategory] = useState('all');
+
+  const { data: apiData } = useQuery({
+    queryKey: ['faq'],
+    queryFn: () => supportApi.getFAQ().then((r) => r.data?.data || []).catch(() => []),
+    staleTime: 5 * 60 * 1000,
+    retry: 1,
+  });
+
+  const faqs = useMemo(() => {
+    if (!apiData || apiData.length === 0) return FALLBACK_FAQS;
+    return apiData.map((item) => ({
+      category: CATEGORY_MAP[item.category] || 'investments',
+      question: item.title,
+      answer: item.content,
+    }));
+  }, [apiData]);
 
   const toggleExpand = (index) => {
     setExpandedIndex(expandedIndex === index ? null : index);
@@ -152,6 +160,22 @@ export default function HelpPage() {
         <h2 className="text-base font-bold text-slate text-center mb-6">Still need assistance?</h2>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Card: Support Tickets */}
+          <Card className="border-sand/50 shadow-subtle hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate({ to: '/support' })}>
+            <CardContent className="p-5 text-center flex flex-col items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-terracotta/10 flex items-center justify-center border border-terracotta/20">
+                <LifeBuoy className="h-5 w-5 text-terracotta" />
+              </div>
+              <div>
+                <h3 className="font-bold text-slate text-xs sm:text-sm">Support Tickets</h3>
+                <p className="text-[10px] sm:text-xs text-gray-400 mt-0.5">Track and manage your requests</p>
+              </div>
+              <span className="text-xs font-semibold text-terracotta hover:underline mt-1">
+                View Tickets →
+              </span>
+            </CardContent>
+          </Card>
+
           {/* Card: Email */}
           <Card className="border-sand/50 shadow-subtle hover:shadow-md transition-shadow">
             <CardContent className="p-5 text-center flex flex-col items-center gap-3">

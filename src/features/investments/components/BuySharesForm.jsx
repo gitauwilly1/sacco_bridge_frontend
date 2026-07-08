@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, Wallet, Smartphone, AlertCircle, ShoppingCart } from 'lucide-react';
+import { ArrowLeft, Wallet, Smartphone, AlertCircle, ShoppingCart, RefreshCw, CheckCircle2, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -30,6 +30,44 @@ export default function BuySharesForm() {
   const [quantity, setQuantity] = useState('');
   const [phoneNumber, setPhoneNumber] = useState(user?.phone_number || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [transactionId, setTransactionId] = useState(null);
+  const [pollStatus, setPollStatus] = useState(null);
+  const [receiptId, setReceiptId] = useState(null);
+
+  const pollRef = useRef(null);
+  useEffect(() => {
+    if (pollStatus !== 'polling' || !transactionId) return;
+    let attempts = 0;
+    let cancelled = false;
+    const poll = async () => {
+      if (cancelled) return;
+      attempts++;
+      try {
+        const res = await investmentsApi.getTransactionStatus(transactionId);
+        const txn = res.data?.data || res.data;
+        if (txn.status === 'completed') {
+          setPollStatus('completed');
+          const rid = txn.receipt_id || txn.receipt || null;
+          if (rid) setReceiptId(rid);
+          toast.dismiss();
+          toast.success('Payment confirmed!');
+          setTimeout(() => navigate({ to: `/receipts/${rid || transactionId}` }), 4000);
+          return;
+        }
+      } catch {
+        // continue
+      }
+      if (attempts < 20 && !cancelled) {
+        pollRef.current = setTimeout(poll, 3000);
+      } else if (!cancelled) {
+        setPollStatus('timeout');
+        toast.dismiss();
+        toast.warning('Payment initiated. Check your M-Pesa and transaction history.');
+      }
+    };
+    const delay = setTimeout(poll, 2000);
+    return () => { cancelled = true; clearTimeout(delay); if (pollRef.current) clearTimeout(pollRef.current); };
+  }, [pollStatus, transactionId, navigate]);
 
   // Load SACCO details
   const {
@@ -127,16 +165,23 @@ export default function BuySharesForm() {
       toast.dismiss();
 
       if (response.data?.success) {
-        toast.success(response.data?.message || 'STK Push sent! Input M-Pesa PIN on your phone.');
-        navigate({ to: '/holdings' });
+        const txnId = response.data?.data?.transaction_id || response.data?.data?.id;
+        if (txnId) {
+          setTransactionId(txnId);
+          setPollStatus('polling');
+          toast.success('STK Push sent! Check your phone for M-Pesa PIN prompt.');
+        } else {
+          toast.success(response.data?.message || 'STK Push sent! Input M-Pesa PIN on your phone.');
+          setTimeout(() => navigate({ to: '/holdings' }), 1000);
+        }
       } else {
         toast.error(response.data?.error?.message || 'Failed to trigger STK Push');
+        setIsSubmitting(false);
       }
     } catch (err) {
       toast.dismiss();
       const msg = err.response?.data?.error?.message || 'Payment initiation failed';
       toast.error(msg);
-    } finally {
       setIsSubmitting(false);
     }
   };
@@ -269,12 +314,43 @@ export default function BuySharesForm() {
               {/* Action Button */}
               <Button
                 type="submit"
-                disabled={isSubmitting || isBelowMinimum || isPhoneInvalid}
+                disabled={isSubmitting || !!pollStatus || isBelowMinimum || isPhoneInvalid}
                 className="w-full bg-terracotta hover:bg-clay text-white shadow-sm transition-all"
               >
                 <Wallet className="h-4 w-4 mr-2" />
-                Confirm & Pay via M-Pesa
+                {pollStatus === 'polling' ? 'Waiting for M-Pesa confirmation...' : 'Confirm & Pay via M-Pesa'}
               </Button>
+
+              {pollStatus === 'polling' && (
+                <div role="status" aria-live="polite" className="flex items-center gap-2 text-xs text-blue-600 font-medium justify-center mt-2">
+                  <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                  Waiting for M-Pesa payment confirmation...
+                </div>
+              )}
+              {pollStatus === 'completed' && (
+                <div role="status" aria-live="polite" className="flex flex-col items-center gap-2 mt-2">
+                  <div className="flex items-center gap-2 text-xs text-success font-medium justify-center">
+                    <CheckCircle2 className="h-3.5 w-3.5" />
+                    Payment confirmed!
+                  </div>
+                  <Button
+                    size="sm"
+                    className="text-xs bg-terracotta hover:bg-clay text-white"
+                    onClick={() => navigate({ to: `/receipts/${receiptId || transactionId}` })}
+                  >
+                    <FileText className="h-3 w-3 mr-1" /> View Receipt
+                  </Button>
+                </div>
+              )}
+              {pollStatus === 'timeout' && (
+                <div role="status" aria-live="polite" className="flex items-center gap-2 text-xs text-alert font-medium justify-center mt-2">
+                  <AlertCircle className="h-3.5 w-3.5" />
+                  Payment initiated but not yet confirmed.{' '}
+                  <button className="underline font-bold" onClick={() => navigate({ to: '/activity' })}>
+                    Check activity
+                  </button>
+                </div>
+              )}
             </form>
           </CardContent>
         </Card>

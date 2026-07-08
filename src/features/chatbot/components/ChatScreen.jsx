@@ -356,7 +356,8 @@ export default function ChatScreen() {
               <p className="text-xs text-gray-400 font-medium">Send a message to start</p>
             </div>
           ) : (
-            messages.map((msg) => {
+            <div role="log" aria-live="polite" aria-label="Chat messages">
+              {messages.map((msg) => {
               const isUser = msg.role === 'user' || msg.sender === 'user';
               return (
                 <div
@@ -409,7 +410,8 @@ export default function ChatScreen() {
                   )}
                 </div>
               );
-            })
+            })}
+            </div>
           )}
           {isTyping && <TypingIndicator />}
           <div ref={messagesEndRef} />

@@ -58,6 +58,8 @@ export default function WebhookManagement() {
   const [showCreate, setShowCreate] = useState(false);
   const [editingWebhook, setEditingWebhook] = useState(null);
   const [viewDeliveries, setViewDeliveries] = useState(null);
+  const [sortKey, setSortKey] = useState(null);
+  const [sortOrder, setSortOrder] = useState('asc');
 
   const {
     data: webhooksData,
@@ -67,7 +69,7 @@ export default function WebhookManagement() {
   } = useQuery({
     queryKey: ['admin-webhooks', page],
     queryFn: () =>
-      adminApi.getWebhooks({ page, page_size: 15 }).then((r) => r.data),
+      adminApi.getWebhooks({ page, page_size: 15, ...(sortKey && { ordering: sortOrder === 'desc' ? `-${sortKey}` : sortKey }) }).then((r) => r.data),
   });
 
   const deleteMutation = useMutation({
@@ -95,6 +97,7 @@ export default function WebhookManagement() {
     {
       key: 'url',
       header: 'URL',
+      sortable: true,
       render: (_, row) => (
         <div>
           <p className="font-medium text-slate text-sm truncate max-w-[250px]">{row.url}</p>
@@ -105,6 +108,7 @@ export default function WebhookManagement() {
     {
       key: 'is_active',
       header: 'Status',
+      sortable: true,
       render: (value) => (
         <Badge
           className={value ? 'bg-success/10 text-success' : 'bg-gray-200 text-gray-600'}
@@ -117,6 +121,7 @@ export default function WebhookManagement() {
     {
       key: 'last_delivery_at',
       header: 'Last Delivery',
+      sortable: true,
       render: (value) => (
         <span className="text-xs text-gray-500">
           {value ? formatTimeAgo(value) : 'Never'}
@@ -126,6 +131,7 @@ export default function WebhookManagement() {
     {
       key: 'created_at',
       header: 'Created',
+      sortable: true,
       render: (value) => (
         <span className="text-xs text-gray-500">{formatDateTime(value)}</span>
       ),
@@ -194,6 +200,13 @@ export default function WebhookManagement() {
         searchable={false}
         emptyMessage="No webhooks configured"
         rowActions={rowActions}
+        sortKey={sortKey}
+        sortOrder={sortOrder}
+        onSort={(key, order) => {
+          setSortKey(key);
+          setSortOrder(order);
+          setPage(1);
+        }}
       />
 
       {/* Create/Edit Dialog */}

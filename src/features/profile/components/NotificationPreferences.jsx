@@ -1,12 +1,29 @@
 import { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Bell, Mail, Smartphone, MessageSquare, Save } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorState } from '@/components/feedback';
 import { toast } from 'sonner';
-import { profileApi } from '../api/profileApi';
+import apiClient from '../../../lib/apiClient';
+
+const CATEGORY_MAP = {
+  contributions: 'CHAMA_CONTRIBUTION',
+  loans: 'CHAMA_LOAN',
+  meetings: 'CHAMA_MEETING',
+  polls: 'CHAMA_MEMBER',
+  investments: 'INVESTMENT_OPPORTUNITY',
+  security: 'SECURITY',
+  system: 'SYSTEM',
+};
+
+const FIELD_MAP = {
+  email: 'email_enabled',
+  sms: 'sms_enabled',
+  push: 'push_enabled',
+  in_app: 'in_app_enabled',
+};
 
 const notificationCategories = [
   {
@@ -55,6 +72,7 @@ const notificationCategories = [
 
 const channels = [
   { key: 'email', label: 'Email', icon: Mail },
+  { key: 'sms', label: 'SMS', icon: MessageSquare },
   { key: 'push', label: 'Push', icon: Smartphone },
   { key: 'in_app', label: 'In-App', icon: MessageSquare },
 ];
@@ -82,36 +100,62 @@ function PreferencesSkeleton() {
 export default function NotificationPreferences() {
   const queryClient = useQueryClient();
   const [preferences, setPreferences] = useState({});
+  const [existingIds, setExistingIds] = useState({});
 
-  const {
-    data: prefsData,
-    isLoading,
-    error,
-    refetch,
-  } = useQuery({
+  const { data: prefsData, isLoading, error, refetch } = useQuery({
     queryKey: ['notification-preferences'],
-    queryFn: () =>
-      profileApi
-        .getNotificationPreferences()
-        .then((r) => r.data.data || r.data || {}),
+    queryFn: () => apiClient.get('/notifications/preferences/').then((r) => r.data),
   });
 
   useEffect(() => {
-    if (prefsData) {
-      setPreferences(prefsData.preferences || prefsData || {});
+    if (Array.isArray(prefsData)) {
+      const mapped = {};
+      const ids = {};
+      for (const pref of prefsData) {
+        for (const [frontendKey, backendKey] of Object.entries(CATEGORY_MAP)) {
+          if (pref.category === backendKey) {
+            mapped[frontendKey] = {};
+            for (const [channel, field] of Object.entries(FIELD_MAP)) {
+              mapped[frontendKey][channel] = pref[field] !== false;
+            }
+            ids[frontendKey] = pref.id;
+            break;
+          }
+        }
+      }
+      setPreferences(mapped);
+      setExistingIds(ids);
     }
   }, [prefsData]);
 
   const saveMutation = useMutation({
-    mutationFn: (data) => profileApi.updateNotificationPreferences(data),
+    mutationFn: async (data) => {
+      const { prefs, ids } = data;
+      const results = [];
+      for (const [frontendKey, channels] of Object.entries(prefs)) {
+        const backendCategory = CATEGORY_MAP[frontendKey];
+        if (!backendCategory) continue;
+        const payload = { category: backendCategory };
+        for (const [channel, field] of Object.entries(FIELD_MAP)) {
+          payload[field] = channels[channel] !== false;
+        }
+        const existingId = ids[frontendKey];
+        if (existingId) {
+          const r = await apiClient.patch(`/notifications/preferences/${existingId}/`, payload);
+          results.push(r.data);
+        } else {
+          const r = await apiClient.post('/notifications/preferences/', payload);
+          results.push(r.data);
+        }
+      }
+      return results;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notification-preferences'] });
       toast.success('Preferences saved');
     },
-    onError: (error) => {
-      toast.error(
-        error.response?.data?.error?.message || 'Failed to save preferences'
-      );
+    onError: () => {
+      toast.error('Failed to save preferences');
     },
   });
 
@@ -129,7 +173,7 @@ export default function NotificationPreferences() {
   };
 
   const handleSave = () => {
-    saveMutation.mutate({ preferences });
+    saveMutation.mutate({ prefs: preferences, ids: existingIds });
   };
 
   if (isLoading) return <PreferencesSkeleton />;

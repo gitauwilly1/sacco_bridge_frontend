@@ -8,12 +8,7 @@ import { toast } from 'sonner';
 import { adminApi } from '../api/adminApi';
 import { formatDate, formatTimeAgo } from '../../../utils/format';
 import DataTable from './DataTable';
-
-const statusColors = {
-  pending: 'bg-alert/10 text-alert border-alert/20',
-  approved: 'bg-success/10 text-success border-success/20',
-  rejected: 'bg-sand text-slate border-sand-dark/20',
-};
+import { DELETION_REQUEST_COLORS, getStatusColor } from '../../../utils/statusMapping';
 
 export default function DeletionRequests() {
   const navigate = useNavigate();
@@ -21,6 +16,8 @@ export default function DeletionRequests() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('all');
+  const [sortKey, setSortKey] = useState(null);
+  const [sortOrder, setSortOrder] = useState('asc');
 
   const {
     data: requestsData,
@@ -36,6 +33,7 @@ export default function DeletionRequests() {
           page_size: 15,
           ...(search && { search }),
           ...(status !== 'all' && { status }),
+          ...(sortKey && { ordering: sortOrder === 'desc' ? `-${sortKey}` : sortKey }),
         })
         .then((r) => r.data),
   });
@@ -59,6 +57,7 @@ export default function DeletionRequests() {
       key: 'id',
       header: 'ID',
       width: '80px',
+      sortable: true,
       render: (value) => <span className="font-mono text-xs font-semibold text-slate/75">#{value}</span>,
     },
     {
@@ -85,9 +84,10 @@ export default function DeletionRequests() {
     {
       key: 'status',
       header: 'Status',
+      sortable: true,
       render: (value) => (
         <Badge
-          className={`${statusColors[value] || 'bg-sand text-slate border-sand-dark/20'} border`}
+          className={`${getStatusColor(value, DELETION_REQUEST_COLORS)} border`}
           variant="outline"
         >
           {value}
@@ -97,6 +97,7 @@ export default function DeletionRequests() {
     {
       key: 'requested_at',
       header: 'Requested',
+      sortable: true,
       render: (_, row) => (
         <span className="text-xs text-gray-500 font-medium">
           {formatTimeAgo(row.requested_at || row.created_at)}
@@ -198,6 +199,13 @@ export default function DeletionRequests() {
         emptyMessage="No deletion requests"
         rowActions={rowActions}
         onRowClick={(row) => navigate({ to: `/admin/deletion-requests/${row.id}` })}
+        sortKey={sortKey}
+        sortOrder={sortOrder}
+        onSort={(key, order) => {
+          setSortKey(key);
+          setSortOrder(order);
+          setPage(1);
+        }}
       />
     </div>
   );

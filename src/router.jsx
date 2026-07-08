@@ -30,6 +30,13 @@ const ChamaForm = React.lazy(() => import('./features/chamas/components/ChamaFor
 const RecordContribution = React.lazy(() => import('./features/chamas/components/RecordContribution'));
 const BulkContribution = React.lazy(() => import('./features/chamas/components/BulkContribution'));
 const LoanApplication = React.lazy(() => import('./features/chamas/components/LoanApplication'));
+const LoanDetail = React.lazy(() => import('./features/chamas/components/LoanDetail'));
+const MeetingForm = React.lazy(() => import('./features/chamas/components/MeetingForm'));
+const MeetingDetail = React.lazy(() => import('./features/chamas/components/MeetingDetail'));
+const PollForm = React.lazy(() => import('./features/chamas/components/PollForm'));
+const PollDetail = React.lazy(() => import('./features/chamas/components/PollDetail'));
+const SettlementList = React.lazy(() => import('./features/investments/components/SettlementTracker').then(m => ({ default: m.SettlementList })));
+const SettlementTracker = React.lazy(() => import('./features/investments/components/SettlementTracker'));
 const TransactionList = React.lazy(() => import('./features/transactions/components/TransactionList'));
 const TransactionDetail = React.lazy(() => import('./features/transactions/components/TransactionDetail'));
 const LedgerList = React.lazy(() => import('./features/transactions/components/LedgerList'));
@@ -40,7 +47,11 @@ const NotificationList = React.lazy(() => import('./features/notifications/compo
 const ChatScreen = React.lazy(() => import('./features/chatbot/components/ChatScreen'));
 const ShareReceipt = React.lazy(() => import('./features/receipts/components/ShareReceipt'));
 const HelpPage = React.lazy(() => import('./features/help/components/HelpPage'));
+const SupportList = React.lazy(() => import('./features/support/components/SupportList'));
+const CreateTicket = React.lazy(() => import('./features/support/components/CreateTicket'));
+const SupportDetail = React.lazy(() => import('./features/support/components/SupportDetail'));
 const SignatureVerify = React.lazy(() => import('./features/legal/components/SignatureVerify'));
+const KYCVerification = React.lazy(() => import('./features/kyc/components/KYCVerification'));
 const LegalAcceptance = React.lazy(() => import('./features/legal/components/LegalAcceptance'));
 const NotFound = React.lazy(() => import('./components/feedback/NotFound'));
 
@@ -65,6 +76,7 @@ const KnowledgeBase = React.lazy(() => import('./features/admin/components/Knowl
 const AdminVolumeAnalytics = React.lazy(() => import('./features/admin/components/AdminVolumeAnalytics'));
 const AdminUnderwriting = React.lazy(() => import('./features/admin/components/AdminUnderwriting'));
 const AdminSettlementList = React.lazy(() => import('./features/admin/components/AdminSettlementList'));
+const ApprovalList = React.lazy(() => import('./features/admin/components/ApprovalList'));
 
 import { dashboardApi } from './features/dashboard/api/dashboardApi';
 import { getInitials, formatKES } from './utils/format';
@@ -333,6 +345,13 @@ const profileDevicesRoute = createRoute({
   component: () => <LazyLoad><Padded><DeviceManagement /></Padded></LazyLoad>,
 });
 
+// ── KYC Route ─────────────────────────────────────────────────────────────────
+const kycRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/kyc',
+  component: () => <LazyLoad><KYCVerification /></LazyLoad>,
+});
+
 // Legacy settings/security aliases
 const settingsRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -419,6 +438,36 @@ const chamaLoanRoute = createRoute({
   component: () => <LazyLoad><LoanApplication /></LazyLoad>,
 });
 
+const chamaLoanDetailRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/chamas/$chamaId/loans/$loanId',
+  component: () => <LazyLoad><LoanDetail /></LazyLoad>,
+});
+
+const chamaNewMeetingRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/chamas/$chamaId/meetings/new',
+  component: () => <LazyLoad><MeetingForm /></LazyLoad>,
+});
+
+const chamaMeetingDetailRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/chamas/$chamaId/meetings/$meetingId',
+  component: () => <LazyLoad><MeetingDetail /></LazyLoad>,
+});
+
+const chamaNewPollRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/chamas/$chamaId/polls/new',
+  component: () => <LazyLoad><PollForm /></LazyLoad>,
+});
+
+const chamaPollDetailRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/chamas/$chamaId/polls/$pollId',
+  component: () => <LazyLoad><PollDetail /></LazyLoad>,
+});
+
 // ── Investment Routes ─────────────────────────────────────────────────────────
 const investmentsRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -497,6 +546,18 @@ const connectionDetailRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/investments/connections/$connectionId',
   component: () => <LazyLoad><ConnectionDetail /></LazyLoad>,
+});
+
+const settlementsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/investments/settlements',
+  component: () => <LazyLoad><Padded><SettlementList /></Padded></LazyLoad>,
+});
+
+const settlementDetailRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/investments/settlements/$settlementId',
+  component: () => <LazyLoad><SettlementTrackerPage /></LazyLoad>,
 });
 
 // ── Transaction Routes ────────────────────────────────────────────────────────
@@ -594,6 +655,25 @@ const helpRoute = createRoute({
   component: () => <LazyLoad><HelpPage /></LazyLoad>,
 });
 
+// ── Support Ticket Routes ──────────────────────────────────────────────────────
+const supportRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/support',
+  component: () => <LazyLoad><SupportList /></LazyLoad>,
+});
+
+const supportNewRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/support/new',
+  component: () => <LazyLoad><CreateTicket /></LazyLoad>,
+});
+
+const supportDetailRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/support/$ticketId',
+  component: () => <LazyLoad><SupportDetail /></LazyLoad>,
+});
+
 const legalVerifyRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/legal/verify/$hash',
@@ -608,6 +688,11 @@ const legalDocumentsRoute = createRoute({
 
 function LazyLoad({ children }) {
   return <Suspense fallback={<div className="flex items-center justify-center h-64"><Loader2 className="animate-spin size-8 text-primary" /></div>}>{children}</Suspense>;
+}
+
+function SettlementTrackerPage() {
+  const { settlementId } = useParams({ strict: false });
+  return <SettlementTracker settlementId={settlementId} />;
 }
 
 function AdminGuard({ children, restricted }) {
@@ -757,6 +842,12 @@ const adminSettlementsRoute = createRoute({
   component: () => <AdminGuard><LazyLoad><AdminSettlementList /></LazyLoad></AdminGuard>,
 });
 
+const adminApprovalsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/admin/approvals',
+  component: () => <AdminGuard><LazyLoad><ApprovalList /></LazyLoad></AdminGuard>,
+});
+
 // ── Catch-all 404 ─────────────────────────────────────────────────────────────
 const catchAllRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -792,6 +883,9 @@ const routeTree = rootRoute.addChildren([
   settingsRoute,
   securityRoute,
 
+  // KYC
+  kycRoute,
+
   // Chamas
   chamasRoute,
   newChamaRoute,
@@ -804,6 +898,11 @@ const routeTree = rootRoute.addChildren([
   chamaContributeRoute,
   chamaBulkContributeRoute,
   chamaLoanRoute,
+  chamaLoanDetailRoute,
+  chamaNewMeetingRoute,
+  chamaMeetingDetailRoute,
+  chamaNewPollRoute,
+  chamaPollDetailRoute,
 
   // Investments
   investmentsRoute,
@@ -819,6 +918,8 @@ const routeTree = rootRoute.addChildren([
   opportunitiesRoute,
   connectionsRoute,
   connectionDetailRoute,
+  settlementsRoute,
+  settlementDetailRoute,
 
   // Transactions
   activityRoute,
@@ -842,6 +943,11 @@ const routeTree = rootRoute.addChildren([
 
   // Help
   helpRoute,
+
+  // Support
+  supportRoute,
+  supportNewRoute,
+  supportDetailRoute,
 
   // Legal
   legalVerifyRoute,
@@ -869,6 +975,7 @@ const routeTree = rootRoute.addChildren([
   adminVolumeRoute,
   adminUnderwritingRoute,
   adminSettlementsRoute,
+  adminApprovalsRoute,
 
   // Profile sub pages
   profileDevicesRoute,

@@ -8,19 +8,7 @@ import { toast } from 'sonner';
 import { adminApi } from '../api/adminApi';
 import { formatDate } from '../../../utils/format';
 import DataTable from './DataTable';
-
-const tierColors = {
-  1: 'bg-success/10 text-success border-success/20',
-  2: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
-  3: 'bg-alert/10 text-alert border-alert/20',
-};
-
-const statusColors = {
-  ACTIVE: 'bg-success/10 text-success border-success/20',
-  SUSPENDED: 'bg-alert/10 text-alert border-alert/20',
-  UNDER_REVIEW: 'bg-alert/10 text-alert border-alert/20',
-  HALTED: 'bg-danger/10 text-danger border-danger/20',
-};
+import { SACCO_STATUS_COLORS, SACCO_TIER_COLORS, getStatusColor } from '../../../utils/statusMapping';
 
 function ActionsDropdown({ row, onVerify, onSuspend, onReactivate, onDelete }) {
   const [open, setOpen] = useState(false);
@@ -88,6 +76,9 @@ export default function SACCOManagement() {
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('all');
   const [tier, setTier] = useState('all');
+  const [sortKey, setSortKey] = useState(null);
+  const [sortOrder, setSortOrder] = useState('asc');
+  const [selectedIds, setSelectedIds] = useState(new Set());
 
   const {
     data: saccosData,
@@ -104,6 +95,7 @@ export default function SACCOManagement() {
           ...(search && { search }),
           ...(status !== 'all' && { status }),
           ...(tier !== 'all' && { sasra_tier: tier }),
+          ...(sortKey && { ordering: sortOrder === 'desc' ? `-${sortKey}` : sortKey }),
         })
         .then((r) => r.data),
   });
@@ -144,6 +136,26 @@ export default function SACCOManagement() {
     onError: (error) => toast.error(error.response?.data?.error?.message || 'Action failed'),
   });
 
+  const bulkSuspendMutation = useMutation({
+    mutationFn: (ids) => adminApi.bulkSuspendsSACCOS(Array.from(ids), 'Bulk suspension'),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-saccos'] });
+      setSelectedIds(new Set());
+      toast.success('SACCOs suspended');
+    },
+    onError: () => toast.error('Bulk suspend failed'),
+  });
+
+  const bulkReactivateMutation = useMutation({
+    mutationFn: (ids) => adminApi.bulkReactivateSACCOS(Array.from(ids)),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-saccos'] });
+      setSelectedIds(new Set());
+      toast.success('SACCOs reactivated');
+    },
+    onError: () => toast.error('Bulk reactivate failed'),
+  });
+
   const saccos = saccosData?.results || saccosData?.data || [];
   const total = saccosData?.pagination?.count ?? saccosData?.count ?? saccos.length;
 
@@ -168,7 +180,7 @@ export default function SACCOManagement() {
       key: 'sasra_tier',
       header: 'Tier',
       render: (value) => (
-        <Badge className={`${tierColors[value] || 'bg-sand text-slate border-sand-dark/20'} border`} variant="outline">
+        <Badge className={`${getStatusColor(value, SACCO_TIER_COLORS)} border`} variant="outline">
           Tier {value}
         </Badge>
       ),
@@ -177,7 +189,7 @@ export default function SACCOManagement() {
       key: 'status',
       header: 'Status',
       render: (value) => (
-        <Badge className={`${statusColors[value] || 'bg-sand text-slate border-sand-dark/20'} border`} variant="outline">
+        <Badge className={`${getStatusColor(value, SACCO_STATUS_COLORS)} border`} variant="outline">
           {value === 'ACTIVE' ? 'Verified' : value === 'UNDER_REVIEW' ? 'Pending' : value}
         </Badge>
       ),
@@ -207,6 +219,31 @@ export default function SACCOManagement() {
         onReactivate={(id) => reactivateMutation.mutate(id)}
         onDelete={(id) => deleteMutation.mutate(id)}
       />
+    </div>
+  );
+
+  const bulkActionBar = (ids) => (
+    <div className="flex items-center gap-2">
+      <Button
+        size="sm"
+        className="text-alert bg-alert/10 hover:bg-alert/20 border-0 text-xs font-semibold cursor-pointer h-8 rounded-lg"
+        onClick={() => {
+          if (window.confirm(`Suspend ${ids.size} SACCOs?`)) bulkSuspendMutation.mutate(ids);
+        }}
+        disabled={bulkSuspendMutation.isPending}
+      >
+        <Ban className="h-3.5 w-3.5 mr-1" /> Suspend
+      </Button>
+      <Button
+        size="sm"
+        className="text-success bg-success/10 hover:bg-success/20 border-0 text-xs font-semibold cursor-pointer h-8 rounded-lg"
+        onClick={() => {
+          if (window.confirm(`Reactivate ${ids.size} SACCOs?`)) bulkReactivateMutation.mutate(ids);
+        }}
+        disabled={bulkReactivateMutation.isPending}
+      >
+        <Play className="h-3.5 w-3.5 mr-1" /> Reactivate
+      </Button>
     </div>
   );
 
@@ -264,6 +301,17 @@ export default function SACCOManagement() {
         onSearch={(v) => { setSearch(v); setPage(1); }}
         emptyMessage="No SACCOs found"
         rowActions={rowActions}
+        sortKey={sortKey}
+        sortOrder={sortOrder}
+        onSort={(key, order) => {
+          setSortKey(key);
+          setSortOrder(order);
+          setPage(1);
+        }}
+        selectable
+        selectedIds={selectedIds}
+        onSelectionChange={setSelectedIds}
+        bulkActionBar={bulkActionBar}
       />
     </div>
   );

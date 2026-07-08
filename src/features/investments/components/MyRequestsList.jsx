@@ -3,11 +3,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import {
   DollarSign, Clock, CheckCircle2, XCircle, Users,
-  ChevronRight, Plus, RefreshCw,
+  ChevronRight, Plus, RefreshCw, Edit, Save,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { ErrorState, EmptyState } from '@/components/feedback';
 import { toast } from 'sonner';
 import { investmentsApi } from '../api/investmentsApi';
@@ -44,6 +46,9 @@ const requestStatusConfig = {
 function RequestCard({ request }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [editing, setEditing] = useState(false);
+  const [editQuantity, setEditQuantity] = useState(request.quantity?.toString() || '');
+  const [editPrice, setEditPrice] = useState(request.price_per_share?.toString() || '');
   const status = requestStatusConfig[request.status] || requestStatusConfig.active;
   const StatusIcon = status.icon;
 
@@ -60,6 +65,20 @@ function RequestCard({ request }) {
     },
   });
 
+  const updateMutation = useMutation({
+    mutationFn: (data) => investmentsApi.updateRequest(request.id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['my-requests'] });
+      setEditing(false);
+      toast.success('Request updated');
+    },
+    onError: (error) => {
+      toast.error(
+        error.response?.data?.error?.message || 'Failed to update request'
+      );
+    },
+  });
+
   const handleCancel = (e) => {
     e.stopPropagation();
     if (window.confirm('Are you sure you want to cancel this request?')) {
@@ -67,10 +86,24 @@ function RequestCard({ request }) {
     }
   };
 
+  const handleSaveEdit = (e) => {
+    e.stopPropagation();
+    const qty = parseInt(editQuantity, 10);
+    const price = parseFloat(editPrice);
+    if (!qty || qty <= 0) { toast.error('Enter a valid quantity'); return; }
+    if (!price || price <= 0) { toast.error('Enter a valid price'); return; }
+    updateMutation.mutate({ quantity: qty, price_per_share: price });
+  };
+
+  const handleCardClick = (e) => {
+    if (editing) return;
+    navigate({ to: `/investments/requests/${request.id}` });
+  };
+
   return (
     <Card
-      className="cursor-pointer border-sand shadow-subtle card-lift transition-all duration-200"
-      onClick={() => navigate({ to: `/investments/requests/${request.id}` })}
+      className={`${editing ? '' : 'cursor-pointer'} border-sand shadow-subtle card-lift transition-all duration-200`}
+      onClick={handleCardClick}
     >
       <CardContent className="p-4">
         <div className="flex items-start justify-between mb-3">
@@ -86,29 +119,78 @@ function RequestCard({ request }) {
             </div>
             <p className="text-xs text-gray-400 font-medium">{request.share_class_name}</p>
           </div>
-          <ChevronRight className="h-4 w-4 text-gray-400 flex-shrink-0 mt-0.5" />
+          {!editing && <ChevronRight className="h-4 w-4 text-gray-400 flex-shrink-0 mt-0.5" />}
         </div>
 
-        <div className="grid grid-cols-3 gap-2.5 mb-3.5 pt-1">
-          <div>
-            <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Quantity</p>
-            <p className="text-sm font-bold text-slate font-numbers mt-0.5" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-              {request.quantity?.toLocaleString()}
-            </p>
+        {editing ? (
+          <div className="space-y-3 mb-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label className="text-[10px] font-bold text-slate uppercase tracking-wider">Quantity</Label>
+                <Input
+                  type="number"
+                  min="1"
+                  value={editQuantity}
+                  onChange={(e) => setEditQuantity(e.target.value)}
+                  className="border-sand focus-visible:ring-terracotta text-sm"
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[10px] font-bold text-slate uppercase tracking-wider">Price per Share (KES)</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={editPrice}
+                  onChange={(e) => setEditPrice(e.target.value)}
+                  className="border-sand focus-visible:ring-terracotta text-sm"
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </div>
+            </div>
+            <div className="flex items-center gap-2 pt-1">
+              <Button
+                size="sm"
+                className="bg-terracotta hover:bg-clay text-white text-xs font-semibold"
+                onClick={handleSaveEdit}
+                disabled={updateMutation.isPending}
+              >
+                <Save className="h-3 w-3 mr-1" />
+                {updateMutation.isPending ? 'Saving...' : 'Save'}
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="border-sand text-slate text-xs font-semibold"
+                onClick={(e) => { e.stopPropagation(); setEditing(false); }}
+              >
+                Cancel
+              </Button>
+            </div>
           </div>
-          <div>
-            <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Price</p>
-            <p className="text-sm font-bold text-slate font-numbers mt-0.5" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-              {formatKES(request.price_per_share)}
-            </p>
+        ) : (
+          <div className="grid grid-cols-3 gap-2.5 mb-3.5 pt-1">
+            <div>
+              <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Quantity</p>
+              <p className="text-sm font-bold text-slate font-numbers mt-0.5" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                {request.quantity?.toLocaleString()}
+              </p>
+            </div>
+            <div>
+              <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Price</p>
+              <p className="text-sm font-bold text-slate font-numbers mt-0.5" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                {formatKES(request.price_per_share)}
+              </p>
+            </div>
+            <div>
+              <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Total</p>
+              <p className="text-sm font-extrabold text-terracotta font-numbers mt-0.5" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                {formatKES((request.quantity || 0) * (request.price_per_share || 0))}
+              </p>
+            </div>
           </div>
-          <div>
-            <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Total</p>
-            <p className="text-sm font-extrabold text-terracotta font-numbers mt-0.5" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-              {formatKES((request.quantity || 0) * (request.price_per_share || 0))}
-            </p>
-          </div>
-        </div>
+        )}
 
         <div className="flex items-center justify-between text-xs pt-3.5 border-t border-sand/40 font-medium">
           <span className="text-gray-400">
@@ -121,17 +203,29 @@ function RequestCard({ request }) {
               formatTimeAgo(request.created_at)
             )}
           </span>
-          {request.status === 'active' && (
-            <Button
-              size="sm"
-              variant="ghost"
-              className="text-xs text-danger font-bold h-auto p-0 hover:bg-transparent hover:text-danger/80"
-              onClick={handleCancel}
-              disabled={cancelMutation.isPending}
-            >
-              Cancel Request
-            </Button>
-          )}
+          <div className="flex items-center gap-2">
+            {request.status === 'active' && !editing && (
+              <>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="text-xs text-slate font-bold h-auto p-0 hover:bg-transparent hover:text-terracotta"
+                  onClick={(e) => { e.stopPropagation(); setEditQuantity(request.quantity?.toString() || ''); setEditPrice(request.price_per_share?.toString() || ''); setEditing(true); }}
+                >
+                  <Edit className="h-3 w-3 mr-0.5" /> Edit
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="text-xs text-danger font-bold h-auto p-0 hover:bg-transparent hover:text-danger/80"
+                  onClick={handleCancel}
+                  disabled={cancelMutation.isPending}
+                >
+                  Cancel Request
+                </Button>
+              </>
+            )}
+          </div>
         </div>
       </CardContent>
     </Card>

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from '@tanstack/react-router';
 import { ShieldCheck, Mail, Phone, IdCard, CheckCircle2, AlertCircle, Clock, XCircle, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -7,11 +8,12 @@ import { toast } from 'sonner';
 import { profileApi } from '../api/profileApi';
 
 export default function VerificationStatus({ profile }) {
+  const navigate = useNavigate();
   const [sending, setSending] = useState(null);
 
   const handleVerifyClick = async (type) => {
     if (type === 'ID') {
-      toast.info('ID verification requires document upload — coming soon.');
+      navigate({ to: '/kyc' });
       return;
     }
     const contact = type === 'email' ? profile?.email : profile?.phone_number;

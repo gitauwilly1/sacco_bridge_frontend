@@ -7,22 +7,15 @@ import { toast } from 'sonner';
 import { adminApi } from '../api/adminApi';
 import { formatDateTime } from '../../../utils/format';
 import DataTable from './DataTable';
-
-const actionColors = {
-  CREATE: 'bg-success/10 text-success border-success/20',
-  UPDATE: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
-  DELETE: 'bg-danger/10 text-danger border-danger/20',
-  SUSPEND: 'bg-alert/10 text-alert border-alert/20',
-  VERIFY: 'bg-success/10 text-success border-success/20',
-  LOGIN: 'bg-sand text-slate border-sand-dark/20',
-  FRAUD: 'bg-danger/10 text-danger border-danger/20',
-};
+import { ACTION_COLORS, getStatusColor } from '../../../utils/statusMapping';
 
 export default function AuditLog() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [actionType, setActionType] = useState('all');
   const [dateRange, setDateRange] = useState('all');
+  const [sortKey, setSortKey] = useState(null);
+  const [sortOrder, setSortOrder] = useState('asc');
 
   const {
     data: auditData,
@@ -37,8 +30,9 @@ export default function AuditLog() {
           page,
           page_size: 20,
           ...(search && { search }),
-          ...(actionType !== 'all' && { action_type: actionType }),
+          ...(actionType !== 'all' && { action: actionType }),
           ...(dateRange !== 'all' && { date_range: dateRange }),
+          ...(sortKey && { ordering: sortOrder === 'desc' ? `-${sortKey}` : sortKey }),
         })
         .then((r) => r.data),
   });
@@ -67,6 +61,7 @@ export default function AuditLog() {
       key: 'timestamp',
       header: 'Time',
       width: '160px',
+      sortable: true,
       render: (_, row) => (
         <span className="text-xs text-gray-500 font-medium">
           {formatDateTime(row.timestamp || row.created_at)}
@@ -74,12 +69,13 @@ export default function AuditLog() {
       ),
     },
     {
-      key: 'action_type',
+      key: 'action',
       header: 'Action',
       width: '100px',
+      sortable: true,
       render: (value) => (
         <Badge
-          className={`${actionColors[value] || 'bg-sand text-slate border-sand-dark/20'} border`}
+          className={`${getStatusColor(value, ACTION_COLORS)} border`}
           variant="outline"
         >
           {value}
@@ -87,12 +83,12 @@ export default function AuditLog() {
       ),
     },
     {
-      key: 'actor',
+      key: 'user',
       header: 'Actor',
       render: (_, row) => (
         <div className="flex items-center gap-1.5 text-sm font-medium text-slate">
           <User className="h-3.5 w-3.5 text-gray-400" />
-          <span>{row.actor_name || row.user_email || 'System'}</span>
+          <span>{row.user || row.user_email || 'System'}</span>
         </div>
       ),
     },
@@ -101,13 +97,13 @@ export default function AuditLog() {
       header: 'Description',
       render: (_, row) => (
         <p className="text-sm text-slate font-medium max-w-[300px] truncate">
-          {row.description || row.event || row.action}
+          {row.description || row.details || '—'}
         </p>
       ),
     },
     {
-      key: 'ip_address',
-      header: 'IP',
+      key: 'reference',
+      header: 'Reference',
       width: '120px',
       render: (value) => (
         <span className="text-xs text-gray-400 font-mono">{value || '—'}</span>
@@ -191,6 +187,13 @@ export default function AuditLog() {
           setPage(1);
         }}
         emptyMessage="No audit entries"
+        sortKey={sortKey}
+        sortOrder={sortOrder}
+        onSort={(key, order) => {
+          setSortKey(key);
+          setSortOrder(order);
+          setPage(1);
+        }}
       />
     </div>
   );

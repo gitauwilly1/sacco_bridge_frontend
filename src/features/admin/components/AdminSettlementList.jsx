@@ -1,39 +1,51 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import { ArrowLeft, Download, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Download, RefreshCw, ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
 import SearchInput from '@/components/ui/SearchInput';
 import DateRangeFilter from '@/components/ui/DateRangeFilter';
 import { adminApi } from '../api/adminApi';
 import { formatKES, formatDate } from '../../../utils/format';
+import { SETTLEMENT_STATUS_COLORS, getStatusColor } from '../../../utils/statusMapping';
 import { toast } from 'sonner';
-
-const statusColors = {
-  COMPLETED: 'bg-success/10 text-success',
-  PENDING: 'bg-warning/10 text-warning',
-  DISPUTED: 'bg-alert/10 text-alert',
-  REVERSED: 'bg-gray-100 text-gray-500',
-};
 
 export default function AdminSettlementList() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [days, setDays] = useState('all');
   const [page, setPage] = useState(1);
+  const [sortKey, setSortKey] = useState('created_at');
+  const [sortOrder, setSortOrder] = useState('desc');
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['admin-settlements', page, search, days],
-    queryFn: () => adminApi.getAdminSettlements({ page, search, ...(days !== 'all' && { days }) }).then((r) => r.data),
+    queryKey: ['admin-settlements', page, search, days, sortKey, sortOrder],
+    queryFn: () => adminApi.getAdminSettlements({ page, search, ...(days !== 'all' && { days }), ...(sortKey && { ordering: sortOrder === 'desc' ? `-${sortKey}` : sortKey }) }).then((r) => r.data),
   });
 
   const rawData = data?.data || data;
   const settlements = Array.isArray(rawData) ? rawData : rawData?.results || [];
   const totalPages = rawData?.total_pages || 1;
   const totalCount = rawData?.count || settlements.length;
+
+  const handleSort = (key) => {
+    if (sortKey === key) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortKey(key);
+      setSortOrder('desc');
+    }
+  };
+
+  const SortIcon = ({ columnKey }) => {
+    if (sortKey !== columnKey) return <ChevronsUpDown className="h-3 w-3 text-slate/30" />;
+    return sortOrder === 'asc'
+      ? <ChevronUp className="h-3 w-3 text-terracotta" />
+      : <ChevronDown className="h-3 w-3 text-terracotta" />;
+  };
 
   const handleExport = async () => {
     try {
@@ -98,32 +110,54 @@ export default function AdminSettlementList() {
 
       {!error && (
         <>
+          <div className="flex items-center gap-3 text-[11px] font-bold text-slate uppercase tracking-wider">
+            <span className="text-gray-400">Sort by:</span>
+            {[
+              { key: 'created_at', label: 'Date' },
+              { key: 'amount', label: 'Amount' },
+              { key: 'state', label: 'Status' },
+            ].map((col) => (
+              <button
+                key={col.key}
+                onClick={() => handleSort(col.key)}
+                className={`flex items-center gap-1 px-2 py-1 rounded-lg transition-colors cursor-pointer ${
+                  sortKey === col.key
+                    ? 'bg-terracotta/10 text-terracotta'
+                    : 'hover:bg-sand-light text-gray-500 hover:text-slate'
+                }`}
+              >
+                {col.label}
+                <SortIcon columnKey={col.key} />
+              </button>
+            ))}
+          </div>
+
           <div className="space-y-2">
             {settlements.map((s) => (
               <Card
                 key={s.id}
                 className="border-sand bg-white shadow-subtle rounded-xl cursor-pointer hover:border-terracotta/30 transition-colors"
-                onClick={() => s.settlement_id && navigate({ to: `/transactions/${s.settlement_id}` })}
+                onClick={() => s.uuid && navigate({ to: `/transactions/${s.uuid}` })}
               >
                 <CardContent className="p-3.5">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3 min-w-0 flex-1">
-                      <div className={`h-9 w-9 rounded-lg flex items-center justify-center ${(statusColors[s.status] || 'bg-gray-100')}`}>
-                        <div className={`h-2 w-2 rounded-full ${s.status === 'COMPLETED' ? 'bg-success' : s.status === 'PENDING' ? 'bg-warning' : s.status === 'DISPUTED' ? 'bg-alert' : 'bg-gray-400'}`} />
+            <div className={`h-9 w-9 rounded-lg flex items-center justify-center bg-gray-100`}>
+              <div className={`h-2 w-2 rounded-full ${s.state === 'COMPLETED' ? 'bg-success' : s.state === 'PENDING' ? 'bg-warning' : s.state === 'DISPUTED' ? 'bg-alert' : 'bg-gray-400'}`} />
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <p className="text-sm font-semibold text-slate truncate">{s.sender_name || s.sender || s.from_user || '—'}</p>
+                          <p className="text-sm font-semibold text-slate truncate">{s.buyer || '—'}</p>
                           <span className="text-gray-300 text-xs">&rarr;</span>
-                          <p className="text-sm font-semibold text-slate truncate">{s.recipient_name || s.recipient || s.to_user || '—'}</p>
+                          <p className="text-sm font-semibold text-slate truncate">{s.seller || '—'}</p>
                         </div>
                         <p className="text-xs text-gray-400 mt-0.5">
-                          {formatKES(s.amount || s.total)} {s.fee && `· Fee: ${formatKES(s.fee)}`} · {formatDate(s.created_at || s.date)}
+                          {formatKES(s.amount)} · {formatDate(s.created_at)}
                         </p>
                       </div>
                     </div>
-                    <Badge className={`text-[10px] font-semibold rounded-full border-0 flex-shrink-0 ml-2 ${statusColors[s.status] || 'bg-gray-100 text-gray-500'}`}>
-                      {s.status}
+                    <Badge className={`text-[10px] font-semibold rounded-full border-0 flex-shrink-0 ml-2 ${getStatusColor(s.state, SETTLEMENT_STATUS_COLORS)}`}>
+                      {s.state}
                     </Badge>
                   </div>
                 </CardContent>

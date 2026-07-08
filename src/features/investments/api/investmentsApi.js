@@ -42,6 +42,7 @@ export const investmentsApi = {
   
   // Payments / M-Pesa STK Push
   initiateStkPush: (data) => apiClient.post('/payments/mpesa/stk-push/', data),
+  getTransactionStatus: (transactionId) => apiClient.get(`/payments/mpesa/transactions/${transactionId}/`),
 
   // Analytics
   getSACCOAnalytics: (saccoId) => apiClient.get(`/analytics/sacco/${saccoId}/`),

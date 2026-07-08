@@ -1,5 +1,6 @@
 import axios from 'axios';
 import env from '../config/env';
+import { logger } from './logger';
 
 const apiClient = axios.create({
   baseURL: env.API_URL,
@@ -30,15 +31,29 @@ const generateUUID = () => {
   });
 };
 
-apiClient.interceptors.request.use((config) => {
+const WRITE_METHODS = ['post', 'put', 'patch', 'delete'];
+
+apiClient.interceptors.request.use(async (config) => {
   if (accessToken) {
     config.headers.Authorization = `Bearer ${accessToken}`;
   }
 
-  // Auto-inject idempotency key for write requests
   const method = config.method?.toLowerCase();
-  if (['post', 'put', 'patch', 'delete'].includes(method) && !config.headers['X-Idempotency-Key']) {
+
+  // Auto-inject idempotency key for write requests
+  if (WRITE_METHODS.includes(method) && !config.headers['X-Idempotency-Key']) {
     config.headers['X-Idempotency-Key'] = generateUUID();
+  }
+
+  // Queue write requests when offline
+  if (WRITE_METHODS.includes(method) && typeof navigator !== 'undefined' && !navigator.onLine) {
+    const { offlineQueue } = await import('./offlineQueue');
+    await offlineQueue.add({
+      method: method.toUpperCase(),
+      url: config.url,
+      data: config.data,
+    });
+    return Promise.reject({ __offline_queued: true, message: 'Queued for when you are back online.' });
   }
 
   return config;
@@ -47,6 +62,17 @@ apiClient.interceptors.request.use((config) => {
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
+    // Offline-queued request — resolve silently so calling code doesn't error
+    if (error.__offline_queued) {
+      return Promise.resolve({
+        data: { offline: true, queued: true, message: error.message },
+        status: 202,
+        statusText: 'Accepted (queued offline)',
+        headers: {},
+        config: error.config,
+      });
+    }
+
     const originalRequest = error.config;
 
     const isAuthEndpoint = originalRequest.url?.includes('/auth/login/') ||
@@ -73,6 +99,13 @@ apiClient.interceptors.response.use(
         window.location.href = '/login';
       }
     }
+
+    logger.captureException(error, {
+      handler: 'apiClient',
+      status: error.response?.status,
+      url: error.config?.url,
+      method: error.config?.method,
+    });
 
     return Promise.reject(error);
   }

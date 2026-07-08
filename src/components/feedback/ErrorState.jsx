@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 
 export function ErrorState({ message = 'Something went wrong', onRetry }) {
   return (
-    <div className="flex flex-col items-center justify-center py-16 text-center px-4 animate-fade-up">
+    <div role="alert" className="flex flex-col items-center justify-center py-16 text-center px-4 animate-fade-up">
       <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-50 ring-8 ring-red-50/50">
         <AlertCircle className="h-8 w-8 text-danger" />
       </div>

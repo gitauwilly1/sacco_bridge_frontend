@@ -4,7 +4,7 @@ import {
   TrendingUp, Users, Wallet, ArrowUpRight,
   ArrowDownLeft, Plus, HandCoins, Building2,
   ChevronRight, Activity, AlertCircle, CheckCircle2,
-  Clock, Scale,
+  Clock, Scale, ShieldCheck, Sparkles,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -175,7 +175,7 @@ export default function DashboardHome() {
   const totalPending = pa.total_pending ?? 0;
 
   return (
-    <div className="p-4 space-y-6 max-w-5xl mx-auto">
+    <div className="p-4 space-y-6 max-w-5xl mx-auto bg-slate-50 rounded-2xl">
 
       {/* ── Greeting ──────────────────────────────────────────────── */}
       <div className="animate-fade-up flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">

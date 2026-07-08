@@ -41,7 +41,7 @@ export default function NotificationBell() {
       <Bell className={`h-5 w-5 text-slate transition-transform ${unreadCount > 0 ? 'animate-bell-ring origin-top' : ''}`} />
       <span className={`absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border border-white ${isConnected ? 'bg-green-500' : 'bg-gray-300'}`} />
       {unreadCount > 0 && (
-        <span
+        <span aria-live="polite" aria-atomic="true"
           className={`absolute -top-0.5 -right-0.5 bg-danger text-white text-[9px] font-extrabold rounded-full h-4.5 w-4.5 flex items-center justify-center border-2 border-white shadow-subtle transition-all duration-300 ${
             isNewChange ? 'scale-125' : 'scale-100'
           }`}

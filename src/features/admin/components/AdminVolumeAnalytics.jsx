@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
-import { TrendingUp, DollarSign, BarChart3, Calendar } from 'lucide-react';
+import { TrendingUp, DollarSign, BarChart3, Calendar, ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -30,6 +30,8 @@ function VolumeBarChart({ data }) {
 
 export default function AdminVolumeAnalytics() {
   const [days, setDays] = useState(30);
+  const [sortKey, setSortKey] = useState('date');
+  const [sortOrder, setSortOrder] = useState('desc');
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['admin-volume', days],
@@ -38,6 +40,26 @@ export default function AdminVolumeAnalytics() {
         const d = r.data.data || r.data;
         return Array.isArray(d) ? d : [];
       }),
+  });
+
+  const handleSort = (key) => {
+    if (sortKey === key) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortKey(key);
+      setSortOrder('desc');
+    }
+  };
+
+  const sortedData = [...(data || [])].sort((a, b) => {
+    const valA = a[sortKey];
+    const valB = b[sortKey];
+    if (valA == null) return 1;
+    if (valB == null) return -1;
+    if (typeof valA === 'string') {
+      return sortOrder === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+    }
+    return sortOrder === 'asc' ? Number(valA) - Number(valB) : Number(valB) - Number(valA);
   });
 
   if (isLoading) return <div className="space-y-4">{[1, 2, 3].map((i) => <Skeleton key={i} className="h-32 w-full rounded-xl" />)}</div>;
@@ -129,17 +151,50 @@ export default function AdminVolumeAnalytics() {
             <CardTitle className="text-xs font-bold text-slate uppercase tracking-wider">Daily Breakdown</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
-            <div className="divide-y divide-sand max-h-80 overflow-y-auto">
-              {data.slice().reverse().map((item) => (
-                <div key={item.date} className="flex items-center justify-between px-4 py-2.5 hover:bg-sand-light/25">
-                  <span className="text-xs text-gray-500">{item.date ? new Date(item.date).toLocaleDateString() : '—'}</span>
-                  <div className="flex items-center gap-4 text-xs">
-                    <span className="font-semibold text-slate w-24 text-right">{formatKES(item.volume)}</span>
-                    <span className="text-gray-400 w-16 text-right">{item.count} txns</span>
-                    <span className="text-gray-400 w-20 text-right">{formatKES(item.fees)} fees</span>
-                  </div>
-                </div>
-              ))}
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="bg-sand-light/50 border-b border-sand/30">
+                    {[
+                      { key: 'date', label: 'Date' },
+                      { key: 'volume', label: 'Volume' },
+                      { key: 'count', label: 'Transactions' },
+                      { key: 'fees', label: 'Fees' },
+                    ].map((col) => (
+                      <th
+                        key={col.key}
+                        className="px-4 py-2.5 text-left text-[10px] font-extrabold text-slate uppercase tracking-wider cursor-pointer hover:text-terracotta transition-colors"
+                        onClick={() => handleSort(col.key)}
+                      >
+                        <div className="flex items-center gap-1">
+                          <span>{col.label}</span>
+                          {sortKey === col.key ? (
+                            sortOrder === 'asc' ? (
+                              <ChevronUp className="h-3 w-3 text-terracotta" />
+                            ) : (
+                              <ChevronDown className="h-3 w-3 text-terracotta" />
+                            )
+                          ) : (
+                            <ChevronsUpDown className="h-3 w-3 text-slate/30" />
+                          )}
+                        </div>
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-sand/30">
+                  {sortedData.map((item) => (
+                    <tr key={item.date} className="hover:bg-sand-light/25 transition-colors">
+                      <td className="px-4 py-2.5 text-xs text-gray-500">
+                        {item.date ? new Date(item.date).toLocaleDateString() : '—'}
+                      </td>
+                      <td className="px-4 py-2.5 text-xs font-semibold text-slate">{formatKES(item.volume)}</td>
+                      <td className="px-4 py-2.5 text-xs text-gray-400">{item.count} txns</td>
+                      <td className="px-4 py-2.5 text-xs text-gray-400">{formatKES(item.fees)} fees</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </CardContent>
         </Card>

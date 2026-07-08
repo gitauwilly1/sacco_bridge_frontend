@@ -7,12 +7,16 @@ import { toast } from 'sonner';
 import { adminApi } from '../api/adminApi';
 import { formatKES, formatDate } from '../../../utils/format';
 import DataTable from './DataTable';
+import { CHAMA_STATUS_COLORS, getStatusColor } from '../../../utils/statusMapping';
 
 export default function ChamaOversight() {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('all');
+  const [sortKey, setSortKey] = useState(null);
+  const [sortOrder, setSortOrder] = useState('asc');
+  const [selectedIds, setSelectedIds] = useState(new Set());
 
   const {
     data: chamasData,
@@ -28,6 +32,7 @@ export default function ChamaOversight() {
           page_size: 15,
           ...(search && { search }),
           ...(status !== 'all' && { status }),
+          ...(sortKey && { ordering: sortOrder === 'desc' ? `-${sortKey}` : sortKey }),
         })
         .then((r) => r.data),
   });
@@ -41,23 +46,33 @@ export default function ChamaOversight() {
     onError: (error) => toast.error(error.response?.data?.error?.message || 'Action failed'),
   });
 
+  const bulkMutation = useMutation({
+    mutationFn: ({ ids, action }) => adminApi.bulkManageChamas(Array.from(ids), action),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-chamas'] });
+      setSelectedIds(new Set());
+      toast.success('Chamas updated');
+    },
+    onError: () => toast.error('Bulk action failed'),
+  });
+
   const chamas = chamasData?.results || chamasData?.data || [];
   const total = chamasData?.pagination?.count ?? chamasData?.count ?? chamas.length;
 
   const columns = [
     {
-      key: 'chama_name',
+      key: 'name',
       header: 'Chama',
       sortable: true,
       render: (_, row) => (
         <div>
-          <p className="font-semibold text-slate text-sm">{row.chama_name}</p>
+          <p className="font-semibold text-slate text-sm">{row.name}</p>
           <p className="text-xs text-gray-400">{row.chama_type}</p>
         </div>
       ),
     },
     {
-      key: 'total_members',
+      key: 'member_count',
       header: 'Members',
       render: (value) => <span className="text-sm font-medium text-slate">{value?.toLocaleString() || '0'}</span>,
     },
@@ -70,14 +85,7 @@ export default function ChamaOversight() {
       key: 'status',
       header: 'Status',
       render: (value) => (
-        <Badge
-          className={
-            value === 'active'
-              ? 'bg-success/10 text-success border border-success/20'
-              : 'bg-danger/10 text-danger border border-danger/20'
-          }
-          variant="outline"
-        >
+        <Badge className={`${getStatusColor(value, CHAMA_STATUS_COLORS)} border`} variant="outline">
           {value}
         </Badge>
       ),
@@ -92,13 +100,13 @@ export default function ChamaOversight() {
 
   const rowActions = (row) => (
     <div className="flex items-center gap-2 justify-end">
-      {row.status === 'active' ? (
+      {(row.status === 'active' || row.status === 'ACTIVE') ? (
         <Button
           size="sm"
           variant="ghost"
           className="text-alert hover:text-alert/80 hover:bg-alert/5 transition-all rounded-lg font-medium"
           onClick={() => {
-            if (window.confirm(`Suspend ${row.chama_name}?`)) {
+            if (window.confirm(`Suspend ${row.name}?`)) {
               manageMutation.mutate({ chamaId: row.id, action: 'suspend' });
             }
           }}
@@ -118,6 +126,31 @@ export default function ChamaOversight() {
     </div>
   );
 
+  const bulkActionBar = (ids) => (
+    <div className="flex items-center gap-2">
+      <Button
+        size="sm"
+        className="text-alert bg-alert/10 hover:bg-alert/20 border-0 text-xs font-semibold cursor-pointer h-8 rounded-lg"
+        onClick={() => {
+          if (window.confirm(`Suspend ${ids.size} chamas?`)) bulkMutation.mutate({ ids, action: 'suspend' });
+        }}
+        disabled={bulkMutation.isPending}
+      >
+        <Ban className="h-3.5 w-3.5 mr-1" /> Suspend
+      </Button>
+      <Button
+        size="sm"
+        className="text-success bg-success/10 hover:bg-success/20 border-0 text-xs font-semibold cursor-pointer h-8 rounded-lg"
+        onClick={() => {
+          if (window.confirm(`Reactivate ${ids.size} chamas?`)) bulkMutation.mutate({ ids, action: 'reactivate' });
+        }}
+        disabled={bulkMutation.isPending}
+      >
+        <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> Reactivate
+      </Button>
+    </div>
+  );
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -132,8 +165,8 @@ export default function ChamaOversight() {
             className="text-xs border border-sand bg-white/90 hover:border-terracotta focus:outline-none focus:ring-1 focus:ring-terracotta rounded-lg px-2.5 py-1.5 text-slate font-medium shadow-subtle transition-all cursor-pointer"
           >
             <option value="all">All</option>
-            <option value="active">Active</option>
-            <option value="suspended">Suspended</option>
+            <option value="ACTIVE">Active</option>
+            <option value="SUSPENDED">Suspended</option>
           </select>
           <Button 
             size="sm" 
@@ -160,6 +193,17 @@ export default function ChamaOversight() {
         onSearch={(v) => { setSearch(v); setPage(1); }}
         emptyMessage="No chamas found"
         rowActions={rowActions}
+        sortKey={sortKey}
+        sortOrder={sortOrder}
+        onSort={(key, order) => {
+          setSortKey(key);
+          setSortOrder(order);
+          setPage(1);
+        }}
+        selectable
+        selectedIds={selectedIds}
+        onSelectionChange={setSelectedIds}
+        bulkActionBar={bulkActionBar}
       />
     </div>
   );

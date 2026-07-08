@@ -7,19 +7,7 @@ import { toast } from 'sonner';
 import { adminApi } from '../api/adminApi';
 import { formatKES, formatTimeAgo } from '../../../utils/format';
 import DataTable from './DataTable';
-
-const riskColors = {
-  low: 'bg-success/10 text-success border-success/20',
-  medium: 'bg-alert/10 text-alert border-alert/20',
-  high: 'bg-danger/10 text-danger border-danger/20',
-  critical: 'bg-danger/10 text-danger border border-danger/30',
-};
-
-const statusColors = {
-  pending: 'bg-alert/10 text-alert border-alert/20',
-  approved: 'bg-success/10 text-success border-success/20',
-  blocked: 'bg-danger/10 text-danger border-danger/20',
-};
+import { RISK_COLORS, FRAUD_STATUS_COLORS, getStatusColor } from '../../../utils/statusMapping';
 
 export default function FraudReview() {
   const queryClient = useQueryClient();
@@ -27,6 +15,8 @@ export default function FraudReview() {
   const [search, setSearch] = useState('');
   const [riskLevel, setRiskLevel] = useState('all');
   const [fraudStatus, setFraudStatus] = useState('pending');
+  const [sortKey, setSortKey] = useState(null);
+  const [sortOrder, setSortOrder] = useState('asc');
 
   const {
     data: assessmentsData,
@@ -43,6 +33,7 @@ export default function FraudReview() {
           ...(search && { search }),
           ...(riskLevel !== 'all' && { risk_level: riskLevel }),
           ...(fraudStatus !== 'all' && { status: fraudStatus }),
+          ...(sortKey && { ordering: sortOrder === 'desc' ? `-${sortKey}` : sortKey }),
         })
         .then((r) => r.data),
   });
@@ -64,6 +55,7 @@ export default function FraudReview() {
       key: 'id',
       header: 'ID',
       width: '80px',
+      sortable: true,
       render: (value) => <span className="font-mono text-xs font-semibold text-slate/75">#{value}</span>,
     },
     {
@@ -79,8 +71,9 @@ export default function FraudReview() {
     {
       key: 'risk_level',
       header: 'Risk',
+      sortable: true,
       render: (value) => (
-        <Badge className={`${riskColors[value] || 'bg-sand text-slate border-sand-dark/20'} border`} variant="outline">
+        <Badge className={`${getStatusColor(value, RISK_COLORS)} border`} variant="outline">
           {value?.toUpperCase()}
         </Badge>
       ),
@@ -88,29 +81,32 @@ export default function FraudReview() {
     {
       key: 'amount',
       header: 'Amount',
+      sortable: true,
       render: (value) => (
         <span className="text-sm font-bold text-slate">{value ? formatKES(value) : '—'}</span>
       ),
     },
     {
-      key: 'status',
-      header: 'Status',
+      key: 'applied_action',
+      header: 'Action',
+      sortable: true,
       render: (value) => (
-        <Badge className={`${statusColors[value] || 'bg-sand text-slate border-sand-dark/20'} border`} variant="outline">
-          {value}
+        <Badge className={`${getStatusColor(value, FRAUD_STATUS_COLORS)} border`} variant="outline">
+          {value?.toLowerCase() || 'pending'}
         </Badge>
       ),
     },
     {
       key: 'created_at',
       header: 'Detected',
+      sortable: true,
       render: (value) => <span className="text-xs text-gray-500 font-medium">{formatTimeAgo(value)}</span>,
     },
   ];
 
   const rowActions = (row) => (
     <div className="flex items-center gap-2 justify-end">
-      {(row.status?.toLowerCase() === 'pending') && (
+      {(!row.applied_action || row.applied_action === 'PENDING' || row.applied_action === 'ALLOW') && (
         <>
           <Button
             size="sm"
@@ -161,10 +157,10 @@ export default function FraudReview() {
             className="text-xs border border-sand bg-white/90 hover:border-terracotta focus:outline-none focus:ring-1 focus:ring-terracotta rounded-lg px-2.5 py-1.5 text-slate font-medium shadow-subtle transition-all cursor-pointer"
           >
             <option value="all">All Risks</option>
-            <option value="critical">Critical</option>
-            <option value="high">High</option>
-            <option value="medium">Medium</option>
-            <option value="low">Low</option>
+            <option value="CRITICAL">Critical</option>
+            <option value="HIGH">High</option>
+            <option value="MEDIUM">Medium</option>
+            <option value="LOW">Low</option>
           </select>
           <Button 
             size="sm" 
@@ -191,6 +187,13 @@ export default function FraudReview() {
         onSearch={(v) => { setSearch(v); setPage(1); }}
         emptyMessage="No fraud assessments"
         rowActions={rowActions}
+        sortKey={sortKey}
+        sortOrder={sortOrder}
+        onSort={(key, order) => {
+          setSortKey(key);
+          setSortOrder(order);
+          setPage(1);
+        }}
       />
     </div>
   );
