@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import { RefreshCw, User, CheckCircle2, XCircle, Eye } from 'lucide-react';
+import { RefreshCw, User, CheckCircle2, XCircle, Eye, Mail, Phone, Clock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -62,9 +62,20 @@ export default function AdminKYCList() {
             <p className="font-bold text-slate text-xs">
               {row.first_name || ''} {row.last_name || ''}
             </p>
-            <p className="text-[10px] text-gray-400 font-medium mt-0.5">{row.email || '—'}</p>
+            <p className="text-[10px] text-gray-400 font-medium mt-0.5 flex items-center gap-1">
+              <Mail className="h-2.5 w-2.5" /> {row.email || '—'}
+            </p>
           </div>
         </div>
+      ),
+    },
+    {
+      key: 'phone_number',
+      header: 'Phone',
+      render: (value) => (
+        <span className="text-[11px] text-gray-405 font-medium flex items-center gap-1">
+          <Phone className="h-3 w-3" /> {value || '—'}
+        </span>
       ),
     },
     {
@@ -80,26 +91,38 @@ export default function AdminKYCList() {
       ),
     },
     {
+      key: 'email_verified',
+      header: 'Email',
+      render: (value) => (
+        value
+          ? <Badge className="bg-success/10 text-success border-success/20 text-[9px] font-bold rounded-full px-1.5 py-0" variant="outline"><CheckCircle2 className="h-2.5 w-2.5 mr-0.5" /> Verified</Badge>
+          : <Badge className="bg-gray-100 text-gray-500 border-gray-200 text-[9px] font-bold rounded-full px-1.5 py-0" variant="outline">No</Badge>
+      ),
+    },
+    {
       key: 'created_at',
       header: 'Joined',
       render: (value) => (
-        <span className="text-[11px] text-gray-405 font-medium font-numbers">{value ? formatDate(value) : '—'}</span>
+        <span className="text-[11px] text-gray-405 font-medium font-numbers flex items-center gap-1">
+          <Clock className="h-3 w-3" /> {value ? formatDate(value) : '—'}
+        </span>
       ),
     },
   ];
 
-  const rowActions = (row) => (
-    <div className="flex items-center gap-1.5 justify-end">
-      <Button
-        size="sm"
-        variant="ghost"
-        onClick={() => navigate({ to: `/admin/users/${row.id}` })}
-        className="text-slate/75 hover:text-terracotta hover:bg-sand-light/50 h-8 rounded-lg text-xs font-semibold px-2 cursor-pointer transition-all"
-      >
-        <Eye className="h-3.5 w-3.5 mr-1" /> View
-      </Button>
-      {(row.kyc_status || 'unverified') === 'pending' && (
-        <>
+  const rowActions = (row) => {
+    const status = row.kyc_status || 'unverified';
+    return (
+      <div className="flex items-center gap-1.5 justify-end">
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={() => navigate({ to: `/admin/users/${row.id}` })}
+          className="text-slate/75 hover:text-terracotta hover:bg-sand-light/50 h-8 rounded-lg text-xs font-semibold px-2 cursor-pointer transition-all"
+        >
+          <Eye className="h-3.5 w-3.5 mr-1" /> View
+        </Button>
+        {(status === 'pending' || status === 'unverified') && (
           <Button
             size="sm"
             variant="ghost"
@@ -113,6 +136,8 @@ export default function AdminKYCList() {
           >
             <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> Verify
           </Button>
+        )}
+        {(status === 'pending' || status === 'verified') && (
           <Button
             size="sm"
             variant="ghost"
@@ -126,10 +151,10 @@ export default function AdminKYCList() {
           >
             <XCircle className="h-3.5 w-3.5 mr-1" /> Reject
           </Button>
-        </>
-      )}
-    </div>
-  );
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-4">
@@ -150,6 +175,7 @@ export default function AdminKYCList() {
             <option value="pending">Pending</option>
             <option value="verified">Verified</option>
             <option value="unverified">Unverified</option>
+            <option value="rejected">Rejected</option>
             <option value="all">All</option>
           </select>
           <Button size="sm" variant="outline" onClick={() => refetch()} className="border-sand hover:bg-sand-light text-slate cursor-pointer h-8 w-8 p-0 rounded-lg">

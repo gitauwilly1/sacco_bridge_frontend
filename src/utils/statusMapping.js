@@ -15,6 +15,8 @@ export const KYC_COLORS = {
   PENDING: 'bg-alert/10 text-alert border-alert/20',
   unverified: 'bg-gray-200 text-gray-600 border-gray-300',
   UNVERIFIED: 'bg-gray-200 text-gray-600 border-gray-300',
+  rejected: 'bg-danger/10 text-danger border-danger/20',
+  REJECTED: 'bg-danger/10 text-danger border-danger/20',
 };
 
 // ── SACCO status & tier ─────────────────────────────────────────────────────
