@@ -91,6 +91,9 @@ export const adminApi = {
   getAdminExport: (params) => apiClient.get('/analytics/admin/export/', { params, responseType: 'blob' }),
   refreshAnalytics: () => apiClient.post('/analytics/refresh/'),
 
+  // Admin KYC Documents
+  getAdminKYCDocuments: (userId) => apiClient.get('/users/admin/kyc/documents/', { params: { user_id: userId } }),
+
   // Admin Notification Summary
   getAdminNotificationSummary: () => apiClient.get('/notifications/admin/summary/'),
 
