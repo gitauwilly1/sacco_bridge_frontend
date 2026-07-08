@@ -26,6 +26,7 @@ import { WifiOff } from 'lucide-react';
 const navItems = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/admin/users', label: 'Users', icon: Users },
+  { to: '/admin/kyc', label: 'KYC', icon: ShieldCheck },
   { to: '/admin/saccos', label: 'SACCOs', icon: Building2 },
   { to: '/admin/chamas', label: 'Chamas', icon: HandCoins },
   { to: '/admin/disputes', label: 'Disputes', icon: AlertCircle },

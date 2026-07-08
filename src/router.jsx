@@ -77,6 +77,7 @@ const AdminVolumeAnalytics = React.lazy(() => import('./features/admin/component
 const AdminUnderwriting = React.lazy(() => import('./features/admin/components/AdminUnderwriting'));
 const AdminSettlementList = React.lazy(() => import('./features/admin/components/AdminSettlementList'));
 const ApprovalList = React.lazy(() => import('./features/admin/components/ApprovalList'));
+const AdminKYCList = React.lazy(() => import('./features/admin/components/AdminKYCList'));
 
 import { dashboardApi } from './features/dashboard/api/dashboardApi';
 import { getInitials, formatKES } from './utils/format';
@@ -848,6 +849,12 @@ const adminApprovalsRoute = createRoute({
   component: () => <AdminGuard><LazyLoad><ApprovalList /></LazyLoad></AdminGuard>,
 });
 
+const adminKYCRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/admin/kyc',
+  component: () => <AdminGuard><LazyLoad><AdminKYCList /></LazyLoad></AdminGuard>,
+});
+
 // ── Catch-all 404 ─────────────────────────────────────────────────────────────
 const catchAllRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -976,6 +983,7 @@ const routeTree = rootRoute.addChildren([
   adminUnderwritingRoute,
   adminSettlementsRoute,
   adminApprovalsRoute,
+  adminKYCRoute,
 
   // Profile sub pages
   profileDevicesRoute,
