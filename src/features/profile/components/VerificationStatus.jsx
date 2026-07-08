@@ -169,11 +169,10 @@ export default function VerificationStatus({ profile }) {
                 </Badge>
                 <Button
                   size="sm"
-                  variant="outline"
-                  className="border-sand hover:bg-sand-light text-slate hover:text-terracotta text-xs font-semibold h-8 rounded-lg shadow-subtle px-3 transition-all"
+                  className="bg-terracotta hover:bg-terracotta-dark text-white border-0 shadow-subtle text-xs font-semibold h-8 rounded-lg px-3 transition-all"
                   onClick={() => handleVerifyClick('ID')}
                 >
-                  Verify
+                  Verify Identity
                 </Button>
               </>
             )}

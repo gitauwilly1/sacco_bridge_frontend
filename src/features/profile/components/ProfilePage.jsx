@@ -17,6 +17,7 @@ import {
   Activity,
   Gauge,
   ShieldCheck,
+  IdCard,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { PageSpinner } from '@/components/feedback/LoadingState';
@@ -41,6 +42,7 @@ import TransactionLimits from './TransactionLimits';
 import AppearanceSettings from './AppearanceSettings';
 import VerificationStatus from './VerificationStatus';
 import ConnectedAccounts from './ConnectedAccounts';
+import KYCVerification from '../../kyc/components/KYCVerification';
 import LoginHistory from './LoginHistory';
 import DeviceManagement from '../../notifications/components/DeviceManagement';
 import { isPlatformAdmin, isSupportAgent } from '../../../utils/permissions';
@@ -129,6 +131,17 @@ const SECTIONS = [
     supportingText: 'Limits help protect your chama and personal finances from unexpected activity.',
     actions: {
       help: { label: 'Help', message: 'Transaction limits are set by your chama administrators and platform policies.' },
+    },
+  },
+  {
+    value: 'kyc',
+    label: 'KYC Verification',
+    heading: 'Identity verification',
+    icon: IdCard,
+    description: 'Upload government-issued ID and documents to verify your identity.',
+    supportingText: 'Verified users enjoy higher transaction limits and increased trust within the platform.',
+    actions: {
+      help: { label: 'Help', message: 'Upload a clear photo of your national ID, passport, or driver\'s license. Verification typically takes 24-48 hours.' },
     },
   },
 ];
@@ -591,6 +604,8 @@ export default function ProfilePage({ defaultTab = 'profile' }) {
               )}
 
               {activeSection.value === 'limits' && <TransactionLimits />}
+
+              {activeSection.value === 'kyc' && <KYCVerification />}
             </div>
 
             <ActionFooter section={activeSection} />
