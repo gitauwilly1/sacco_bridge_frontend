@@ -1,4 +1,4 @@
-import { useEffect, lazy, Suspense, ErrorBoundary } from 'react';
+import { useEffect, lazy, Suspense } from 'react';
 const AuthLayout = lazy(() => import('./features/auth/components/AuthLayout'));
 import { useLocation } from '@tanstack/react-router';
 import useAuthStore from './stores/authStore';
@@ -15,6 +15,7 @@ import AppShell from './components/layout/AppShell';
 import AdminLayout from './features/admin/components/AdminLayout';
 import { Outlet, useNavigate } from '@tanstack/react-router';
 import ErrorFallback from './components/feedback/ErrorFallback';
+import ErrorBoundary from './components/feedback/ErrorBoundary';
 import useIdleTimer from './hooks/useIdleTimer';
 import SessionTimeoutModal from './components/feedback/SessionTimeoutModal';
 import CookieConsentBanner from './components/CookieConsentBanner';
