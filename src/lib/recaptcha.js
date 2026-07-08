@@ -7,7 +7,8 @@ if (!RECAPTCHA_SITE_KEY) {
 const loadRecaptchaScript = () =>
   new Promise((resolve, reject) => {
     if (typeof window === 'undefined') {
-      return reject(new Error('reCAPTCHA can only be loaded in the browser'));}
+      return reject(new Error('reCAPTCHA can only be loaded in the browser'));
+    }
 
     if (window.grecaptcha) {
       return resolve(window.grecaptcha);
@@ -21,7 +22,7 @@ const loadRecaptchaScript = () =>
     }
 
     const script = document.createElement('script');
-    script.src = `https://www.google.com/recaptcha/api.js?render=${RECAPTCHA_SITE_KEY}`;
+    script.src = 'https://www.google.com/recaptcha/api.js?render=explicit';
     script.async = true;
     script.defer = true;
     script.onload = () => {
@@ -35,16 +36,49 @@ const loadRecaptchaScript = () =>
     document.head.appendChild(script);
   });
 
-export async function getRecaptchaToken(action = 'submit') {
+let widgetId = null;
+let widgetContainer = null;
+
+const ensureWidget = async () => {
   if (!RECAPTCHA_SITE_KEY) {
-    return null;
+    throw new Error('reCAPTCHA site key is not configured');
   }
 
+  const grecaptcha = window.grecaptcha || (await loadRecaptchaScript());
+
+  await new Promise((resolve, reject) => {
+    try {
+      grecaptcha.ready(() => resolve());
+    } catch (error) {
+      reject(error);
+    }
+  });
+
+  if (!widgetContainer) {
+    widgetContainer = document.createElement('div');
+    widgetContainer.style.position = 'absolute';
+    widgetContainer.style.left = '-9999px';
+    widgetContainer.style.top = '-9999px';
+    document.body.appendChild(widgetContainer);
+  }
+
+  if (widgetId === null) {
+    widgetId = grecaptcha.render(widgetContainer, {
+      sitekey: RECAPTCHA_SITE_KEY,
+      size: 'invisible',
+      badge: 'bottomright',
+    });
+  }
+
+  return { grecaptcha, widgetId };
+};
+
+export async function getRecaptchaToken(action = 'submit') {
+  const { grecaptcha, widgetId: activeWidgetId } = await ensureWidget();
+
   try {
-    const grecaptcha = window.grecaptcha || (await loadRecaptchaScript());
-    await new Promise((resolve) => grecaptcha.ready(resolve));
-    return await grecaptcha.execute(RECAPTCHA_SITE_KEY, { action });
-  } catch {
-    return null;
+    return await grecaptcha.execute(activeWidgetId, { action });
+  } catch (error) {
+    throw new Error(`reCAPTCHA execution failed: ${error.message || error}`);
   }
 }
