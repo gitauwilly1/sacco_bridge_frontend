@@ -20,6 +20,33 @@ export const clearAccessToken = () => {
   accessToken = null;
 };
 
+export const refreshAccessToken = async () => {
+  const refreshPayloads = [{}, { refresh: '' }];
+  let lastError = null;
+
+  for (const payload of refreshPayloads) {
+    try {
+      const { data } = await axios.post(
+        `${env.API_URL}/auth/token/refresh/`,
+        payload,
+        { withCredentials: true }
+      );
+
+      const newToken = data?.data?.access_token || data?.access_token || data?.token;
+      if (newToken) {
+        setAccessToken(newToken);
+        return newToken;
+      }
+
+      throw new Error('Refresh response did not contain an access token');
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  throw lastError || new Error('Unable to refresh access token');
+};
+
 const generateUUID = () => {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) {
     return crypto.randomUUID();
@@ -82,21 +109,16 @@ apiClient.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        const { data } = await axios.post(
-          `${env.API_URL}/auth/token/refresh/`,
-          { refresh: '' },
-          { withCredentials: true }
-        );
-
-        const newToken = data.data?.access_token;
+        const newToken = await refreshAccessToken();
         if (newToken) {
-          setAccessToken(newToken);
           originalRequest.headers.Authorization = `Bearer ${newToken}`;
           return apiClient(originalRequest);
         }
       } catch (refreshError) {
         clearAccessToken();
-        window.location.href = '/login';
+        if (typeof window !== 'undefined') {
+          window.location.href = '/login';
+        }
       }
     }
 

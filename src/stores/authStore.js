@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import apiClient, { setAccessToken, clearAccessToken } from '../lib/apiClient';
+import apiClient, { setAccessToken, clearAccessToken, refreshAccessToken } from '../lib/apiClient';
 
 const useAuthStore = create(
   persist(
@@ -86,11 +86,11 @@ const useAuthStore = create(
 
       initialize: async () => {
         try {
-          const { data } = await apiClient.post('/auth/token/refresh/', {});
-          if (data.data?.access_token) {
-            setAccessToken(data.data.access_token);
+          const newToken = await refreshAccessToken();
+          if (newToken) {
+            setAccessToken(newToken);
             set({
-              user: data.data.user,
+              user: null,
               isAuthenticated: true,
               isLoading: false,
               isInitialized: true,

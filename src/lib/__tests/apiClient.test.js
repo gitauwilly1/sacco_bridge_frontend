@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import axios from 'axios';
-import apiClient, { setAccessToken, getAccessToken, clearAccessToken } from '../apiClient';
+import apiClient, { setAccessToken, getAccessToken, clearAccessToken, refreshAccessToken } from '../apiClient';
 
 // Mock window.location
 const originalLocation = global.window ? global.window.location : undefined;
@@ -84,12 +84,30 @@ describe('apiClient interceptors', () => {
 
     expect(axiosPostSpy).toHaveBeenCalledWith(
       expect.stringContaining('/auth/token/refresh/'),
-      { refresh: '' },
+      {},
       { withCredentials: true }
     );
     expect(getAccessToken()).toBe('newly-refreshed-token');
     expect(response.data.retried).toBe(true);
     expect(response.config.headers.Authorization).toBe('Bearer newly-refreshed-token');
+  });
+
+  it('should try a cookie-based refresh payload before falling back to the legacy refresh body', async () => {
+    const axiosPostSpy = vi.spyOn(axios, 'post')
+      .mockRejectedValueOnce(new Error('missing cookie token'))
+      .mockResolvedValueOnce({
+        data: {
+          data: {
+            access_token: 'newly-refreshed-token',
+          },
+        },
+      });
+
+    const token = await refreshAccessToken();
+
+    expect(token).toBe('newly-refreshed-token');
+    expect(axiosPostSpy).toHaveBeenNthCalledWith(1, expect.stringContaining('/auth/token/refresh/'), {}, { withCredentials: true });
+    expect(axiosPostSpy).toHaveBeenNthCalledWith(2, expect.stringContaining('/auth/token/refresh/'), { refresh: '' }, { withCredentials: true });
   });
 
   it('should clear access token and redirect to /login if refresh token request fails', async () => {
@@ -106,7 +124,7 @@ describe('apiClient interceptors', () => {
 
     await expect(apiClient.get('/data-unauthorized')).rejects.toThrow();
 
-    expect(axiosPostSpy).toHaveBeenCalled();
+    expect(axiosPostSpy).toHaveBeenCalledTimes(2);
     expect(getAccessToken()).toBeNull();
     expect(global.window.location.href).toBe('/login');
   });
